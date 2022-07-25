@@ -63,42 +63,46 @@ for(i in 1:nrow(marZoo)){
 marMap
 
 #### NEWFOUNDLAND
-subset(data,is.na(ColWtCL_6))
+
+
+
 
 #### MAKE A TEST MAPPING FUNCTION
+
 
 
 # Create a function to only select relevant data from the metadata
 mapMaker = function(mapData) {
   
   # I'm sure there's a better way to do this. But first, split the data
-  punctual = subset(mapData, is.na(longitudeEnd)) # just a point
-  transect = subset(mapData, !is.na(longitudeEnd)) # is a transect
+  punctual = subset(mapData, is.na(latitudeEnd) | latitudeEnd == "NA")
+  transect = subset(mapData, as.numeric(latitudeEnd)>1)
   
   mapTemplate = leaflet(options = leafletOptions(zoomControl = F)) %>% 
     # Add Esri world Imagery basemap from Esri
     # More options here: https://leaflet-extras.github.io/leaflet-providers/preview/
     addProviderTiles(providers$Esri.WorldImagery) %>%
-
+    
+    # Add circles for stations that are not transects ('punctual stations')
     addCircleMarkers(data = punctual, ~as.numeric(longitude), ~as.numeric(latitude),
-                       weight = 0.5,
-                       col = 'black', 
-                       fillColor = 'coral',
-                       radius = 4, 
-                       fillOpacity = 0.9, 
-                       stroke = T) %>%
-
-    addCircleMarkers(data = transect, ~as.numeric(longitude), ~as.numeric(latitude),
                      weight = 0.5,
                      col = 'red', 
                      fillColor = 'red',
                      radius = 4, 
                      fillOpacity = 0.9, 
                      stroke = T) %>%
-        
+  
     # add a map scalebar
     addScaleBar(position = 'topright')
 
+  # Add the survey transects as lines from start (latitude/longitude) to end (-End)
+  if (nrow(transect)>=1){ # need to make sure this actually has data
+    for(i in 1:nrow(transect)){
+    mapTemplate = addPolylines(mapTemplate, lat = c(transect[i,]$latitude, transect[i,]$latitudeEnd), 
+                           lng = c(transect[i,]$longitude, transect[i,]$longitudeEnd))
+    }
+  }
+  
   return(mapTemplate) # return processed data frame
 }
 
@@ -108,6 +112,8 @@ pacMap = mapMaker(pacZoo)
 pacMap
 marMap = mapMaker(marZoo)
 marMap
+gulfMap = mapMaker(gulfZoo)
+gulfMap
 
 # Start the basemap (set zoomControl to false to hide the zoom buttons on map)
 nlMap = leaflet(options = leafletOptions(zoomControl = F)) %>% 
