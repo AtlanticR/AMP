@@ -63,26 +63,42 @@ for(i in 1:nrow(marZoo)){
 marMap
 
 #### NEWFOUNDLAND
-
+subset(data,is.na(ColWtCL_6))
 
 #### MAKE A TEST MAPPING FUNCTION
 
 
 # Create a function to only select relevant data from the metadata
 mapMaker = function(mapData) {
+  
+  # I'm sure there's a better way to do this. But first, split the data
+  punctual = subset(mapData, is.na(longitudeEnd)) # just a point
+  transect = subset(mapData, !is.na(longitudeEnd)) # is a transect
+  
   mapTemplate = leaflet(options = leafletOptions(zoomControl = F)) %>% 
     # Add Esri world Imagery basemap from Esri
     # More options here: https://leaflet-extras.github.io/leaflet-providers/preview/
     addProviderTiles(providers$Esri.WorldImagery) %>%
-    addCircleMarkers(data = mapData, ~as.numeric(longitude), ~as.numeric(latitude),
+
+    addCircleMarkers(data = punctual, ~as.numeric(longitude), ~as.numeric(latitude),
+                       weight = 0.5,
+                       col = 'black', 
+                       fillColor = 'coral',
+                       radius = 4, 
+                       fillOpacity = 0.9, 
+                       stroke = T) %>%
+
+    addCircleMarkers(data = transect, ~as.numeric(longitude), ~as.numeric(latitude),
                      weight = 0.5,
-                     col = 'black', 
-                     fillColor = 'coral',
+                     col = 'red', 
+                     fillColor = 'red',
                      radius = 4, 
                      fillOpacity = 0.9, 
-                     stroke = T)  %>%
-  # add a map scalebar
-  addScaleBar(position = 'topright')
+                     stroke = T) %>%
+        
+    # add a map scalebar
+    addScaleBar(position = 'topright')
+
   return(mapTemplate) # return processed data frame
 }
 
