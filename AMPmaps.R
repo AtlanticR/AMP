@@ -27,8 +27,7 @@ gulfMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_GULF_Feb22022
 ###############################################################################
 ## Pre-processing
 
-# adding a comment just to test again
-
+# Create a function to only select relevant data from the metadata
 processMeta = function(xlData) {
   dfProc = subset(xlData, sampleType == "Z" & # only get Zooplankton data
                     (netMesh == 250 | # only want net size of 236 or 250 um
@@ -41,9 +40,7 @@ processMeta = function(xlData) {
 marZoo = processMeta(marMeta) # Maritimes zooplankton data
 nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
-gulfZoo = processMeta(gulfMeta)
-# Create a function to only select relevant data from the metadata
-# Gulf
+gulfZoo = processMeta(gulfMeta) # Gulf
 
 ###############################################################################
 ## Make the leaflet map
@@ -67,9 +64,6 @@ marMap
 
 #### NEWFOUNDLAND
 
-# I'm going to try turning my data into a spatial object
-#nlPoints =  st_as_sf(nlZoo, coords = c("longitude", "latitude"), crs = 4326)
-
 
 #### MAKE A TEST MAPPING FUNCTION
 
@@ -86,7 +80,9 @@ mapMaker = function(mapData) {
                      fillColor = 'coral',
                      radius = 4, 
                      fillOpacity = 0.9, 
-                     stroke = T)  
+                     stroke = T)  %>%
+  # add a map scalebar
+  addScaleBar(position = 'topright')
   return(mapTemplate) # return processed data frame
 }
 
