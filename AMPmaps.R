@@ -106,6 +106,7 @@ mapMaker = function(mapData) {
   return(mapTemplate) # return processed data frame
 }
 
+# Call the functions and draw the maps!
 nlMap = mapMaker(nlZoo)
 nlMap
 pacMap = mapMaker(pacZoo)
