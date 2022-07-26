@@ -5,13 +5,21 @@
 ###############################################################################
 ## Get things set up
 
-# Trying out a new way to install multiple packages at once
-# Use the pacman package!
-install.packages("pacman")
+# Clear console
+rm(list=ls())
+graphics.off()
 
-# Load them (I might not use all of them in the end)
-pacman::p_load(dplyr, ggplot2, leaflet, mapr, mapview, 
-               readxl)
+# Function to load multiple packages
+ipak = function(pkg){
+  new.pkg = pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# Choose necessary packages
+packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl")
+ipak(packages)
 
 # Set directory
 # Look into here package and probably replace this 
