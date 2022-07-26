@@ -1,8 +1,13 @@
-# Make some leaflet maps for the AMP sampling sites out of the metadata files
+################################################################################
+# Making Aquaculture Monitoring Program maps of sampling locations
+# Make leaflet maps for the AMP sampling sites out of the metadata files
+# Create generic functions to process/clean the data, then map these locations
+# Sampling locations are both points (discrete i.e., punctual stations) and
+# lines (transects)
+# Metadata files are not public
 # Code by Stephen Finnis July 2022
+################################################################################
 
-
-###############################################################################
 ## Get things set up
 
 # Clear console
@@ -21,7 +26,7 @@ ipak = function(pkg){
 packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl")
 ipak(packages)
 
-###############################################################################
+################################################################################
 ## Load the data data
 
 # Set directory
@@ -35,7 +40,7 @@ nlMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_NL_Jan132022_OG
 pacMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_Pacific_Jan262022.xlsx", sheet = "zoo")
 gulfMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo")
 
-###############################################################################
+################################################################################
 ## Data cleaning
 
 # Create a function to only select relevant data from the metadata
@@ -53,7 +58,7 @@ nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
 
-###############################################################################
+################################################################################
 ## Make leaflet maps (i.e., can zoom in/out in the Viewer panel)
 # Sampling locations will be displayed as circles for non-transects
 # Transects will be drawn as lines
@@ -82,8 +87,10 @@ mapMaker = function(mapData) {
     # Add circles for stations that are not transects (i.e., 'punctual stations')
     addCircleMarkers(data = punctual, ~as.numeric(longitude), ~as.numeric(latitude),
                      weight = 0.5,
-                     col = 'red', 
-                     fillColor = 'red',
+                     col = 'black', 
+                     # NOTE: NOT MANY COLOUR OPTIONS
+                     # Need a workaround if want a specific colour (otherwise will be black)
+                     fillColor = 'purple', 
                      radius = 4, 
                      fillOpacity = 0.9, 
                      stroke = T) %>%
@@ -106,16 +113,20 @@ mapMaker = function(mapData) {
 
 # Call the functions and draw the maps!
 # Some sites with NAs may get errors. Just ignore this
-nlMap = mapMaker(nlZoo)
+nlMap = mapMaker(nlZoo) # Newfoundland
 nlMap
-pacMap = mapMaker(pacZoo)
+pacMap = mapMaker(pacZoo) # Pacific
 pacMap
-marMap = mapMaker(marZoo)
+marMap = mapMaker(marZoo) # Maritimes
 marMap
-gulfMap = mapMaker(gulfZoo)
+gulfMap = mapMaker(gulfZoo) # Gulf
 gulfMap
 
-###############################################################################
+################################################################################
+## DELETE THESE??
+# This is my code for making the maps separately 
+# I might need these later if each map has very custom things to add
+
 ## Just in case I want to make them separately (Delete these later)
 
 ## Newfoundland 
