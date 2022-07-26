@@ -21,6 +21,9 @@ ipak = function(pkg){
 packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl")
 ipak(packages)
 
+###############################################################################
+## Load the data data
+
 # Set directory
 # Look into here package and probably replace this 
 setwd("C:/Users/FINNISS/Desktop")
@@ -33,7 +36,7 @@ pacMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_Pacific_Jan262
 gulfMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo")
 
 ###############################################################################
-## Pre-processing
+## Data cleaning
 
 # Create a function to only select relevant data from the metadata
 processMeta = function(xlData) {
@@ -44,54 +47,39 @@ processMeta = function(xlData) {
   return(dfProc) # return processed data frame
 }
 
-# Process that data!
+# Process the data
 marZoo = processMeta(marMeta) # Maritimes zooplankton data
 nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
 
 ###############################################################################
-## Make the leaflet map
+## Make leaflet maps (i.e., can zoom in/out in the Viewer panel)
+# Sampling locations will be displayed as circles for non-transects
+# Transects will be drawn as lines
+# There's sampling data for 4 regions: Newfoundland, Maritimes, Gulf, and Pacific
 
-### MARITIMES
-# Start the basemap (set zoomControl to false to hide the zoom buttons on map)
-marMap = leaflet(options = leafletOptions(zoomControl = F)) %>% 
-  
-  # Add Esri world Imagery basemap from Esri
-  # More options here: https://leaflet-extras.github.io/leaflet-providers/preview/
-  addProviderTiles(providers$Esri.WorldImagery) 
-
-# Add the survey transects as lines from start (latitude/longitude) to end (-End)
-for(i in 1:nrow(marZoo)){
-  marMap = addPolylines(marMap, lat = c(marZoo[i,]$latitude, marZoo[i,]$latitudeEnd), 
-                        lng = c(marZoo[i,]$longitude, marZoo[i,]$longitudeEnd))
-}
-
-# Show the map
-marMap
-
-#### NEWFOUNDLAND
-
-
-
-
-#### MAKE A TEST MAPPING FUNCTION
-
-
-
-# Create a function to only select relevant data from the metadata
+# Create a function to create maps for any region
 mapMaker = function(mapData) {
   
   # I'm sure there's a better way to do this. But first, split the data
+  # This separates point from line data. There is a column for punctual vs transect
+  # but it's inconsistent (spelling, typos etc.) so instead base it if there is an
+  # "end" latitude (could be longitude instead) column with data
+  # In some cases, "NA" was typed into the column. These must be checked for in two ways
   punctual = subset(mapData, is.na(latitudeEnd) | latitudeEnd == "NA")
+  # Convert to a numeric for entries that are actual numbers
   transect = subset(mapData, as.numeric(latitudeEnd)>1)
   
+  # Get the leaflet map set up  
+  # Setting zoomControl as false removes the zoom icon from the map
   mapTemplate = leaflet(options = leafletOptions(zoomControl = F)) %>% 
-    # Add Esri world Imagery basemap from Esri
+
+    # Add Esri world Imagery basemap
     # More options here: https://leaflet-extras.github.io/leaflet-providers/preview/
     addProviderTiles(providers$Esri.WorldImagery) %>%
     
-    # Add circles for stations that are not transects ('punctual stations')
+    # Add circles for stations that are not transects (i.e., 'punctual stations')
     addCircleMarkers(data = punctual, ~as.numeric(longitude), ~as.numeric(latitude),
                      weight = 0.5,
                      col = 'red', 
@@ -100,21 +88,24 @@ mapMaker = function(mapData) {
                      fillOpacity = 0.9, 
                      stroke = T) %>%
   
-    # add a map scalebar
+    # Add a scalebar
     addScaleBar(position = 'topright')
 
-  # Add the survey transects as lines from start (latitude/longitude) to end (-End)
-  if (nrow(transect)>=1){ # need to make sure this actually has data
+  # Add the survey transects as lines from start (latitude/longitude) to end (..End)
+  # First eed to make sure this actually has data or will get an error message
+  if (nrow(transect)>=1){ 
     for(i in 1:nrow(transect)){
     mapTemplate = addPolylines(mapTemplate, lat = c(transect[i,]$latitude, transect[i,]$latitudeEnd), 
                            lng = c(transect[i,]$longitude, transect[i,]$longitudeEnd))
     }
   }
   
-  return(mapTemplate) # return processed data frame
+  # Return processed data frame
+  return(mapTemplate) 
 }
 
 # Call the functions and draw the maps!
+# Some sites with NAs may get errors. Just ignore this
 nlMap = mapMaker(nlZoo)
 nlMap
 pacMap = mapMaker(pacZoo)
@@ -124,6 +115,10 @@ marMap
 gulfMap = mapMaker(gulfZoo)
 gulfMap
 
+###############################################################################
+## Just in case I want to make them separately (Delete these later)
+
+## Newfoundland 
 # Start the basemap (set zoomControl to false to hide the zoom buttons on map)
 nlMap = leaflet(options = leafletOptions(zoomControl = F)) %>% 
   # Add Esri world Imagery basemap from Esri
@@ -136,13 +131,11 @@ nlMap = leaflet(options = leafletOptions(zoomControl = F)) %>%
                    radius = 4, 
                    fillOpacity = 0.9, 
                    stroke = T)
+
+# Draw the map
 nlMap
 
-
-
-#### Pacific
-
-# A few checks
+## Pacific
 # I think there are a lot of sampling issues so I will have to review this all
 pacZoo = subset(pacZoo, 
                 !(is.na(latitude)))
@@ -159,10 +152,12 @@ pacMap = leaflet(options = leafletOptions(zoomControl = F)) %>%
                    radius = 4, 
                    fillOpacity = 0.9, 
                    stroke = T)
+
+# Draw the map
 pacMap
 
 
-#### Gulf
+## Gulf
 
 # Start the basemap (set zoomControl to false to hide the zoom buttons on map)
 gulfMap = leaflet(options = leafletOptions(zoomControl = F)) %>% 
@@ -175,4 +170,24 @@ for(i in 1:nrow(gulfZoo)){
   gulfMap = addPolylines(gulfMap, lat = c(gulfZoo[i,]$latitude, gulfZoo[i,]$latitudeEnd), 
                          lng = c(gulfZoo[i,]$longitude, gulfZoo[i,]$longitudeEnd))
 }
+
+# Draw the map
 gulfMap
+
+
+## Maritimes
+# Start the basemap (set zoomControl to false to hide the zoom buttons on map)
+marMap = leaflet(options = leafletOptions(zoomControl = F)) %>% 
+  
+  # Add Esri world Imagery basemap from Esri
+  # More options here: https://leaflet-extras.github.io/leaflet-providers/preview/
+  addProviderTiles(providers$Esri.WorldImagery) 
+
+# Add the survey transects as lines from start (latitude/longitude) to end (-End)
+for(i in 1:nrow(marZoo)){
+  marMap = addPolylines(marMap, lat = c(marZoo[i,]$latitude, marZoo[i,]$latitudeEnd), 
+                        lng = c(marZoo[i,]$longitude, marZoo[i,]$longitudeEnd))
+}
+
+# Draw the map
+marMap
