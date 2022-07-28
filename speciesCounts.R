@@ -1,17 +1,11 @@
 # Finnis Testing File Stuff
 
-file = read.csv("C:/Users/FINNISS/Desktop/TEST_AMMP_Gulf_Malpeque_475326_20200929_250UM_R2.csv", header=F)
-
-
-
 
 library(dplyr)
 library(stringr)
 
-file[1] %>% filter(str_detect(file, "Class"))
 
-str_detect(file[,1], "Class")
-
+file = read.csv("C:/Users/FINNISS/Desktop/TEST_AMMP_Gulf_Malpeque_475326_20200929_250UM_R2.csv", header=F)
 
 class = file[which(str_detect(file[,1], "Class$")), ] 
 count = file[which(str_detect(file[,1], "Count")), ]
