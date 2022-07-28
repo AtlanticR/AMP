@@ -3,15 +3,68 @@
 
 library(dplyr)
 library(stringr)
-
+library(tools)
 
 file = read.csv("C:/Users/FINNISS/Desktop/TEST_AMMP_Gulf_Malpeque_475326_20200929_250UM_R2.csv", header=F)
 
+# I want class (taxa), count (cell count) and particles (cell/ml) in each file
+# This looks for each word, and gets the whole row where that word is found
 class = file[which(str_detect(file[,1], "Class$")), ] 
 count = file[which(str_detect(file[,1], "Count")), ]
 particles = file[which(str_detect(file[,1], "Particles")), ]
 
-test = as.data.frame(cbind("class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+# I only want the second column from the row where this data is actually located
+df = as.data.frame(cbind("class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+
+
+# List all csv files in the directory
+mar_data =
+  list.files(
+    "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary",
+    full.names = T, # don't want full directory names
+    pattern = ".csv"
+  )
+
+
+#### Test as a loop
+
+datalist = list()
+
+for(i in 1:length(mar_data)){
+  data = read.csv(mar_data[i])
+ 
+  class = data[which(str_detect(data[,1], "Class$")), ] 
+  count = data[which(str_detect(data[,1], "Count")), ]
+  particles = data[which(str_detect(data[,1], "Particles")), ]
+  
+  df = as.data.frame(cbind("sample" = data,
+    "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+  datalist[[i]] = df
+}
+
+big_data = dplyr::bind_rows(datalist)
+
+
+datalist = list()
+
+for (i in 1:5) {
+  # ... make some data
+  dat <- data.frame(x = rnorm(10), y = runif(10))
+  dat$i <- i  # maybe you want to keep track of which iteration produced it?
+  datalist[[i]] <- dat # add it to your list
+}
+
+big_data = do.call(rbind, datalist)
+# or big_data <- dplyr::bind_rows(datalist)
+# or big_data <- data.table::rbindlist(datalist)
+
+
+
+
+# Remove the file extension 
+mar_data = sub('\\.csv$', '', mar_data) 
+
+
 
 
 
