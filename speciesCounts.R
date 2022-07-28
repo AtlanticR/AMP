@@ -1,68 +1,83 @@
+################################################################################
 # Finnis Testing File Stuff
 
 
-library(dplyr)
-library(stringr)
-library(tools)
+################################################################################
 
-file = read.csv("C:/Users/FINNISS/Desktop/TEST_AMMP_Gulf_Malpeque_475326_20200929_250UM_R2.csv", header=F)
+## Get things set up
 
-# I want class (taxa), count (cell count) and particles (cell/ml) in each file
-# This looks for each word, and gets the whole row where that word is found
-class = file[which(str_detect(file[,1], "Class$")), ] 
-count = file[which(str_detect(file[,1], "Count")), ]
-particles = file[which(str_detect(file[,1], "Particles")), ]
+# Function to load multiple packages
+ipak = function(pkg){
+  new.pkg = pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
 
-# I only want the second column from the row where this data is actually located
-df = as.data.frame(cbind("class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+# Choose necessary packages
+packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl", "stringr",
+             "tools")
+ipak(packages)
 
+################################################################################
+## Set up the data
 
-# List all csv files in the directory
-mar_data =
+# List all csv files in the directory (full directory name)
+marDataFull =
   list.files(
     "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary",
     full.names = T, # don't want full directory names
     pattern = ".csv"
   )
 
+# List them all without the full directory name (it's useful for later)
+marDataShort =
+  list.files(
+    "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary",
+    full.names = F, # don't want full directory names
+    pattern = ".csv"
+  )
 
-#### Test as a loop
+# Remove the file extension 
+marDataShort = sub('\\.csv$', '', marDataShort) 
 
-datalist = list()
 
-for(i in 1:length(mar_data)){
-  data = read.csv(mar_data[i])
- 
+################################################################################
+## Create dataframes with data
+
+# Make an empty list to store the data
+marDatalist = list()
+
+# Loop through all the data and extract the class (plankton taxa), count (# of 
+# cells in the sample), and particles (# cells/ml)
+for(i in 1:length(marDataFull)){
+  
+  # Read in the files
+  data = read.csv(marDataFull[i]) 
+  
+  # Extract full row of data which contain class, count and particle information 
   class = data[which(str_detect(data[,1], "Class$")), ] 
   count = data[which(str_detect(data[,1], "Count")), ]
   particles = data[which(str_detect(data[,1], "Particles")), ]
   
-  df = as.data.frame(cbind("sample" = data,
+  # Combine this all into a dataframe
+  # Don't want the full row, we only want the 2nd column with the actual data
+  # Label it with the file name (without directory/extension)
+  df = as.data.frame(cbind("sample" = marDataShort[i],
     "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
-  datalist[[i]] = df
+  
+  # Add this to the list of dataframes (there are many alternative methods)
+  marDatalist[[i]] = df
 }
 
-big_data = dplyr::bind_rows(datalist)
-
-
-datalist = list()
-
-for (i in 1:5) {
-  # ... make some data
-  dat <- data.frame(x = rnorm(10), y = runif(10))
-  dat$i <- i  # maybe you want to keep track of which iteration produced it?
-  datalist[[i]] <- dat # add it to your list
-}
-
-big_data = do.call(rbind, datalist)
-# or big_data <- dplyr::bind_rows(datalist)
-# or big_data <- data.table::rbindlist(datalist)
+# Bind together this list of dataframes into one big data frame
+marCounts = dplyr::bind_rows(marDatalist)
 
 
 
 
-# Remove the file extension 
-mar_data = sub('\\.csv$', '', mar_data) 
+
+
 
 
 
