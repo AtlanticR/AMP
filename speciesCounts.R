@@ -16,7 +16,7 @@ ipak = function(pkg){
 
 # Choose necessary packages
 packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl", "stringr",
-             "tools")
+             "tidyr", "tools")
 ipak(packages)
 
 ################################################################################
@@ -40,7 +40,6 @@ marDataShort =
 
 # Remove the file extension 
 marDataShort = sub('\\.csv$', '', marDataShort) 
-
 
 ################################################################################
 ## Create dataframes with data
@@ -70,13 +69,21 @@ for(i in 1:length(marDataFull)){
   marDatalist[[i]] = df
 }
 
-# Bind together this list of dataframes into one big data frame
-marCounts = dplyr::bind_rows(marDatalist)
+# Bind together this list of dataframes into one big data frame (both count/particles)
+marboth = dplyr::bind_rows(marDatalist)
 
+marCounts = marboth[,c(1:3)]
+marParticles = marboth[,c(1,2,4)]
 
+#pivot the data frame into a wide format
 
+# RENAME THESE AND ALSO ALPHABETIZE THE SPECIES LIST
 
+x = marCounts %>% pivot_wider(names_from = class, values_from = count)
+y = marParticles %>% pivot_wider(names_from = class, values_from = particles)
 
+# names_from: The column whose values will be used as column names
+# values_from: The column whose values will be used as cell values
 
 
 
