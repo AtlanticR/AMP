@@ -41,6 +41,18 @@ marDataShort =
 # Remove the file extension 
 marDataShort = sub('\\.csv$', '', marDataShort) 
 
+
+myCols <- as.character(read_excel("C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/AMMP Maritimes 2021 Zooplankton Samples.xlsx",
+                                  n_max = 4, col_names = F))
+
+sampleXL = read_excel("C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/AMMP Maritimes 2021 Zooplankton Samples.xlsx",
+                      n_max =  46,
+                      sheet = "Samples"
+                      )
+
+
+
+
 ################################################################################
 ## Create dataframes with data
 
@@ -70,10 +82,10 @@ for(i in 1:length(marDataFull)){
 }
 
 # Bind together this list of dataframes into one big data frame (both count/particles)
-marboth = dplyr::bind_rows(marDatalist)
+marBoth = dplyr::bind_rows(marDatalist)
 
-marCounts = marboth[,c(1:3)]
-marParticles = marboth[,c(1,2,4)]
+marCounts = marBoth[,c(1:3)]
+marParticles = marBoth[,c(1,2,4)]
 
 #pivot the data frame into a wide format
 
@@ -84,6 +96,41 @@ y = marParticles %>% pivot_wider(names_from = class, values_from = particles)
 
 # names_from: The column whose values will be used as column names
 # values_from: The column whose values will be used as cell values
+
+
+######
+
+# Create a pie chart for the data
+
+
+# Do a few data edits
+# Remove certain classes
+# Remove Leftovers??
+# Remove "Zooplankton (unid)"??
+
+
+marBothReduced = subset(marBoth, !grepl("[0-9]", class) & # remove the "Class 1-9" data
+                class != "Leftovers") # Remove "Leftovers" class
+
+ggplot(test, aes(x="", y=count, fill=class)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)+
+  theme(legend.position = "none")
+
+
+# Stacked bar chart
+ggplot(test, aes(x=sample, y=count, fill=class)) +
+  geom_bar(stat="identity", width=1) +
+  theme(legend.position = "none",
+        axis.text.x=element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+
+
+ggplot(data, aes(fill=condition, y=value, x=specie)) + 
+  geom_bar(position="dodge", stat="identity")
+
 
 
 #### convert particles/ml (flowcam sample) to ind m^-3 (seawater)
