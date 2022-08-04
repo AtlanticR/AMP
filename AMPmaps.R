@@ -58,6 +58,10 @@ nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
 
+
+
+
+
 ################################################################################
 ## Make leaflet maps (i.e., can zoom in/out in the Viewer panel)
 # Sampling locations will be displayed as circles for non-transects
@@ -111,7 +115,7 @@ mapMaker = function(mapData) {
   return(mapTemplate) 
 }
 
-# Call the functions and draw the maps!
+# Call the functions and draw the maps
 # Some sites with NAs may get errors. Just ignore this
 nlMap = mapMaker(nlZoo) # Newfoundland
 nlMap
