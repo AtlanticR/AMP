@@ -16,7 +16,7 @@ ipak = function(pkg){
 
 # Choose necessary packages
 packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl", "stringr",
-             "tidyr", "tools")
+             "tidyr", "tools", "vegan")
 ipak(packages)
 
 ################################################################################
@@ -86,12 +86,20 @@ y = marParticles %>% pivot_wider(names_from = class, values_from = particles)
 # values_from: The column whose values will be used as cell values
 
 
+#### convert particles/ml (flowcam sample) to ind m^-3 (seawater)
+
+# density = (n)(Vs)/(Vm)
+# n = average number of orgs in 1 ml subsample
+# Vs = volume of plankton sample (ml) (i.e. bottle volume!!)
+# Vm = volume of seawater sampled by the net (m3)
+
+# double check: is there a l --> m^3 conversion for seawater?
+
+marZooCondensed = marZoo[,c("sampleCode","tideRange", "waterVolume")] 
 
 
 
-
-
-
+merge(marZooCondensed, marParticles, by = "sampleCode", all = TRUE)
 
 
 
