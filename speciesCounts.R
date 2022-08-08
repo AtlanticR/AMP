@@ -95,18 +95,18 @@ marBoth = marBoth %>%
            class != "Leftovers") %>% # Remove "Leftovers" class (CHECK THIS)
   
   group_by(class) %>%
-  summarize(allClass = sum(count))
+  summarize(allClass = sum(count)) %>%
   
   
   # Need to create an "Other" class so the pie charts don't have too many slices
   # Keep the 5 most abundant classes, name the rest "Other"
-  mutate(rank = rank(-count), 
+  mutate(rank = rank(-allClass), 
          classNew = ifelse(rank <= 5, class, 'Other')) %>%
   
   # Manipulate the dataframe to show the percentage of each class
   # This will condense the dataframe (it's easier to plot this way)
   group_by(classNew) %>%
-  summarise(sumCount = sum(count)) %>%
+  summarise(sumCount = sum(allClass)) %>%
   mutate(perc = sumCount / sum(sumCount)*100)
 
 
@@ -129,7 +129,7 @@ ggplot(marBoth, aes(x="", y=perc, fill=classNew)) +
 # Pie chart for one station
 
 # Bar chart of one station
-ggplot(oneStation, aes(x=class, y=count, fill=class)) +
+ggplot(marBoth, aes(x=class, y=sumCount, fill=class)) +
   geom_bar(stat="identity", width=1) +
   theme(legend.position = "none",
         axis.text.x=element_blank(),
