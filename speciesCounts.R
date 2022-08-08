@@ -15,7 +15,7 @@ ipak = function(pkg){
 }
 
 # Choose necessary packages
-packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl", "stringr",
+packages = c("dplyr", "ggplot2", "ggthemes", "jcolors", "leaflet", "mapr", "mapview", "readxl", "stringr",
              "tidyr", "tools", "vegan")
 ipak(packages)
 
@@ -84,70 +84,34 @@ for(i in 1:length(marDataFull)){
 # Bind together this list of dataframes into one big data frame (both count/particles)
 marBoth = dplyr::bind_rows(marDatalist)
 
-marCounts = marBoth[,c(1:3)]
-marParticles = marBoth[,c(1,2,4)]
-
-#pivot the data frame into a wide format
-
-# RENAME THESE AND ALSO ALPHABETIZE THE SPECIES LIST
-
-x = marCounts %>% pivot_wider(names_from = class, values_from = count)
-y = marParticles %>% pivot_wider(names_from = class, values_from = particles)
-
-# names_from: The column whose values will be used as column names
-# values_from: The column whose values will be used as cell values
-
-
-######
-
-# Create a pie chart for the data
-
-
-# Do a few data edits
-# Remove certain classes
-# Remove Leftovers??
-# Remove "Zooplankton (unid)"??
-
-# Remove unnecessary classes 
-marBothReduced = subset(marBoth, !grepl("[0-9]", class) & # remove the "Class 1-9" data
-                class != "Leftovers") # Remove "Leftovers" class (CHECK THIS)
-
 # Convert counts to numeric (it's easier for plotting)
-marBothReduced$count = as.numeric(marBothReduced$count)
-
-# Get data from one station to just check graphs
-oneStation = subset(marBothReduced, sample == "21_08_24_Mar_S04_Z01_1053_250")
-
-
-
-
-# Graphs still try and show classes with 0 counts
-# It's easiest to just remove these from the dataframe
-# Need to remove these
-oneStation = 
-  oneStation %>% 
-  dplyr::na_if(0) 
-oneStation = na.omit(oneStation)
+marBoth$count = as.numeric(marBoth$count)
 
 # Five most abundant species, rest are "other"
-oneStation <- oneStation %>% 
+marBoth = marBoth %>% 
+  
+  # Remove unnecessary classes 
+  subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
+           class != "Leftovers") %>% # Remove "Leftovers" class (CHECK THIS)
+  
+  group_by(class) %>%
+  summarize(allClass = sum(count))
+  
+  
+  # Need to create an "Other" class so the pie charts don't have too many slices
+  # Keep the 5 most abundant classes, name the rest "Other"
   mutate(rank = rank(-count), 
-         classNew = ifelse(rank <= 5, class, 'Other'))
-
-test = 
-
-oneStation %>%
+         classNew = ifelse(rank <= 5, class, 'Other')) %>%
+  
+  # Manipulate the dataframe to show the percentage of each class
+  # This will condense the dataframe (it's easier to plot this way)
   group_by(classNew) %>%
   summarise(sumCount = sum(count)) %>%
   mutate(perc = sumCount / sum(sumCount)*100)
 
-install.packages("jcolors")
-library(jcolors)
-install.packages("ggthemes")
-library("ggthemes")
 
-
-ggplot(test, aes(x="", y=perc, fill=classNew)) +
+# Plot it!
+ggplot(marBoth, aes(x="", y=perc, fill=classNew)) +
   geom_bar(stat="identity") +
   # geom_text(aes(x=1.6, label = round(perc, digits=2)),
             # position = position_stack(vjust = 0.5)) +
@@ -190,6 +154,39 @@ ggplot(marBothReduced, aes(x=sample, y=as.numeric(count), fill=class)) +
 
 ggplot(data, aes(fill=condition, y=value, x=specie)) + 
   geom_bar(position="dodge", stat="identity")
+
+
+
+
+###### THINGS I WILL PROBABLY DELETE BUT I'M TOO SCARED TO DELETE
+
+# Get data from one station to just check graphs
+oneStation = subset(marBothReduced, sample == "21_08_24_Mar_S04_Z01_1053_250")
+
+# Graphs still try and show classes with 0 counts
+# It's easiest to just remove these from the dataframe
+# This part can actually be removed (but i'll keep it for later)
+# oneStation = 
+#   oneStation %>% 
+#   dplyr::na_if(0) 
+# oneStation = na.omit(oneStation)
+
+
+
+## For doing NMDS/things where I need the water volume
+marCounts = marBoth[,c(1:3)]
+marParticles = marBoth[,c(1,2,4)]
+
+#pivot the data frame into a wide format
+
+# RENAME THESE AND ALSO ALPHABETIZE THE SPECIES LIST
+
+x = marCounts %>% pivot_wider(names_from = class, values_from = count)
+y = marParticles %>% pivot_wider(names_from = class, values_from = particles)
+
+# names_from: The column whose values will be used as column names
+# values_from: The column whose values will be used as cell values
+
 
 
 
