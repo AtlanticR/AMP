@@ -108,25 +108,74 @@ y = marParticles %>% pivot_wider(names_from = class, values_from = particles)
 # Remove Leftovers??
 # Remove "Zooplankton (unid)"??
 
-
+# Remove unnecessary classes 
 marBothReduced = subset(marBoth, !grepl("[0-9]", class) & # remove the "Class 1-9" data
-                class != "Leftovers") # Remove "Leftovers" class
+                class != "Leftovers") # Remove "Leftovers" class (CHECK THIS)
+
+# Convert counts to numeric (it's easier for plotting)
+marBothReduced$count = as.numeric(marBothReduced$count)
+
+# Get data from one station to just check graphs
+oneStation = subset(marBothReduced, sample == "21_08_24_Mar_S04_Z01_1053_250")
 
 
-first = subset(marBothReduced, sample == "21_08_24_Mar_S04_Z01_1053_250")
-
-sort(as.numeric(marBothReduced$count), decreasing = T)
 
 
-first = 
-first %>% 
+# Graphs still try and show classes with 0 counts
+# It's easiest to just remove these from the dataframe
+# Need to remove these
+oneStation = 
+  oneStation %>% 
   dplyr::na_if(0) 
-first = na.omit(first)
+oneStation = na.omit(oneStation)
 
-ggplot(first, aes(x="", y=as.numeric(count), fill=class)) +
-  geom_bar(stat="identity", width=1) +
+# Five most abundant species, rest are "other"
+oneStation <- oneStation %>% 
+  mutate(rank = rank(-count), 
+         classNew = ifelse(rank <= 5, class, 'Other'))
+
+test = 
+
+oneStation %>%
+  group_by(classNew) %>%
+  summarise(sumCount = sum(count)) %>%
+  mutate(perc = sumCount / sum(sumCount)*100)
+
+install.packages("jcolors")
+library(jcolors)
+install.packages("ggthemes")
+library("ggthemes")
+
+
+ggplot(test, aes(x="", y=perc, fill=classNew)) +
+  geom_bar(stat="identity") +
+  # geom_text(aes(x=1.6, label = round(perc, digits=2)),
+            # position = position_stack(vjust = 0.5)) +
+
+  geom_col(color = "black")+
   coord_polar("y", start=0)+
-  theme(legend.position = "none")
+  #scale_fill_brewer(palette = "Dark2")+
+  scale_fill_brewer(palette = "Set2")+
+  geom_text(aes(label = round(perc, digits=2)),
+            position = position_stack(vjust = 0.5),
+            size = 3) +
+  theme_void()
+
+
+# Pie chart for one station
+
+# Bar chart of one station
+ggplot(oneStation, aes(x=class, y=count, fill=class)) +
+  geom_bar(stat="identity", width=1) +
+  theme(legend.position = "none",
+        axis.text.x=element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+
+
+
+
 
 
 # Stacked bar chart
