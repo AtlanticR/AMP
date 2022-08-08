@@ -112,14 +112,25 @@ y = marParticles %>% pivot_wider(names_from = class, values_from = particles)
 marBothReduced = subset(marBoth, !grepl("[0-9]", class) & # remove the "Class 1-9" data
                 class != "Leftovers") # Remove "Leftovers" class
 
-ggplot(test, aes(x="", y=count, fill=class)) +
+
+first = subset(marBothReduced, sample == "21_08_24_Mar_S04_Z01_1053_250")
+
+sort(as.numeric(marBothReduced$count), decreasing = T)
+
+
+first = 
+first %>% 
+  dplyr::na_if(0) 
+first = na.omit(first)
+
+ggplot(first, aes(x="", y=as.numeric(count), fill=class)) +
   geom_bar(stat="identity", width=1) +
   coord_polar("y", start=0)+
   theme(legend.position = "none")
 
 
 # Stacked bar chart
-ggplot(test, aes(x=sample, y=count, fill=class)) +
+ggplot(marBothReduced, aes(x=sample, y=as.numeric(count), fill=class)) +
   geom_bar(stat="identity", width=1) +
   theme(legend.position = "none",
         axis.text.x=element_blank(),
