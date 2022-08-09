@@ -22,10 +22,22 @@ ipak(packages)
 ################################################################################
 ## Set up the data
 
+# Datasets without a "Zooplankton Identification Data" folder
+# AAMP NL 2020 Zooplankton Data
+# AAMP Pacific June 2021 Zooplankton Data
+# AAMP Pacific March 2021 Zooplankton Data
+# AAMP Pacific Sept 2021 Zooplankton Data
+
+
+
+folderExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary"
+spreadsheetExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/AMMP Gulf 2021 Zooplankton Samples.xlsx"
+
+
 # List all csv files in the directory (full directory name)
 marDataFull =
   list.files(
-    "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary",
+    folderExt,
     full.names = T, # don't want full directory names
     pattern = ".csv"
   )
@@ -33,25 +45,13 @@ marDataFull =
 # List them all without the full directory name (it's useful for later)
 marDataShort =
   list.files(
-    "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary",
+    folderExt,
     full.names = F, # don't want full directory names
     pattern = ".csv"
   )
 
 # Remove the file extension 
 marDataShort = sub('\\.csv$', '', marDataShort) 
-
-
-myCols <- as.character(read_excel("C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/AMMP Maritimes 2021 Zooplankton Samples.xlsx",
-                                  n_max = 4, col_names = F))
-
-sampleXL = read_excel("C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Maritimes 2021 Zooplankton Data/AMMP Maritimes 2021 Zooplankton Samples.xlsx",
-                      n_max =  46,
-                      sheet = "Samples"
-                      )
-
-
-
 
 ################################################################################
 ## Create dataframes with data
@@ -84,16 +84,19 @@ for(i in 1:length(marDataFull)){
 # Bind together this list of dataframes into one big data frame (both count/particles)
 marBoth = dplyr::bind_rows(marDatalist)
 
-# Convert counts to numeric (it's easier for plotting)
+# Convert counts to numeric
 marBoth$count = as.numeric(marBoth$count)
 
-# Five most abundant species, rest are "other"
+# Do some cleaning of the data
 marBoth = marBoth %>% 
   
   # Remove unnecessary classes 
   subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
-           class != "Leftovers") %>% # Remove "Leftovers" class (CHECK THIS)
-  
+           class != "Leftovers" &
+           class != "Extra taxa" &
+           class != "extra taxa" &
+           class != "Extra Taxa") %>% # Remove "Leftovers" class (CHECK THIS)
+    
   # Want counts per taxa (class) for the whole bay, not by tow
   group_by(class) %>%
   summarize(countBay = sum(count)) %>%
