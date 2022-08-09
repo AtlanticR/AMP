@@ -15,7 +15,7 @@ ipak = function(pkg){
 }
 
 # Choose necessary packages
-packages = c("dplyr", "ggplot2", "ggthemes", "jcolors", "leaflet", "mapr", "mapview", "readxl", "stringr",
+packages = c("dplyr", "ggplot2", "ggrepel", "ggthemes", "jcolors", "leaflet", "mapr", "mapview", "readxl", "stringr",
              "tidyr", "tools", "vegan")
 ipak(packages)
 
@@ -94,36 +94,51 @@ marBoth = marBoth %>%
   subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
            class != "Leftovers") %>% # Remove "Leftovers" class (CHECK THIS)
   
+  # Want counts per taxa (class) for the whole bay, not by tow
   group_by(class) %>%
-  summarize(allClass = sum(count)) %>%
-  
+  summarize(countBay = sum(count)) %>%
   
   # Need to create an "Other" class so the pie charts don't have too many slices
   # Keep the 5 most abundant classes, name the rest "Other"
-  mutate(rank = rank(-allClass), 
+  mutate(rank = rank(-countBay), 
          classNew = ifelse(rank <= 5, class, 'Other')) %>%
   
   # Manipulate the dataframe to show the percentage of each class
   # This will condense the dataframe (it's easier to plot this way)
   group_by(classNew) %>%
-  summarise(sumCount = sum(allClass)) %>%
+  summarise(sumCount = sum(countBay)) %>%
   mutate(perc = sumCount / sum(sumCount)*100)
 
 
-# Plot it!
+# Get the positions for the labels
+labelPositions = marBoth %>% 
+  mutate(csum = rev(cumsum(rev(perc))), 
+         pos = perc/2 + lead(csum, 1),
+         pos = if_else(is.na(pos), perc/2, pos))
+
+# Make the pie chart
 ggplot(marBoth, aes(x="", y=perc, fill=classNew)) +
   geom_bar(stat="identity") +
-  # geom_text(aes(x=1.6, label = round(perc, digits=2)),
-            # position = position_stack(vjust = 0.5)) +
-
-  geom_col(color = "black")+
-  coord_polar("y", start=0)+
-  #scale_fill_brewer(palette = "Dark2")+
+  geom_col(color = "black")+ # add black border around slices
+  coord_polar("y", start=0)+ # make it a pie chart
   scale_fill_brewer(palette = "Set2")+
-  geom_text(aes(label = round(perc, digits=2)),
-            position = position_stack(vjust = 0.5),
-            size = 3) +
-  theme_void()
+  # For labelling percents within pie slices:
+  # geom_text(aes(label = round(perc, digits=2)),
+  #           position = position_stack(vjust = 0.5),
+  #           size = 3) +
+  geom_label_repel(data = labelPositions,
+                   aes(y = pos, label = paste0(round(perc,1), "%")),
+                   size = 3, nudge_x = 1, show.legend = FALSE)+
+  ggtitle("Maritimes 2021")+ # fix this to be automated
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.spacing = element_blank(),
+    title=element_blank())
 
 
 # Pie chart for one station
