@@ -34,6 +34,24 @@ folderExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 20
 spreadsheetExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/AMMP Gulf 2021 Zooplankton Samples.xlsx"
 
 
+allFolders = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/"
+
+allDataNames =
+  list.files(
+    allFolders,
+    full.names = T, # don't want full directory names
+  )
+
+#list.files(allFolders, recursive=TRUE)
+hi = list()
+
+for(i in 1:length(allDataNames)){
+  hi[[i]] = list.files(
+    path = paste(allDataNames[i], "/Zooplankton Identification Data/Classification Summary", sep = ""))
+}
+
+
+
 # List all csv files in the directory (full directory name)
 marDataFull =
   list.files(
