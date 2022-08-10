@@ -217,7 +217,6 @@ pacSep21Plot = piePrep(pacSep21)
 
 piePlot = function(pieData) {
   
-g1 =
   # Make the pie chart
   ggplot(pieData, aes(x="", y=perc, fill=classNew)) +
     geom_bar(stat="identity") +
@@ -228,10 +227,10 @@ g1 =
     # geom_text(aes(label = round(perc, digits=2)),
     #           position = position_stack(vjust = 0.5),
     #           size = 3) +
-    geom_label_repel(data = labelPositions,
+    geom_label_repel(data = pieData,
                      aes(y = pos, label = paste0(round(perc,1), "%")),
                      size = 3, nudge_x = 1, show.legend = FALSE)+
-    ggtitle("Maritimes 2021")+ # fix this to be automated
+    #ggtitle("Maritimes 2021")+ # fix this to be automated
     theme(
       axis.text = element_blank(),
       axis.ticks = element_blank(),
@@ -241,11 +240,19 @@ g1 =
       panel.grid.minor = element_blank(),
       panel.spacing = element_blank(),
       title=element_blank())
-
-  return(g1)
 }
 
+# Plot these
 piePlot(gulf20Plot)
+piePlot(gulf21Plot)
+piePlot(mar21Plot)
+piePlot(nl20Plot)
+piePlot(nl21Plot)
+piePlot(pac20Plot)
+piePlot(pacJun21Plot)
+piePlot(pacMar21Plot)
+piePlot(pacSep21Plot)
+
 
 
 # Pie chart for one station
