@@ -1,7 +1,7 @@
 ################################################################################
-# Finnis Testing File Stuff
-
-
+# AMP making different charts with the zooplankton data
+# Created by Stephen Finnis 2022
+# 
 ################################################################################
 
 ## Get things set up
@@ -21,12 +21,6 @@ ipak(packages)
 
 ################################################################################
 ## Set up the data
-
-
-
-
-folderExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary"
-spreadsheetExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/AMMP Gulf 2021 Zooplankton Samples.xlsx"
 
 # Define the directory where data need to be read from 
 allFolders = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/"
@@ -81,8 +75,10 @@ for(i in 1:length(allDataNames)){
   dirShort[[i]] = sub('\\.csv$', '', dirShort[[i]])
 }
 
-# Remove the file extension 
-dirShort = sub('\\.csv$', '', dirShort)
+
+#### THIS IS MY OLD CODE FOR READING IN JUST ONE FILE!!!!! REMOVE THIS EVENTUALLY!!!!
+folderExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary"
+spreadsheetExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/AMMP Gulf 2021 Zooplankton Samples.xlsx"
 
 # List all csv files in the directory (full directory name)
 marDataFull =
@@ -103,18 +99,30 @@ marDataShort =
 # Remove the file extension 
 marDataShort = sub('\\.csv$', '', marDataShort) 
 
+#### REMOVE ABOVE THIS POINT 
+
+# Just test if one works
+marDataFull = dirFull[[2]]
+
+
+
 ################################################################################
 ## Create dataframes with data
 
+
+
+procData = function(xl_dataFull, xl_dataShort) {
+  
+
 # Make an empty list to store the data
-marDatalist = list()
+datalist = list()
 
 # Loop through all the data and extract the class (plankton taxa), count (# of 
 # cells in the sample), and particles (# cells/ml)
-for(i in 1:length(marDataFull)){
+for(i in 1:length(xl_dataFull)){
   
   # Read in the files
-  data = read.csv(marDataFull[i]) 
+  data = read.csv(xl_dataFull[i]) 
   
   # Extract full row of data which contain class, count and particle information 
   class = data[which(str_detect(data[,1], "Class$")), ] 
@@ -124,15 +132,15 @@ for(i in 1:length(marDataFull)){
   # Combine this all into a dataframe
   # Don't want the full row, we only want the 2nd column with the actual data
   # Label it with the file name (without directory/extension)
-  df = as.data.frame(cbind("sample" = marDataShort[i],
+  df = as.data.frame(cbind("sample" = xl_dataShort[i],
     "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
   
   # Add this to the list of dataframes (there are many alternative methods)
-  marDatalist[[i]] = df
+  datalist[[i]] = df
 }
 
 # Bind together this list of dataframes into one big data frame (both count/particles)
-marBoth = dplyr::bind_rows(marDatalist)
+marBoth = dplyr::bind_rows(datalist)
 
 # Convert counts to numeric
 marBoth$count = as.numeric(marBoth$count)
@@ -161,6 +169,26 @@ marBoth = marBoth %>%
   group_by(classNew) %>%
   summarise(sumCount = sum(countBay)) %>%
   mutate(perc = sumCount / sum(sumCount)*100)
+
+return(marBoth) 
+
+}
+
+
+maritimes = procData(dirFull[[1]], dirShort[[1]])
+gulf = procData(dirFull[[2]], dirShort[[2]])
+
+gulf2020 = dirFull[[1]]
+gulf2021 = dirFull[[2]]
+mar2021 = dirFull[[3]]
+nl2020 = dirFull[[4]]
+nl2021 = dirFull[[5]]
+pac2020 = dirFull[[6]]
+pacJun2021 = dirFull[[7]]
+pacMar2021 = dirFull[[8]]
+pacSep2021 = dirFull[[9]]
+
+
 
 
 # Get the positions for the labels
