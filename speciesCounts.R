@@ -76,36 +76,6 @@ for(i in 1:length(allDataNames)){
 }
 
 
-#### THIS IS MY OLD CODE FOR READING IN JUST ONE FILE!!!!! REMOVE THIS EVENTUALLY!!!!
-folderExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary"
-spreadsheetExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/AMMP Gulf 2021 Zooplankton Samples.xlsx"
-
-# List all csv files in the directory (full directory name)
-marDataFull =
-  list.files(
-    folderExt,
-    full.names = T, # don't want full directory names
-    pattern = ".csv"
-  )
-
-# List them all without the full directory name (it's useful for later)
-marDataShort =
-  list.files(
-    folderExt,
-    full.names = F, # don't want full directory names
-    pattern = ".csv"
-  )
-
-# Remove the file extension 
-marDataShort = sub('\\.csv$', '', marDataShort) 
-
-#### REMOVE ABOVE THIS POINT 
-
-# Just test if one works
-marDataFull = dirFull[[2]]
-
-
-
 ################################################################################
 ## Create dataframes with data
 
