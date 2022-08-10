@@ -110,19 +110,19 @@ marDataFull = dirFull[[2]]
 ## Create dataframes with data
 
 
-
-procData = function(xl_dataFull, xl_dataShort) {
+# Create a function that will make dataframes with species counts for each dataset
+# Pass in the list of files with full directory name (xl_dataFull) and just file names (xl_dataShort)
+speciesDF = function(xlDataFull, xlDataShort) {
   
-
 # Make an empty list to store the data
 datalist = list()
 
 # Loop through all the data and extract the class (plankton taxa), count (# of 
 # cells in the sample), and particles (# cells/ml)
-for(i in 1:length(xl_dataFull)){
+for(i in 1:length(xlDataFull)){
   
   # Read in the files
-  data = read.csv(xl_dataFull[i]) 
+  data = read.csv(xlDataFull[i]) 
   
   # Extract full row of data which contain class, count and particle information 
   class = data[which(str_detect(data[,1], "Class$")), ] 
@@ -132,7 +132,7 @@ for(i in 1:length(xl_dataFull)){
   # Combine this all into a dataframe
   # Don't want the full row, we only want the 2nd column with the actual data
   # Label it with the file name (without directory/extension)
-  df = as.data.frame(cbind("sample" = xl_dataShort[i],
+  df = as.data.frame(cbind("sample" = xlDataShort[i],
     "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
   
   # Add this to the list of dataframes (there are many alternative methods)
@@ -140,10 +140,28 @@ for(i in 1:length(xl_dataFull)){
 }
 
 # Bind together this list of dataframes into one big data frame (both count/particles)
+siteDf = dplyr::bind_rows(datalist)
+
+# Convert counts to numeric
+siteDf$count = as.numeric(siteDf$count)
+
+return(siteDf)
+}
+
+mar21 = speciesDF(dirFull[[1]], dirShort[[1]])
+
+
+#### DELETE A LOT OF THIS LATER:
+
+# Bind together this list of dataframes into one big data frame (both count/particles)
 marBoth = dplyr::bind_rows(datalist)
 
 # Convert counts to numeric
 marBoth$count = as.numeric(marBoth$count)
+
+
+## DELETE ABOVE
+
 
 # Do some cleaning of the data
 marBoth = marBoth %>% 
@@ -170,13 +188,12 @@ marBoth = marBoth %>%
   summarise(sumCount = sum(countBay)) %>%
   mutate(perc = sumCount / sum(sumCount)*100)
 
-return(marBoth) 
-
-}
 
 
-maritimes = procData(dirFull[[1]], dirShort[[1]])
-gulf = procData(dirFull[[2]], dirShort[[2]])
+
+
+maritimes = speciesDF(dirFull[[1]], dirShort[[1]])
+gulf = speciesDF(dirFull[[2]], dirShort[[2]])
 
 gulf2020 = dirFull[[1]]
 gulf2021 = dirFull[[2]]
