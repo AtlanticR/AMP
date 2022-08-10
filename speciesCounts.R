@@ -133,7 +133,10 @@ for(i in 1:length(dirFull[[4]])) {
   # 4 denotes Newfoundland data, and i denotes which file to read in
   data = read.csv(dirFull[[4]][i], skip = 2) %>% 
     # Keep everything before the "End Metadata Statistics" part (remove that and after)
-    filter(row_number() < which(Name =='======== End Metadata Statistics ========'))
+    filter(row_number() < which(Name =='======== End Metadata Statistics ========')) %>%
+    # Rename the columns to match the other data files
+    # format: new = cold
+    rename(class = Name, count = Count, particles = Particles...ml)
   
   # Add each file to the list. Each bit of data will be stored as a list (within the list)
   nl20Datalist[[i]] = data
@@ -157,7 +160,7 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 
 # Create dataframe for Newfoundland 2020 data
 nl20 = dplyr::bind_rows(nl20Datalist)
-nl20$Count = as.numeric(nl20$Count)
+nl20$count = as.numeric(nl20$count)
 
 ################################################################################
 ## Alter data format for creation of pie charts
@@ -197,7 +200,7 @@ return(plotData)
 gulf20Plot = piePrep(gulf20)
 gulf21Plot = piePrep(gulf21)
 mar21Plot = piePrep(mar21)
-nl20Plot = piePrep(nl20) # UGH THIS IS A DIFFERENT FORMAT
+nl20Plot = piePrep(nl20)
 nl21Plot = piePrep(nl21)
 pac20Plot = piePrep(pac20)
 pacJun21Plot = piePrep(pacJun21)
