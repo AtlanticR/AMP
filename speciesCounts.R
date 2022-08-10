@@ -79,7 +79,6 @@ for(i in 1:length(allDataNames)){
 ################################################################################
 ## Create dataframes with data
 
-
 # Create a function that will make dataframes with species counts for each dataset
 # Pass in the list of files with full directory name (xl_dataFull) and just file names (xl_dataShort)
 speciesDF = function(xlDataFull, xlDataShort) {
@@ -118,7 +117,18 @@ siteDf$count = as.numeric(siteDf$count)
 return(siteDf)
 }
 
-mar21 = speciesDF(dirFull[[1]], dirShort[[1]])
+# Run the function above and create the dataframes for each
+gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
+gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
+mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
+nl20 = speciesDF(dirFull[[4]], dirShort[[4]])
+nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
+pac20 = speciesDF(dirFull[[6]], dirShort[[6]])
+pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
+pacMar21 = speciesDF(dirFull[[8]], dirShort[[8]])
+pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
+
+
 
 
 #### DELETE A LOT OF THIS LATER:
