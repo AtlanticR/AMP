@@ -122,61 +122,50 @@ return(siteDf)
 # For some reason the csvs are in a different format 
 
 # Make an empty list to store the data
-nl10Datalist = list()
+nl20Datalist = list()
 
 # Loop through all the data and extract the class (plankton taxa), count (# of 
 # cells in the sample), and particles (# cells/ml)
 # The 4 refers to the Newfoundland 2020 data (it's 4th in the list)
-for(i in 1:length(dirFull[[4]])){
+for(i in 1:length(dirFull[[4]])) {
   
   # Read in the files (it's a list of lists)
   # 4 denotes Newfoundland data, and i denotes which file to read in
   data = read.csv(dirFull[[4]][i], skip = 2) %>% 
-    # Remove everything after the "End Metadata Statistics" part
-    filter(row_number() = which(Name=='======== End Metadata Statistics ========'))
+    # Keep everything before the "End Metadata Statistics" part (remove that and after)
+    filter(row_number() < which(Name =='======== End Metadata Statistics ========'))
   
   # Add each file to the list. Each bit of data will be stored as a list (within the list)
-  nl10Datalist[[i]] = data
+  nl20Datalist[[i]] = data
 }
 
 ################################################################################
+## Create data frames of each dataset
 
-
-
-# Bind together this list of dataframes into one big data frame (both count/particles)
-nl20 = dplyr::bind_rows(nl10Datalist)
-
-
-
-
-# Run the function above and create the dataframes for each
+# Run the speciesDF function and create the dataframes for dataset
+# This returns a dataframe with columns for sample, class, count, particles
+# Note this might need to be turned into wide table format eventually
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
-nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # UGH THIS IS DIFFERENT FORMAT
+# nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # UGH THIS IS A DIFFERENT FORMAT
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 pac20 = speciesDF(dirFull[[6]], dirShort[[6]])
 pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
 pacMar21 = speciesDF(dirFull[[8]], dirShort[[8]])
 pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 
+# Create dataframe for Newfoundland 2020 data
+nl20 = dplyr::bind_rows(nl20Datalist)
+nl20$Count = as.numeric(nl20$Count)
 
+################################################################################
+## Alter data format for creation of pie charts
 
-
-#### DELETE A LOT OF THIS LATER:
-
-# Bind together this list of dataframes into one big data frame (both count/particles)
-marBoth = dplyr::bind_rows(datalist)
-
-# Convert counts to numeric
-marBoth$count = as.numeric(marBoth$count)
-
-
-## DELETE ABOVE
-
+piePrep = function(plotData) {
 
 # Do some cleaning of the data
-marBoth = marBoth %>% 
+plotData = plotData %>% 
   
   # Remove unnecessary classes 
   subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
@@ -200,25 +189,20 @@ marBoth = marBoth %>%
   summarise(sumCount = sum(countBay)) %>%
   mutate(perc = sumCount / sum(sumCount)*100)
 
+return(plotData)
+}
 
-
-
-
-maritimes = speciesDF(dirFull[[1]], dirShort[[1]])
-gulf = speciesDF(dirFull[[2]], dirShort[[2]])
-
-gulf2020 = dirFull[[1]]
-gulf2021 = dirFull[[2]]
-mar2021 = dirFull[[3]]
-nl2020 = dirFull[[4]]
-nl2021 = dirFull[[5]]
-pac2020 = dirFull[[6]]
-pacJun2021 = dirFull[[7]]
-pacMar2021 = dirFull[[8]]
-pacSep2021 = dirFull[[9]]
-
-
-
+################################################################################
+# Process data for pie charts
+gulf20Plot = piePrep(gulf20)
+gulf21Plot = piePrep(gulf21)
+mar21Plot = piePrep(mar21)
+nl20Plot = piePrep(nl20) # UGH THIS IS A DIFFERENT FORMAT
+nl21Plot = piePrep(nl21)
+pac20Plot = piePrep(pac20)
+pacJun21Plot = piePrep(pacJun21)
+pacMar21Plot = piePrep(pacMar21)
+pacSep21Plot = piePrep(pacSep21)
 
 # Get the positions for the labels
 labelPositions = marBoth %>% 
