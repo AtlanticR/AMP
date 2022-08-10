@@ -117,11 +117,43 @@ siteDf$count = as.numeric(siteDf$count)
 return(siteDf)
 }
 
+################################################################################
+## Process the Newfoundland 2020 data separately
+# For some reason the csvs are in a different format 
+
+# Make an empty list to store the data
+nl10Datalist = list()
+
+# Loop through all the data and extract the class (plankton taxa), count (# of 
+# cells in the sample), and particles (# cells/ml)
+# The 4 refers to the Newfoundland 2020 data (it's 4th in the list)
+for(i in 1:length(dirFull[[4]])){
+  
+  # Read in the files (it's a list of lists)
+  # 4 denotes Newfoundland data, and i denotes which file to read in
+  data = read.csv(dirFull[[4]][i], skip = 2) %>% 
+    # Remove everything after the "End Metadata Statistics" part
+    filter(row_number() = which(Name=='======== End Metadata Statistics ========'))
+  
+  # Add each file to the list. Each bit of data will be stored as a list (within the list)
+  nl10Datalist[[i]] = data
+}
+
+################################################################################
+
+
+
+# Bind together this list of dataframes into one big data frame (both count/particles)
+nl20 = dplyr::bind_rows(nl10Datalist)
+
+
+
+
 # Run the function above and create the dataframes for each
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
-nl20 = speciesDF(dirFull[[4]], dirShort[[4]])
+nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # UGH THIS IS DIFFERENT FORMAT
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 pac20 = speciesDF(dirFull[[6]], dirShort[[6]])
 pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
