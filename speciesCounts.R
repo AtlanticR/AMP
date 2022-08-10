@@ -22,35 +22,67 @@ ipak(packages)
 ################################################################################
 ## Set up the data
 
-# Datasets without a "Zooplankton Identification Data" folder
-# AAMP NL 2020 Zooplankton Data
-# AAMP Pacific June 2021 Zooplankton Data
-# AAMP Pacific March 2021 Zooplankton Data
-# AAMP Pacific Sept 2021 Zooplankton Data
 
 
 
 folderExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/Zooplankton Identification Data/Classification summary"
 spreadsheetExt = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/AMMP Gulf 2021 Zooplankton Data/AMMP Gulf 2021 Zooplankton Samples.xlsx"
 
-
+# Define the directory where data need to be read from 
 allFolders = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/"
 
+# Get a list of all the folders that are within that directory
 allDataNames =
   list.files(
     allFolders,
     full.names = T, # don't want full directory names
   )
 
-#list.files(allFolders, recursive=TRUE)
-hi = list()
+# Want a list of csv files containing all the zooplankton counts
+# There are slightly different file structures based on how the taxonomists did their work
+# Some datasets do not have a "Zooplankton Identification Data" folder (they were "cleaned" while ID'ing)
+# Therefore we need to check for files in two different directories (but both end in "Classification Summary")
 
+# For reference, these datasets do NOT have a "Zooplankton Identification Data" folder:
+# AAMP NL 2020 Zooplankton Data
+# AAMP Pacific June 2021 Zooplankton Data
+# AAMP Pacific March 2021 Zooplankton Data
+# AAMP Pacific Sept 2021 Zooplankton Data
+
+# In some cases I need the full directory names and sometimes I don't
+# I found it easiest to just get these separately
+
+## Get full directory names
+# Initialize empty list
+dirFull = list()
+
+# Loop through every folder in allDataNames
 for(i in 1:length(allDataNames)){
-  hi[[i]] = list.files(
-    path = paste(allDataNames[i], "/Zooplankton Identification Data/Classification Summary", sep = ""))
+  dirFull[[i]] = list.files(
+    # List the files! Some will have a "Zooplankton Identification Data" folder. Some won't.
+    path = c(paste(allDataNames[i], "/Classification Summary", sep = ""),
+      paste(allDataNames[i], "/Zooplankton Identification Data/Classification Summary", sep = "")),
+    full.names = T, # Get full directory names
+    pattern = ".csv")
 }
 
+## Get just the file names (i.e., not the full directory names)
+# This is helpful for naming things and matching to the metadata spreadsheet
+# Initialize empty list
+dirShort = list()
 
+for(i in 1:length(allDataNames)){
+  dirShort[[i]] = list.files(
+    path = c(paste(allDataNames[i], "/Classification Summary", sep = ""),
+             paste(allDataNames[i], "/Zooplankton Identification Data/Classification Summary", sep = "")),
+    full.names = F, # Just get the file names
+    pattern = ".csv")
+  # Remove the file extension
+  dirShort[[i]] = sub('\\.csv$', '', dirShort[[i]])
+}
+
+# Remove the file extension 
+dirShort = sub('\\.csv$', '', dirShort)
 
 # List all csv files in the directory (full directory name)
 marDataFull =
