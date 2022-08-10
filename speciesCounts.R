@@ -75,7 +75,6 @@ for(i in 1:length(allDataNames)){
   dirShort[[i]] = sub('\\.csv$', '', dirShort[[i]])
 }
 
-
 ################################################################################
 ## Create dataframes with data
 
@@ -190,7 +189,13 @@ plotData = plotData %>%
   # This will condense the dataframe (it's easier to plot this way)
   group_by(classNew) %>%
   summarise(sumCount = sum(countBay)) %>%
-  mutate(perc = sumCount / sum(sumCount)*100)
+  mutate(perc = sumCount / sum(sumCount)*100) %>%
+  
+  # Add a column called "pos" to get positions of where the percent labels should go
+  # Code obtained from: https://r-charts.com/part-whole/pie-chart-labels-outside-ggplot2/
+  mutate(csum = rev(cumsum(rev(perc))), 
+        pos = perc/2 + lead(csum, 1),
+        pos = if_else(is.na(pos), perc/2, pos))
 
 return(plotData)
 }
@@ -207,35 +212,40 @@ pacJun21Plot = piePrep(pacJun21)
 pacMar21Plot = piePrep(pacMar21)
 pacSep21Plot = piePrep(pacSep21)
 
-# Get the positions for the labels
-labelPositions = marBoth %>% 
-  mutate(csum = rev(cumsum(rev(perc))), 
-         pos = perc/2 + lead(csum, 1),
-         pos = if_else(is.na(pos), perc/2, pos))
+################################################################################
+# Create function for making pie charts!
 
-# Make the pie chart
-ggplot(marBoth, aes(x="", y=perc, fill=classNew)) +
-  geom_bar(stat="identity") +
-  geom_col(color = "black")+ # add black border around slices
-  coord_polar("y", start=0)+ # make it a pie chart
-  scale_fill_brewer(palette = "Set2")+
-  # For labelling percents within pie slices:
-  # geom_text(aes(label = round(perc, digits=2)),
-  #           position = position_stack(vjust = 0.5),
-  #           size = 3) +
-  geom_label_repel(data = labelPositions,
-                   aes(y = pos, label = paste0(round(perc,1), "%")),
-                   size = 3, nudge_x = 1, show.legend = FALSE)+
-  ggtitle("Maritimes 2021")+ # fix this to be automated
-  theme(
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.spacing = element_blank(),
-    title=element_blank())
+piePlot = function(pieData) {
+  
+g1 =
+  # Make the pie chart
+  ggplot(pieData, aes(x="", y=perc, fill=classNew)) +
+    geom_bar(stat="identity") +
+    geom_col(color = "black")+ # add black border around slices
+    coord_polar("y", start=0)+ # make it a pie chart
+    scale_fill_brewer(palette = "Set2")+
+    # For labelling percents within pie slices:
+    # geom_text(aes(label = round(perc, digits=2)),
+    #           position = position_stack(vjust = 0.5),
+    #           size = 3) +
+    geom_label_repel(data = labelPositions,
+                     aes(y = pos, label = paste0(round(perc,1), "%")),
+                     size = 3, nudge_x = 1, show.legend = FALSE)+
+    ggtitle("Maritimes 2021")+ # fix this to be automated
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.background = element_rect(fill = "white"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.spacing = element_blank(),
+      title=element_blank())
+
+  return(g1)
+}
+
+piePlot(gulf20Plot)
 
 
 # Pie chart for one station
