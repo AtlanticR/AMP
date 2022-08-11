@@ -16,7 +16,7 @@ ipak = function(pkg){
 
 # Choose necessary packages
 packages = c("dplyr", "ggplot2", "ggrepel", "ggthemes", "jcolors", "leaflet", "mapr", "mapview", "readxl", "stringr",
-             "tidyr", "tools", "vegan")
+             "tidyr", "tools", "vegan", "wpa")
 ipak(packages)
 
 ################################################################################
@@ -101,21 +101,27 @@ for(i in 1:length(xlDataFull)){
   # Don't want the full row, we only want the 2nd column with the actual data
   # Label it with the file name (without directory/extension)
   df = as.data.frame(cbind("sample" = xlDataShort[i],
-    "class" = class[,2], "count" = count[,2], "particles" = particles[,2])) %>%
+    "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+    
+  # Remove all underscores and replace them with spaces
+  df$class = us_to_space(df$class)
   
-  # DATA CLEANING!!!
-  # Remove unnecessary classes 
-  subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
+  # Make entire string lowercase
+  df$class = str_to_lower(df$class)
+  # Then capitalize the first letter
+  df$class = str_to_sentence(df$class)
+  
+  df = df %>%  
+    subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
            class != "Leftovers" &
            class != "Leftover" &
-           class != "Extra taxa" &
-           class != "extra taxa" &
-           class != "Extra Taxa") %>% # Remove "Leftovers" class (CHECK THIS)
+           class != "Extra taxa") %>% # Remove "Leftovers" class (CHECK THIS)
     
     # Fix typos in classes
-    mutate(class = replace(class, class == "Zooplankton (Unid))", "Zooplankton (Unid)"))
-    
-    
+    mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
+    mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)"))
+  
   # Add this to the list of dataframes (there are many alternative methods)
   datalist[[i]] = df
 }
