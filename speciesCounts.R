@@ -101,8 +101,21 @@ for(i in 1:length(xlDataFull)){
   # Don't want the full row, we only want the 2nd column with the actual data
   # Label it with the file name (without directory/extension)
   df = as.data.frame(cbind("sample" = xlDataShort[i],
-    "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+    "class" = class[,2], "count" = count[,2], "particles" = particles[,2])) %>%
   
+  # DATA CLEANING!!!
+  # Remove unnecessary classes 
+  subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
+           class != "Leftovers" &
+           class != "Leftover" &
+           class != "Extra taxa" &
+           class != "extra taxa" &
+           class != "Extra Taxa") %>% # Remove "Leftovers" class (CHECK THIS)
+    
+    # Fix typos in classes
+    mutate(class = replace(class, class == "Zooplankton (Unid))", "Zooplankton (Unid)"))
+    
+    
   # Add this to the list of dataframes (there are many alternative methods)
   datalist[[i]] = df
 }
@@ -161,6 +174,11 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 nl20 = dplyr::bind_rows(nl20Datalist)
 nl20$count = as.numeric(nl20$count)
 
+# Testing to see if my replacements work
+# gulf20=
+# gulf20 %>%
+# mutate(class = replace(class, class == "Zooplankton (Unid))", "Zooplankton (Unid)"))
+
 ################################################################################
 ## Alter data format for creation of pie charts
 
@@ -169,14 +187,6 @@ piePrep = function(plotData) {
 # Do some cleaning of the data
 plotData = plotData %>% 
   
-  # Remove unnecessary classes 
-  subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
-           class != "Leftovers" &
-           class != "Leftover" &
-           class != "Extra taxa" &
-           class != "extra taxa" &
-           class != "Extra Taxa") %>% # Remove "Leftovers" class (CHECK THIS)
-    
   # Want counts per taxa (class) for the whole bay, not by tow
   group_by(class) %>%
   summarize(countBay = sum(count)) %>%
