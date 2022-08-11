@@ -115,17 +115,27 @@ for(i in 1:length(xlDataFull)){
   
   df = df %>%  
     subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
-           class != "Leftovers" &
-           class != "Leftover" &
-           class != "Debris" &
-           class != "Extra taxa") %>% # Remove "Leftovers" class (CHECK THIS)
+             class != "Leftovers" &
+             class != "Leftover" &
+             class != "Debris" &
+             class != "Clumped zooplankton" &
+             class != "Clumped zooplankton debris" &
+             class != "Diatom" &
+             class != "Extra taxa") %>% # Remove "Leftovers" class (CHECK THIS)
     
     # Fix typos in classes
     mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)")) %>%
     mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
     mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
     mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
     mutate(class = replace(class, class == "Gastropoda limacina spp larvaeadult", "Gastropoda limacina spp larvae adult")) %>%
+    mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
+    mutate(class = replace(class, class == "Platyhelminthes nemertea larvae", "Platyhelmenthes nemertea larvae")) %>%
+    mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
     mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)"))
   
   # Add this to the list of dataframes (there are many alternative methods)
