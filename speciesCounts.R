@@ -102,10 +102,11 @@ for(i in 1:length(xlDataFull)){
   # Label it with the file name (without directory/extension)
   df = as.data.frame(cbind("sample" = xlDataShort[i],
     "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
-    
+ 
+  
+  # Fix generic typos/edit to ensure consistency between entries   
   # Remove all underscores and replace them with spaces
   df$class = us_to_space(df$class)
-  
   # Make entire string lowercase
   df$class = str_to_lower(df$class)
   # Then capitalize the first letter
@@ -113,41 +114,41 @@ for(i in 1:length(xlDataFull)){
   # Remove instances of multiple spaces between words
   df$class = str_squish(df$class)
   
+  # Remove unwanted classes
   df = df %>%  
     subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
-             class != "Leftovers" &
-             class != "Leftover" &
-             class != "Debris" &
+             class != "Benthic" &
+             class != "Bubbles" &
              class != "Clumped zooplankton" &
-             class != "Clumped zooplankton debris" &
              class != "Clumped zooplankton/debris" &
              class != "Clumped zooplankton debris" &
-             class != "Duplicate images" &
-             class != "Debris or zooplankton" & 
-             class != "Fragments of zooplankton" &
-             class != "Bubbles" &
              class != "Cut images" &
-             class != "Benthic" &
+             class != "Debris" &
+             class != "Debris or zooplankton" & 
              class != "Diatom" &
-             class != "Extra taxa") %>% # Remove "Leftovers" class (CHECK THIS)
+             class != "Duplicate images" &
+             class != "Extra taxa" &
+             class != "Fragments of zooplankton" &
+             class != "Leftover" &
+             class != "Leftovers") %>% # Remove "Leftovers" class (CHECK THIS)
     
     # Fix typos in classes
-    mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)")) %>%
-    mutate(class = replace(class, class == "Zooplankton", "Zooplankton (unid)")) %>%
-    mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
+    mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
     mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
     mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
     mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
     mutate(class = replace(class, class == "Gastropoda limacina spp larvaeadult", "Gastropoda limacina spp larvae adult")) %>%
-    mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
-    mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Osteichthys larvae", "Osteichthyes larvae")) %>%
+    mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Ostracoda spp", "Ostracoda")) %>%
     mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
     mutate(class = replace(class, class == "Platyhelminthes nemertea larvae", "Platyhelmenthes nemertea larvae")) %>%
-    mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
-    mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)"))
+    mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Zooplankton", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)"))
   
   # Add this to the list of dataframes (there are many alternative methods)
   datalist[[i]] = df
