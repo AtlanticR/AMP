@@ -172,6 +172,7 @@ plotData = plotData %>%
   # Remove unnecessary classes 
   subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
            class != "Leftovers" &
+           class != "Leftover" &
            class != "Extra taxa" &
            class != "extra taxa" &
            class != "Extra Taxa") %>% # Remove "Leftovers" class (CHECK THIS)
@@ -258,7 +259,7 @@ piePlot(pacSep21Plot)
 # Pie chart for one station
 
 # Bar chart of one station
-ggplot(marBoth, aes(x=class, y=sumCount, fill=class)) +
+ggplot(gulf20, aes(x=class, y=sumCount, fill=class)) +
   geom_bar(stat="identity", width=1) +
   theme(legend.position = "none",
         axis.text.x=element_blank(),
