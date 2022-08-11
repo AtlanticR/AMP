@@ -75,6 +75,8 @@ for(i in 1:length(allDataNames)){
   dirShort[[i]] = sub('\\.csv$', '', dirShort[[i]])
 }
 
+
+
 ################################################################################
 ## Create dataframes with data
 
@@ -85,24 +87,25 @@ speciesDF = function(xlDataFull, xlDataShort) {
 # Make an empty list to store the data
 datalist = list()
 
-# Loop through all the data and extract the class (plankton taxa), count (# of 
-# cells in the sample), and particles (# cells/ml)
-for(i in 1:length(xlDataFull)){
-  
-  # Read in the files
-  data = read.csv(xlDataFull[i]) 
-  
-  # Extract full row of data which contain class, count and particle information 
-  class = data[which(str_detect(data[,1], "Class$")), ] 
-  count = data[which(str_detect(data[,1], "Count")), ]
-  particles = data[which(str_detect(data[,1], "Particles")), ]
-  
-  # Combine this all into a dataframe
-  # Don't want the full row, we only want the 2nd column with the actual data
-  # Label it with the file name (without directory/extension)
-  df = as.data.frame(cbind("sample" = xlDataShort[i],
-    "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+  # Loop through all the data and extract the class (plankton taxa), count (# of 
+  # cells in the sample), and particles (# cells/ml)
+  for(i in 1:length(xlDataFull)){
  
+    # Read in the files
+    data = read.csv(xlDataFull[i]) 
+    
+    # Extract full row of data which contain class, count and particle information 
+    class = data[which(str_detect(data[,1], "Class$")), ] 
+    count = data[which(str_detect(data[,1], "Count")), ]
+    particles = data[which(str_detect(data[,1], "Particles")), ]
+    
+    # Combine this all into a dataframe
+    # Don't want the full row, we only want the 2nd column with the actual data
+    # Label it with the file name (without directory/extension)
+    df = as.data.frame(cbind("sample" = xlDataShort[i],
+      "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+  }
+  
   
   # Fix generic typos/edit to ensure consistency between entries   
   # Remove all underscores and replace them with spaces
@@ -134,14 +137,20 @@ for(i in 1:length(xlDataFull)){
     
     # Fix typos in classes
     mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
+    mutate(class = replace(class, class == "Calanoid civ-vi", "Calanoida civ-vi")) %>%
     mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
-    mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
+    mutate(class = replace(class, class == "Cirripedia nauplius", "Cirripedia nauplii")) %>%
+    mutate(class = replace(class, class == "Cumacea juvenileadult", "Cumacea juvenile adult")) %>%
     mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
+    mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
     mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
+    mutate(class = replace(class, class == "Decpoda brachyura zoea", "Decapoda brachyura zoea")) %>%
     mutate(class = replace(class, class == "Gastropoda limacina spp larvaeadult", "Gastropoda limacina spp larvae adult")) %>%
+    mutate(class = replace(class, class == "Mysidacea juvenileadult", "Mysidacea juvenile adult")) %>%
     mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Osteichthys larvae", "Osteichthyes larvae")) %>%
+    mutate(class = replace(class, class == " Osteichthyes eggs", " Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Ostracoda spp", "Ostracoda")) %>%
     mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
@@ -152,15 +161,16 @@ for(i in 1:length(xlDataFull)){
   
   # Add this to the list of dataframes (there are many alternative methods)
   datalist[[i]] = df
-}
 
+  
 # Bind together this list of dataframes into one big data frame (both count/particles)
-siteDf = dplyr::bind_rows(datalist)
+  siteDf = dplyr::bind_rows(datalist)
 
 # Convert counts to numeric
-siteDf$count = as.numeric(siteDf$count)
+  siteDf$count = as.numeric(siteDf$count)
 
-return(siteDf)
+  return(siteDf)
+
 }
 
 ################################################################################
@@ -197,7 +207,7 @@ for(i in 1:length(dirFull[[4]])) {
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
-# nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # UGH THIS IS A DIFFERENT FORMAT
+#nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # UGH THIS IS A DIFFERENT FORMAT
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 pac20 = speciesDF(dirFull[[6]], dirShort[[6]])
 pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
@@ -208,10 +218,15 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 nl20 = dplyr::bind_rows(nl20Datalist)
 nl20$count = as.numeric(nl20$count)
 
-# Testing to see if my replacements work
-# gulf20=
-# gulf20 %>%
-# mutate(class = replace(class, class == "Zooplankton (Unid))", "Zooplankton (Unid)"))
+
+x = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
+      
+x
+
+
+
+
+
 
 ################################################################################
 ## Alter data format for creation of pie charts
