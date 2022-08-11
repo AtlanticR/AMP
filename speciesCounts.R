@@ -110,16 +110,22 @@ for(i in 1:length(xlDataFull)){
   df$class = str_to_lower(df$class)
   # Then capitalize the first letter
   df$class = str_to_sentence(df$class)
+  # Remove instances of multiple spaces between words
+  df$class = str_squish(df$class)
   
   df = df %>%  
     subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
            class != "Leftovers" &
            class != "Leftover" &
+           class != "Debris" &
            class != "Extra taxa") %>% # Remove "Leftovers" class (CHECK THIS)
     
     # Fix typos in classes
     mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
     mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
+    mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
+    mutate(class = replace(class, class == "Gastropoda limacina spp larvaeadult", "Gastropoda limacina spp larvae adult")) %>%
     mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)"))
   
   # Add this to the list of dataframes (there are many alternative methods)
