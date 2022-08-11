@@ -120,11 +120,20 @@ for(i in 1:length(xlDataFull)){
              class != "Debris" &
              class != "Clumped zooplankton" &
              class != "Clumped zooplankton debris" &
+             class != "Clumped zooplankton/debris" &
+             class != "Clumped zooplankton debris" &
+             class != "Duplicate images" &
+             class != "Debris or zooplankton" & 
+             class != "Fragments of zooplankton" &
+             class != "Bubbles" &
+             class != "Cut images" &
+             class != "Benthic" &
              class != "Diatom" &
              class != "Extra taxa") %>% # Remove "Leftovers" class (CHECK THIS)
     
     # Fix typos in classes
     mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Zooplankton", "Zooplankton (unid)")) %>%
     mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
     mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
     mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
@@ -133,6 +142,8 @@ for(i in 1:length(xlDataFull)){
     mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Osteichthys larvae", "Osteichthyes larvae")) %>%
+    mutate(class = replace(class, class == "Ostracoda spp", "Ostracoda")) %>%
     mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
     mutate(class = replace(class, class == "Platyhelminthes nemertea larvae", "Platyhelmenthes nemertea larvae")) %>%
     mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
