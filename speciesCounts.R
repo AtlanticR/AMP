@@ -75,6 +75,11 @@ for(i in 1:length(allDataNames)){
   dirShort[[i]] = sub('\\.csv$', '', dirShort[[i]])
 }
 
+install.packages("useful")
+library("useful")
+x = dirShort[[4]]
+
+compare.list(x[1], dirShort[[4]][1])
 
 
 ################################################################################
@@ -87,10 +92,36 @@ speciesDF = function(xlDataFull, xlDataShort) {
 # Make an empty list to store the data
 datalist = list()
 
+
+#if (compare.list(xlDataShort, dirShort[[4]])){
+if (compare.list(xlDataShort[1], dirShort[[4]][1])){
+  
+  
+  # Loop through all the data and extract the class (plankton taxa), count (# of 
+  # cells in the sample), and particles (# cells/ml)
+  # The 4 refers to the Newfoundland 2020 data (it's 4th in the list)
+  #for(i in 1:length(xlDataFull[[4]])) {
+  for(i in 1:length(xlDataFull)) {  
+    # Read in the files (it's a list of lists)
+    # 4 denotes Newfoundland data, and i denotes which file to read in
+    df = read.csv(xlDataFull[i], skip = 2) %>% 
+      # Keep everything before the "End Metadata Statistics" part (remove that and after)
+      filter(row_number() < which(Name =='======== End Metadata Statistics ========')) %>%
+      # Rename the columns to match the other data files
+      # format: new = cold
+      rename(class = Name, count = Count, particles = Particles...ml)
+    df$sample = xlDataShort[i]
+    datalist[[i]] = df
+  }
+  
+  
+} else {
+
   # Loop through all the data and extract the class (plankton taxa), count (# of 
   # cells in the sample), and particles (# cells/ml)
   for(i in 1:length(xlDataFull)){
- 
+
+     
     # Read in the files
     data = read.csv(xlDataFull[i]) 
     
@@ -104,9 +135,15 @@ datalist = list()
     # Label it with the file name (without directory/extension)
     df = as.data.frame(cbind("sample" = xlDataShort[i],
       "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+    datalist[[i]] = df
   }
+} 
   
-  
+# Bind together this list of dataframes into one big data frame (both count/particles)
+siteDf = dplyr::bind_rows(datalist)
+df = siteDf
+
+
   # Fix generic typos/edit to ensure consistency between entries   
   # Remove all underscores and replace them with spaces
   df$class = us_to_space(df$class)
@@ -160,16 +197,16 @@ datalist = list()
     mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)"))
   
   # Add this to the list of dataframes (there are many alternative methods)
-  datalist[[i]] = df
+  #datalist[[i]] = df
 
   
 # Bind together this list of dataframes into one big data frame (both count/particles)
-  siteDf = dplyr::bind_rows(datalist)
+#  siteDf = dplyr::bind_rows(datalist)
 
 # Convert counts to numeric
   siteDf$count = as.numeric(siteDf$count)
 
-  return(siteDf)
+  return(df)
 
 }
 
@@ -207,7 +244,7 @@ for(i in 1:length(dirFull[[4]])) {
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
-#nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # UGH THIS IS A DIFFERENT FORMAT
+nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # UGH THIS IS A DIFFERENT FORMAT
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 pac20 = speciesDF(dirFull[[6]], dirShort[[6]])
 pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
