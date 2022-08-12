@@ -172,20 +172,25 @@ siteDf = siteDf %>%
   mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
   mutate(class = replace(class, class == "Calanoid civ-vi", "Calanoida civ-vi")) %>%
   mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
+  mutate(class = replace(class, class == "Centropages spp civ-vi", "Centropages civ-vi")) %>%
   mutate(class = replace(class, class == "Cirripedia nauplius", "Cirripedia nauplii")) %>%
+  mutate(class = replace(class, class == "Ctenophora larva", "Ctenophora larvae")) %>%
+  mutate(class = replace(class, class == "Cyclopoida spp", "Cyclopoida")) %>%
   mutate(class = replace(class, class == "Cumacea juvenileadult", "Cumacea juvenile adult")) %>%
   mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
   mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
   mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
   mutate(class = replace(class, class == "Decpoda brachyura zoea", "Decapoda brachyura zoea")) %>%
   mutate(class = replace(class, class == "Gastropoda limacina spp larvaeadult", "Gastropoda limacina spp larvae adult")) %>%
+  mutate(class = replace(class, class == "Monstrilloida", "Monstrilloida spp")) %>%
   mutate(class = replace(class, class == "Mysidacea juvenileadult", "Mysidacea juvenile adult")) %>%
   mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
   mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
   mutate(class = replace(class, class == "Osteichthys larvae", "Osteichthyes larvae")) %>%
-  mutate(class = replace(class, class == " Osteichthyes eggs", " Osteichthyes egg")) %>%
+  mutate(class = replace(class, class == "Osteichthyes eggs", " Osteichthyes egg")) %>%
   mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
   mutate(class = replace(class, class == "Ostracoda spp", "Ostracoda")) %>%
+  mutate(class = replace(class, class == "Platyhelmenthes nemertea larva", "Platyhelmenthes nemertea larvae")) %>%
   mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
   mutate(class = replace(class, class == "Platyhelminthes nemertea larvae", "Platyhelmenthes nemertea larvae")) %>%
   mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
@@ -198,8 +203,6 @@ return(siteDf)
 
 }
 
-
-
 ################################################################################
 ## Create data frames of each dataset
 
@@ -209,21 +212,17 @@ return(siteDf)
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
-nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # UGH THIS IS A DIFFERENT FORMAT
+nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # This is the one in a different format
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 pac20 = speciesDF(dirFull[[6]], dirShort[[6]])
 pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
 pacMar21 = speciesDF(dirFull[[8]], dirShort[[8]])
 pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 
-# Create dataframe for Newfoundland 2020 data
-nl20 = dplyr::bind_rows(nl20Datalist)
-nl20$count = as.numeric(nl20$count)
-
-
+# Check for consistency between classes
 x = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
       
-x
+
 
 
 
