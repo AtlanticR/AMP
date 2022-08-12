@@ -146,6 +146,7 @@ siteDf$class = str_to_lower(siteDf$class)
 siteDf$class = str_to_sentence(siteDf$class)
 # Remove instances of multiple spaces between words
 siteDf$class = str_squish(siteDf$class)
+siteDf$class = str_replace(siteDf$class,"spp", "spp.")
   
 # Remove unwanted classes
 # These do not contain relevant zooplankton data
@@ -175,21 +176,21 @@ siteDf = siteDf %>%
   mutate(class = replace(class, class == "Centropages spp civ-vi", "Centropages civ-vi")) %>%
   mutate(class = replace(class, class == "Cirripedia nauplius", "Cirripedia nauplii")) %>%
   mutate(class = replace(class, class == "Ctenophora larva", "Ctenophora larvae")) %>%
-  mutate(class = replace(class, class == "Cyclopoida spp", "Cyclopoida")) %>%
+  mutate(class = replace(class, class == "Cyclopoida spp.", "Cyclopoida")) %>%
   mutate(class = replace(class, class == "Cumacea juvenileadult", "Cumacea juvenile adult")) %>%
   mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
   mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
   mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
   mutate(class = replace(class, class == "Decpoda brachyura zoea", "Decapoda brachyura zoea")) %>%
-  mutate(class = replace(class, class == "Gastropoda limacina spp larvaeadult", "Gastropoda limacina spp larvae adult")) %>%
-  mutate(class = replace(class, class == "Monstrilloida", "Monstrilloida spp")) %>%
+  mutate(class = replace(class, class == "Gastropoda limacina spp. larvaeadult", "Gastropoda limacina spp. larvae adult")) %>%
+  mutate(class = replace(class, class == "Monstrilloida", "Monstrilloida spp.")) %>%
   mutate(class = replace(class, class == "Mysidacea juvenileadult", "Mysidacea juvenile adult")) %>%
   mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
   mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
   mutate(class = replace(class, class == "Osteichthys larvae", "Osteichthyes larvae")) %>%
   mutate(class = replace(class, class == "Osteichthyes eggs", " Osteichthyes egg")) %>%
   mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
-  mutate(class = replace(class, class == "Ostracoda spp", "Ostracoda")) %>%
+  mutate(class = replace(class, class == "Ostracoda spp.", "Ostracoda")) %>%
   mutate(class = replace(class, class == "Platyhelmenthes nemertea larva", "Platyhelmenthes nemertea larvae")) %>%
   mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
   mutate(class = replace(class, class == "Platyhelminthes nemertea larvae", "Platyhelmenthes nemertea larvae")) %>%
@@ -220,13 +221,47 @@ pacMar21 = speciesDF(dirFull[[8]], dirShort[[8]])
 pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 
 # Check for consistency between classes
-x = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
+checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
       
 
+################################################################################
+## TEST SECTION: 
+
+# Convert data into better format
+# Each row is a station, each column is a class. Each cell represents the counts. 
+mar21New = 
+  mar21 %>%
+  select(-particles) %>% # Remove this column
+  # Modify the data frame into wide format
+  # names_from: The column whose values will be used as column names
+  # values_from: The column whose values will be used as cell values
+  pivot_wider(names_from = class, values_from = count) %>%
+  mutate_all(~replace(.,is.na(.), 0)) # replace NAs with 0
+
+metaMarTest = 
+  marZoo %>%
+  select(facilityName, sampleCode, waterVolume, tideRange, yearStart)
+
+
+mar21NewTest= 
+  mar21New %>%
+  select(sample)
+
+x =full_join(mar21NewTest, metaMarTest, by=c("sample" = "sampleCode"))
+
+y =full_join(metaMarTest, mar21NewTest, by=c("sampleCode" = "sample"))
+
+#### I THINK THERE IS A LABELLING ISSUE
+# in the metadata there's a station called 21_08_25_Mar_S03_Z01_1548_250 
+# in the actual data files it's 21_08_25_Mar_S03_Z01_1538_250 (38 VS 48!!)
 
 
 
+mar21New$sample=="21_08_25_Mar_S03_Z01_1538_250"
+mar21New$sample=="21_08_25_Mar_S03_Z01_1548_250"
 
+metaMarTest$sampleCode=="21_08_25_Mar_S03_Z01_1538_250"
+metaMarTest$sampleCode=="21_08_25_Mar_S03_Z01_1548_250"
 
 
 ################################################################################
