@@ -18,7 +18,7 @@
 
 # Cleaning: refers to the sorting of images into the following classes: Zooplankton, 0-250μm Length, Cut Images, Debris, Fragments of Zooplankton, Benthic, Clumped Zooplankton, Debris or Zooplankton, Bubbles.
 
-#############################################
+################################################################################
 ## Explanation of process:
 # Note: the entire sample is analyzed (i.e., basic properties like particle size are measured) BUT
 # not all of the zooplankton ID'd!! It is very time consuming since they have to be manually ID'd
@@ -32,9 +32,15 @@
 
 # Note, the counts also need to be divided by the volume of water sampled to gets ind m^-3 but that information is in the metadata
 # spreadsheet and the calculation will be done separately
-###################################
+################################################################################
+# To make things easier I have removed the _R2 from the names manually in Excel:
+# 21_09_01_Mar_S02_Z03_1400_250_R2
 
 
+
+
+
+## Load packages
 
 
 # Function to load multiple packages
@@ -46,16 +52,14 @@ ipak = function(pkg){
 }
 
 # Choose necessary packages
-packages = c("dplyr", "ggplot2", "ggrepel", "ggthemes", "jcolors", "leaflet", "mapr", "mapview", "readxl", "stringr",
-             "tidyr", "tools", "useful", "vegan", "wpa")
+packages = c("plyr", "dplyr", "purrr", "readxl", "stringr", "tidyr", "tools", "useful")
 ipak(packages)
 
-
-
-
+################################################################################
+# Read in data
 
 # Determine file path for permit data (created by Charlotte Smith)
-xl_data = file.path(fileLoadPath, "NaturalResources/Species/Permits/SARAdata_withCoordinates.xlsx")
+xl_data = file.path("C:/Users/FINNISS/Desktop/FlowCamPercent.xlsx")
 
 # Get the sheet names from the spreadsheet (there is one sheet per year, from 2010 to 2020)
 sheets = excel_sheets(path = xl_data)
@@ -63,5 +67,32 @@ sheets = excel_sheets(path = xl_data)
 # Read in the data from each sheet in the Excel file. Each sheet will be its own list
 list_all = lapply(sheets, function (x) read_excel (xl_data, sheet = x))
 
-# Combine each list into a single dataframe
-perm_df = rbind.fill(list_all)
+# Very handy!!! This is how to label each list with the sheet name
+names(list_all) = sheets
+
+# Remove "R2" ending in data files
+# These represent "second Run" FlowCam samples because there was an issue with the first run
+list_all = map(list_all, ~ mutate(.x, FlowCamSampleName = str_replace(FlowCamSampleName, "_R2", "")))
+
+
+
+
+y = rapply(list_all, function(x) str_replace(list_all$Gulf2020Perc$FlowCamSampleName, "_R2", ""))
+
+list_all = rapply(list_all,function(x) str_replace(list_all, "_R2", ""))
+
+
+# Turn each sheet (list entry) into individual dataframes
+list2env(list_all,envir=.GlobalEnv)
+
+#attach(list_all)
+
+
+
+list_all[[1]][1]
+
+
+
+
+
+
