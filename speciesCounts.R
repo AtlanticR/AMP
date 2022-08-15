@@ -231,21 +231,33 @@ checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, n
 # See file for full explanation of what everything means
 source("FlowCamPercents.R")
 
-x = unique(mar21$sample)
 
-list_all[[3]]
-
-# Need to remove R2 from file name
+# Maritimes 2021 data
+# Remove the R2 from the file name
 # This represents a second run of the sample because the first one had some sort of problem
-
-x =full_join(mar21, list_all[[3]], by=c("sample" = "FlowCam Sample Name"))
-
-
+# Note that for some datasets, this is removed. For some it's not 
+Maritimes2021Perc$FlowCamSampleName = str_replace(Maritimes2021Perc$FlowCamSampleName,"_R2", "")
 
 
+mar21Adj =full_join(mar21, Maritimes2021Perc, by=c("sample" = "FlowCamSampleName"))
+mar21Adj$adjCount = mar21Adj$count / mar21Adj$PercSampleCleaned / mar21Adj$PercZooIdentified
 
 
-    
+# Gulf 2020 data
+
+gulf20Adj = full_join(gulf20, Gulf2020Perc, by=c("sample" = "FlowCamSampleName"))
+
+# The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
+# Replace these NAs with 1
+gulf20Adj$PercSampleCleaned[is.na(gulf20Adj$PercSampleCleaned)] = 1
+gulf20Adj$PercZooIdentified[is.na(gulf20Adj$PercZooIdentified)] = 1
+
+gulf20Adj$adjCount = gulf20Adj$count / gulf20Adj$PercSampleCleaned / gulf20Adj$PercZooIdentified
+
+# Remove this one sample because there's no associated data
+gulf20Adj = subset(gulf20Adj, sample!="AMMP_Gulf_StPeters_2_20200901HT_250UM_2")
+
+
 
 ################################################################################
 ## TEST SECTION: 
