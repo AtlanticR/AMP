@@ -222,7 +222,30 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 
 # Check for consistency between classes
 checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
-      
+  
+
+################################################################################
+# Test adjusting counts by % cleaned and % of sample identified 
+
+# Read in code from this file
+# See file for full explanation of what everything means
+source("FlowCamPercents.R")
+
+x = unique(mar21$sample)
+
+list_all[[3]]
+
+# Need to remove R2 from file name
+# This represents a second run of the sample because the first one had some sort of problem
+
+x =full_join(mar21, list_all[[3]], by=c("sample" = "FlowCam Sample Name"))
+
+
+
+
+
+
+    
 
 ################################################################################
 ## TEST SECTION: 
