@@ -70,26 +70,15 @@ list_all = lapply(sheets, function (x) read_excel (xl_data, sheet = x))
 # Very handy!!! This is how to label each list with the sheet name
 names(list_all) = sheets
 
-# Remove "R2" ending in data files
+# Remove "R2" ending in sample names
 # These represent "second Run" FlowCam samples because there was an issue with the first run
-list_all = map(list_all, ~ mutate(.x, FlowCamSampleName = str_replace(FlowCamSampleName, "_R2", "")))
+#UGHHHH SOME HAVE R2 in FILE NAMES AND SOME DON'T
+# list_all = map(list_all, ~ mutate(.x, FlowCamSampleName = str_replace(FlowCamSampleName, "_R2", "")))
 
 
-
-
-y = rapply(list_all, function(x) str_replace(list_all$Gulf2020Perc$FlowCamSampleName, "_R2", ""))
-
-list_all = rapply(list_all,function(x) str_replace(list_all, "_R2", ""))
-
-
-# Turn each sheet (list entry) into individual dataframes
+# Turn each sheet (list entry) into individual dataframes. Each dataframe will be named the sheet name
 list2env(list_all,envir=.GlobalEnv)
 
-#attach(list_all)
-
-
-
-list_all[[1]][1]
 
 
 
