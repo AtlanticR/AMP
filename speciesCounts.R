@@ -267,7 +267,7 @@ gulf20Adj$adjCount = gulf20Adj$count / gulf20Adj$PercSampleCleaned / gulf20Adj$P
 # Remove this one sample because there's no associated data
 gulf20Adj = subset(gulf20Adj, sample!="AMMP_Gulf_StPeters_2_20200901HT_250UM_2")
 
-# Remove all the things from the end
+# Fix up sample names. These endings can now be removed.
 gulf20Adj$sample = str_replace(gulf20Adj$sample,"_R2", "")
 gulf20Adj$sample = str_replace(gulf20Adj$sample,"_1", "")
 gulf20Adj$sample = str_replace(gulf20Adj$sample,"_5mm", "")
@@ -287,7 +287,8 @@ gulf21Adj$PercZooIdentified[is.na(gulf21Adj$PercZooIdentified)] = 1
 # because only a percentage has been cleaned and then subsequently identified
 gulf21Adj$adjCount = gulf21Adj$count / gulf21Adj$PercSampleCleaned / gulf21Adj$PercZooIdentified
 
-# This is not technically correct, but will link the two samples together
+# Remove _5mm file name ending and replace with _250. This will associate the 5mm size fraction with the rest
+# of the sample from that location
 gulf21Adj$sample = str_replace(gulf21Adj$sample,"_5mm", "_250")
 
 ######## Newfoundland 2020 ######## 
@@ -311,7 +312,8 @@ nl21Adj$PercZooIdentified[is.na(nl21Adj$PercZooIdentified)] = 1
 # because only a percentage has been cleaned and then subsequently identified
 nl21Adj$adjCount = nl21Adj$count / nl21Adj$PercSampleCleaned / nl21Adj$PercZooIdentified
 
-# This is not technically correct, but will link the two samples together
+# Remove _5mm file name ending and replace with _250. This will associate the 5mm size fraction with the rest
+# of the sample from that location
 nl21Adj$sample = str_replace(nl21Adj$sample,"_5mm", "_250")
 
 ########  Pacific 2020 ########  
@@ -341,7 +343,8 @@ pacJun21Adj$PercZooIdentified[is.na(pacJun21Adj$PercZooIdentified)] = 1
 # because only a percentage has been cleaned and then subsequently identified
 pacJun21Adj$adjCount = pacJun21Adj$count / pacJun21Adj$PercSampleCleaned / pacJun21Adj$PercZooIdentified
 
-# This is not technically correct, but will link the two samples together
+# Remove _5mm_run file name ending and replace with _250. This will associate the 5mm size fraction with the rest
+# of the sample from that location
 pacJun21Adj$sample = str_replace(pacJun21Adj$sample,"_5mm", "_250um")
 pacJun21Adj$sample = str_replace(pacJun21Adj$sample,"_run", "")
 
@@ -369,7 +372,7 @@ pac21SeptAdj$PercZooIdentified[is.na(pac21SeptAdj$PercZooIdentified)] = 1
 # because only a percentage has been cleaned and then subsequently identified
 pac21SeptAdj$adjCount = pac21SeptAdj$count / pac21SeptAdj$PercSampleCleaned / pac21SeptAdj$PercZooIdentified
 
-# This is not technically correct, but will link the two samples together
+# Remove _5mm file name ending. This will associate the 5mm size fraction with the rest of the sample from that location
 pac21SeptAdj$sample = str_replace(pac21SeptAdj$sample,"_5mm", "")
 
 ################################################################################
