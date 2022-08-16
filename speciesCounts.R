@@ -222,39 +222,46 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 
 # Check for consistency between classes
 checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
-  
 
 ################################################################################
-# Test adjusting counts by % cleaned and % of sample identified 
-# This is not the cleanest code and will probably have to be adjusted
-
+# Adjust counts by % cleaned and % of sample identified 
 # Note that the naming conventions are inconsistent between samples
 # It is not easy to create a function to do all of these edits since some things are
 # not the same between files (e.g., ending with "250UM" vs "250" vs "250um")
+# For some the data files DO match the "Zooplankton Samples" spreadsheet, for some
+# they do not.
 
 # Read in code from this file
 # See file for full explanation of what everything means
 source("FlowCamPercents.R")
 
+######## Maritimes 2021 ########
 
-## Maritimes 2021 data
 # Remove the R2 from the file name
 # This represents a second run of the sample because the first one had some sort of problem
-# Note that for some datasets, this is removed. For some it's not 
+# For some datasets, "R2" has been removed from data file names. For some it's not. 
 Maritimes2021Perc$FlowCamSampleName = str_replace(Maritimes2021Perc$FlowCamSampleName,"_R2", "")
 
+# Join the dataframes of counts with the dataframe of the adjustments
 mar21Adj =full_join(mar21, Maritimes2021Perc, by=c("sample" = "FlowCamSampleName"))
+
+# Create a column with adjusted counts. Original count is only a percentage of entire sample
+# because only a percentage has been cleaned and then subsequently identified
 mar21Adj$adjCount = mar21Adj$count / mar21Adj$PercSampleCleaned / mar21Adj$PercZooIdentified
 
+######## Gulf 2020 ######## 
 
-## Gulf 2020 data
+# Join the dataframes of counts with the dataframe of the adjustments
 gulf20Adj = full_join(gulf20, Gulf2020Perc, by=c("sample" = "FlowCamSampleName"))
 
-# The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
-# Replace these NAs with 1
+# The 5mm data will show up as NA because these are not included in the "Zooplankton Samples xlsx" and have
+# nothing to join to. However, for these, 100% of the sample was analyzed.
+# Therefore, replace these NAs with 1 (100% as a fraction)
 gulf20Adj$PercSampleCleaned[is.na(gulf20Adj$PercSampleCleaned)] = 1
 gulf20Adj$PercZooIdentified[is.na(gulf20Adj$PercZooIdentified)] = 1
 
+# Create a column with adjusted counts. Original count is only a percentage of entire sample
+# because only a percentage has been cleaned and then subsequently identified
 gulf20Adj$adjCount = gulf20Adj$count / gulf20Adj$PercSampleCleaned / gulf20Adj$PercZooIdentified
 
 # Remove this one sample because there's no associated data
@@ -265,107 +272,105 @@ gulf20Adj$sample = str_replace(gulf20Adj$sample,"_R2", "")
 gulf20Adj$sample = str_replace(gulf20Adj$sample,"_1", "")
 gulf20Adj$sample = str_replace(gulf20Adj$sample,"_5mm", "")
 
+######## Gulf 2021 ########  
 
-## Gulf 2021 data
+# Join the dataframes of counts with the dataframe of the adjustments
 gulf21Adj =full_join(gulf21, Gulf2021Perc, by=c("sample" = "FlowCamSampleName"))
 
-# The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
-# Replace these NAs with 1
+# The 5mm data will show up as NA because these are not included in the "Zooplankton Samples xlsx" and have
+# nothing to join to. However, for these, 100% of the sample was analyzed.
+# Therefore, replace these NAs with 1 (100% as a fraction)
 gulf21Adj$PercSampleCleaned[is.na(gulf21Adj$PercSampleCleaned)] = 1
 gulf21Adj$PercZooIdentified[is.na(gulf21Adj$PercZooIdentified)] = 1
 
-# Add new column with adjusted counts
+# Create a column with adjusted counts. Original count is only a percentage of entire sample
+# because only a percentage has been cleaned and then subsequently identified
 gulf21Adj$adjCount = gulf21Adj$count / gulf21Adj$PercSampleCleaned / gulf21Adj$PercZooIdentified
 
 # This is not technically correct, but will link the two samples together
 gulf21Adj$sample = str_replace(gulf21Adj$sample,"_5mm", "_250")
 
-
-## Newfoundland 2020 data
+######## Newfoundland 2020 ######## 
 nl20Adj =full_join(nl20, Nl2020Perc, by=c("sample" = "FlowCamSampleName"))
 
 # Add new column with adjusted counts
 nl20Adj$adjCount = nl20Adj$count / nl20Adj$PercSampleCleaned / nl20Adj$PercZooIdentified
 
+########  Newfoundland 2021 ########  
 
-## Newfoundland 2021 data
+# Join the dataframes of counts with the dataframe of the adjustments
 nl21Adj =full_join(nl21, Nl2021Perc, by=c("sample" = "FlowCamSampleName"))
 
-# The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
-# Replace these NAs with 1
+# The 5mm data will show up as NA because these are not included in the "Zooplankton Samples xlsx" and have
+# nothing to join to. However, for these, 100% of the sample was analyzed.
+# Therefore, replace these NAs with 1 (100% as a fraction)
 nl21Adj$PercSampleCleaned[is.na(nl21Adj$PercSampleCleaned)] = 1
 nl21Adj$PercZooIdentified[is.na(nl21Adj$PercZooIdentified)] = 1
 
-# Add new column with adjusted counts
+# Create a column with adjusted counts. Original count is only a percentage of entire sample
+# because only a percentage has been cleaned and then subsequently identified
 nl21Adj$adjCount = nl21Adj$count / nl21Adj$PercSampleCleaned / nl21Adj$PercZooIdentified
 
 # This is not technically correct, but will link the two samples together
 nl21Adj$sample = str_replace(nl21Adj$sample,"_5mm", "_250")
 
-
-## Pacific 2020 data
+########  Pacific 2020 ########  
 
 # Need to capitalize um so they match
 pac20$sample = str_replace(pac20$sample,"um", "UM")
 
-# Join them
+# Join the dataframes of counts with the dataframe of the adjustments
 pac20Adj =full_join(pac20, Pac2020Perc, by=c("sample" = "FlowCamSampleName"))
 
-# Add new column with adjusted counts
+# Create a column with adjusted counts. Original count is only a percentage of entire sample
+# because only a percentage has been cleaned and then subsequently identified
 pac20Adj$adjCount = pac20Adj$count / pac20Adj$PercSampleCleaned / pac20Adj$PercZooIdentified
 
+######## Pacific June 2021 ########  
 
-## Pacific June 2021 data
-
-# Join them
+# Join the dataframes of counts with the dataframe of the adjustments
 pacJun21Adj =full_join(pacJun21, PacJun2021Perc, by=c("sample" = "FlowCamSampleName"))
 
-
-# The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
-# Replace these NAs with 1
+# The 5mm data will show up as NA because these are not included in the "Zooplankton Samples xlsx" and have
+# nothing to join to. However, for these, 100% of the sample was analyzed.
+# Therefore, replace these NAs with 1 (100% as a fraction)
 pacJun21Adj$PercSampleCleaned[is.na(pacJun21Adj$PercSampleCleaned)] = 1
 pacJun21Adj$PercZooIdentified[is.na(pacJun21Adj$PercZooIdentified)] = 1
 
-
-# Add new column with adjusted counts
+# Create a column with adjusted counts. Original count is only a percentage of entire sample
+# because only a percentage has been cleaned and then subsequently identified
 pacJun21Adj$adjCount = pacJun21Adj$count / pacJun21Adj$PercSampleCleaned / pacJun21Adj$PercZooIdentified
 
 # This is not technically correct, but will link the two samples together
 pacJun21Adj$sample = str_replace(pacJun21Adj$sample,"_5mm", "_250um")
 pacJun21Adj$sample = str_replace(pacJun21Adj$sample,"_run", "")
 
+########  Pacific March 2021 ########  
 
-## Pacific March 2021 data
-
-# Join them
+# Join the dataframes of counts with the dataframe of the adjustments
 pacMar21Adj =full_join(pacMar21, PacMar2021Perc, by=c("sample" = "FlowCamSampleName"))
 
-
-# Add new column with adjusted counts
+# Create a column with adjusted counts. Original count is only a percentage of entire sample
+# because only a percentage has been cleaned and then subsequently identified
 pacMar21Adj$adjCount = pacMar21Adj$count / pacMar21Adj$PercSampleCleaned / pacMar21Adj$PercZooIdentified
 
+######## Pacific Sept 2021 ########
 
-
-## Pacific Sept 2021 data
-
-
-# Join them
+# Join the dataframes of counts with the dataframe of the adjustments
 pac21SeptAdj =full_join(pacSep21, PacSept2021Perc, by=c("sample" = "FlowCamSampleName"))
 
-# The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
-# Replace these NAs with 1
+# The 5mm data will show up as NA because these are not included in the "Zooplankton Samples xlsx" and have
+# nothing to join to. However, for these, 100% of the sample was analyzed.
+# Therefore, replace these NAs with 1 (100% as a fraction)
 pac21SeptAdj$PercSampleCleaned[is.na(pac21SeptAdj$PercSampleCleaned)] = 1
 pac21SeptAdj$PercZooIdentified[is.na(pac21SeptAdj$PercZooIdentified)] = 1
 
-
-# Add new column with adjusted counts
+# Create a column with adjusted counts. Original count is only a percentage of entire sample
+# because only a percentage has been cleaned and then subsequently identified
 pac21SeptAdj$adjCount = pac21SeptAdj$count / pac21SeptAdj$PercSampleCleaned / pac21SeptAdj$PercZooIdentified
 
 # This is not technically correct, but will link the two samples together
 pac21SeptAdj$sample = str_replace(pac21SeptAdj$sample,"_5mm", "")
-
-
-
 
 ################################################################################
 ## TEST SECTION: 
