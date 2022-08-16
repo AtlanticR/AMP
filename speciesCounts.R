@@ -226,13 +226,18 @@ checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, n
 
 ################################################################################
 # Test adjusting counts by % cleaned and % of sample identified 
+# This is not the cleanest code and will probably have to be adjusted
+
+# Note that the naming conventions are inconsistent between samples
+# It is not easy to create a function to do all of these edits since some things are
+# not the same between files (e.g., ending with "250UM" vs "250" vs "250um")
 
 # Read in code from this file
 # See file for full explanation of what everything means
 source("FlowCamPercents.R")
 
 
-# Maritimes 2021 data
+## Maritimes 2021 data
 # Remove the R2 from the file name
 # This represents a second run of the sample because the first one had some sort of problem
 # Note that for some datasets, this is removed. For some it's not 
@@ -242,7 +247,7 @@ mar21Adj =full_join(mar21, Maritimes2021Perc, by=c("sample" = "FlowCamSampleName
 mar21Adj$adjCount = mar21Adj$count / mar21Adj$PercSampleCleaned / mar21Adj$PercZooIdentified
 
 
-# Gulf 2020 data
+## Gulf 2020 data
 gulf20Adj = full_join(gulf20, Gulf2020Perc, by=c("sample" = "FlowCamSampleName"))
 
 # The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
@@ -261,7 +266,7 @@ gulf20Adj$sample = str_replace(gulf20Adj$sample,"_1", "")
 gulf20Adj$sample = str_replace(gulf20Adj$sample,"_5mm", "")
 
 
-# Gulf 2021 data
+## Gulf 2021 data
 gulf21Adj =full_join(gulf21, Gulf2021Perc, by=c("sample" = "FlowCamSampleName"))
 
 # The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
@@ -276,14 +281,14 @@ gulf21Adj$adjCount = gulf21Adj$count / gulf21Adj$PercSampleCleaned / gulf21Adj$P
 gulf21Adj$sample = str_replace(gulf21Adj$sample,"_5mm", "_250")
 
 
-# Newfoundland 2020 data
+## Newfoundland 2020 data
 nl20Adj =full_join(nl20, Nl2020Perc, by=c("sample" = "FlowCamSampleName"))
 
 # Add new column with adjusted counts
 nl20Adj$adjCount = nl20Adj$count / nl20Adj$PercSampleCleaned / nl20Adj$PercZooIdentified
 
 
-# Newfoundland 2021 data
+## Newfoundland 2021 data
 nl21Adj =full_join(nl21, Nl2021Perc, by=c("sample" = "FlowCamSampleName"))
 
 # The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
@@ -298,7 +303,7 @@ nl21Adj$adjCount = nl21Adj$count / nl21Adj$PercSampleCleaned / nl21Adj$PercZooId
 nl21Adj$sample = str_replace(nl21Adj$sample,"_5mm", "_250")
 
 
-# Pacific 2020 data
+## Pacific 2020 data
 
 # Need to capitalize um so they match
 pac20$sample = str_replace(pac20$sample,"um", "UM")
@@ -308,6 +313,57 @@ pac20Adj =full_join(pac20, Pac2020Perc, by=c("sample" = "FlowCamSampleName"))
 
 # Add new column with adjusted counts
 pac20Adj$adjCount = pac20Adj$count / pac20Adj$PercSampleCleaned / pac20Adj$PercZooIdentified
+
+
+## Pacific June 2021 data
+
+# Join them
+pacJun21Adj =full_join(pacJun21, PacJun2021Perc, by=c("sample" = "FlowCamSampleName"))
+
+
+# The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
+# Replace these NAs with 1
+pacJun21Adj$PercSampleCleaned[is.na(pacJun21Adj$PercSampleCleaned)] = 1
+pacJun21Adj$PercZooIdentified[is.na(pacJun21Adj$PercZooIdentified)] = 1
+
+
+# Add new column with adjusted counts
+pacJun21Adj$adjCount = pacJun21Adj$count / pacJun21Adj$PercSampleCleaned / pacJun21Adj$PercZooIdentified
+
+# This is not technically correct, but will link the two samples together
+pacJun21Adj$sample = str_replace(pacJun21Adj$sample,"_5mm", "_250um")
+pacJun21Adj$sample = str_replace(pacJun21Adj$sample,"_run", "")
+
+
+## Pacific March 2021 data
+
+# Join them
+pacMar21Adj =full_join(pacMar21, PacMar2021Perc, by=c("sample" = "FlowCamSampleName"))
+
+
+# Add new column with adjusted counts
+pacMar21Adj$adjCount = pacMar21Adj$count / pacMar21Adj$PercSampleCleaned / pacMar21Adj$PercZooIdentified
+
+
+
+## Pacific Sept 2021 data
+
+
+# Join them
+pac21SeptAdj =full_join(pacSep21, PacSept2021Perc, by=c("sample" = "FlowCamSampleName"))
+
+# The 5mm data will show up as NA because 100% but 100% of this size fraction was analyzed
+# Replace these NAs with 1
+pac21SeptAdj$PercSampleCleaned[is.na(pac21SeptAdj$PercSampleCleaned)] = 1
+pac21SeptAdj$PercZooIdentified[is.na(pac21SeptAdj$PercZooIdentified)] = 1
+
+
+# Add new column with adjusted counts
+pac21SeptAdj$adjCount = pac21SeptAdj$count / pac21SeptAdj$PercSampleCleaned / pac21SeptAdj$PercZooIdentified
+
+# This is not technically correct, but will link the two samples together
+pac21SeptAdj$sample = str_replace(pac21SeptAdj$sample,"_5mm", "")
+
 
 
 
