@@ -381,31 +381,82 @@ pac21SeptAdj$adjCount = pac21SeptAdj$count / pac21SeptAdj$PercSampleCleaned / pa
 pac21SeptAdj$sample = str_replace(pac21SeptAdj$sample,"_5mm", "")
 
 ################################################################################
-## TEST SECTION: 
+## TEST SECTION: MERGE WITH THE METADATA
 
-# Convert data into better format
-# Each row is a station, each column is a class. Each cell represents the counts. 
-mar21New = 
-  mar21 %>%
-  select(-particles) %>% # Remove this column
-  # Modify the data frame into wide format
-  # names_from: The column whose values will be used as column names
-  # values_from: The column whose values will be used as cell values
-  pivot_wider(names_from = class, values_from = count) %>%
-  mutate_all(~replace(.,is.na(.), 0)) # replace NAs with 0
+# The data do match:
+# Gulf 2021
+#	Maritimes 2021
+#	NL 2021
+#	Pacific Sept 2021 (these are okay, but the last 2 digits with the sampling time got cut off)
 
-metaMarTest = 
-  marZoo %>%
+### REMEMBER TO ALSO DIVIDE BY 4 BECAUSE THE SAMPLE WAS SPLIT IN 4
+
+
+
+# gulf 2021
+metaGulfFix = 
+  gulfZoo %>%
+  select(facilityName, sampleCode, waterVolume, tideRange, yearStart) %>%
+  filter(yearStart==2021)
+
+
+# nl 2021 DONT HAVE METADATA FOR THIS YET
+metaNlFix = 
+  nlZoo %>%
   select(facilityName, sampleCode, waterVolume, tideRange, yearStart)
+
+
+# Pacific Sept 2021
+metaPacSept21Fix = 
+  pacZoo %>%
+  select(facilityName, sampleCode, waterVolume, tideRange, yearStart, monthStart) %>%
+  filter(yearStart==2021 & monthStart == 09)
+
+
+
+# Maritimes 2021
+metaMarFix = 
+  marZoo %>%
+  select(facilityName, sampleCode, waterVolume, tideRange, yearStart) %>%
+  # Rename one of the samples from the metadata where the file name is different
+  mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
+
+
+
+
+# Maritimes 2021
+marMerge = full_join(mar21Adj, metaMarFix, by=c("sample" = "sampleCode"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+pacSept21Merge = full_join(pac21SeptAdj, metaPacSept21Fix, by=c("sample" = "sampleCode"))
+
+
+
+
+
+
+
 
 
 mar21NewTest= 
   mar21New %>%
   select(sample)
 
-x =full_join(mar21NewTest, metaMarTest, by=c("sample" = "sampleCode"))
+x =full_join(mar21Adj, metaMarTest, by=c("sample" = "sampleCode"))
 
-y =full_join(metaMarTest, mar21NewTest, by=c("sampleCode" = "sample"))
+
 
 #### I THINK THERE IS A LABELLING ISSUE
 # in the metadata there's a station called 21_08_25_Mar_S03_Z01_1548_250 
@@ -540,6 +591,25 @@ ggplot(data, aes(fill=condition, y=value, x=specie)) +
 
 
 ###### THINGS I WILL PROBABLY DELETE BUT I'M TOO SCARED TO DELETE
+
+
+
+# RESTRUCTURING DATASETS:
+# Convert data into better format
+# Each row is a station, each column is a class. Each cell represents the counts. 
+mar21New = 
+  mar21Adj %>%
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified)) %>% # Remove this column
+  # Modify the data frame into wide format
+  # names_from: The column whose values will be used as column names
+  # values_from: The column whose values will be used as cell values
+  # COMMENT THESE OUT BUT USE LATER:
+  # pivot_wider(names_from = class, values_from = adjCount) %>%
+  # mutate_all(~replace(.,is.na(.), 0)) # replace NAs with 0
+  
+
+
+
 
 
 ################################################################################
