@@ -49,6 +49,13 @@ processMeta = function(xlData) {
                     (netMesh == 250 | # only want net size of 236 or 250 um
                        netMesh == 236) & 
                     yearStart != 2019) # do not want 2019 data
+  
+  # CHECK TO SEE IF THERE ARE STILL ANY ISSUES
+  # Calculation comes from the zoo_inst sheet in the metadata
+  # volume of cylinder = pi * r^2 * depth. Here, a flowmeter conversion factor is included instead of depth
+  dfProc$waterVolume = ifelse(is.na(dfProc$waterVolume), 0.25^2 * dfProc$flowmeter * 26873 / 999999, dfProc$waterVolume)
+
+  
   return(dfProc) # return processed data frame
 }
 
@@ -57,9 +64,6 @@ marZoo = processMeta(marMeta) # Maritimes zooplankton data
 nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
-
-
-
 
 
 ################################################################################
