@@ -224,15 +224,18 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
 
 ################################################################################
-# Adjust counts by % cleaned and % of sample identified 
-# Note that the naming conventions are inconsistent between samples
+# Create column of adjusted counts
+# The counts in the data spreadsheets do NOT represent counts from the entire sample
+# The sample was divided into 10 portions (usually) and then a portion was "cleaned" (separated into different components)
+# From that, a % of the zooplankton in the subsamples were ID'd (they would only spend __ hours ID'ing)
+
+# The naming conventions are inconsistent between samples.
+# For some sites, the data files DO match the "Zooplankton Samples" spreadsheet. For others, they do not.
 # It is not easy to create a function to do all of these edits since some things are
-# not the same between files (e.g., ending with "250UM" vs "250" vs "250um")
-# For some the data files DO match the "Zooplankton Samples" spreadsheet, for some
-# they do not.
+# not the same between files (e.g., ending with "250UM" vs "250" vs "250um") and this is instead done manually.
 
 # Read in code from this file
-# See file for full explanation of what everything means
+# See this file for full explanation of the data
 source("FlowCamPercents.R")
 
 ######## Maritimes 2021 ########
@@ -250,6 +253,8 @@ mar21Adj =full_join(mar21, Maritimes2021Perc, by=c("sample" = "FlowCamSampleName
 mar21Adj$adjCount = mar21Adj$count / mar21Adj$PercSampleCleaned / mar21Adj$PercZooIdentified
 
 ######## Gulf 2020 ######## 
+
+# For some of these data files, there is no HT/LT in the names. These can still be matched to metadata based on what Jeff Barrell provided
 
 # Join the dataframes of counts with the dataframe of the adjustments
 gulf20Adj = full_join(gulf20, Gulf2020Perc, by=c("sample" = "FlowCamSampleName"))
