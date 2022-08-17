@@ -1,11 +1,30 @@
 ################################################################################
-# Making Aquaculture Monitoring Program maps of sampling locations
-# Make leaflet maps for the AMP sampling sites out of the metadata files
-# Create generic functions to process/clean the data, then map these locations
-# Sampling locations are both points (discrete i.e., punctual stations) and
-# lines (transects)
+### STUDY AREA MAPS
+
+## BACKGROUND:
+# The Aquaculture Monitoring Program (AMP) has sampling locations in four 
+# DFO regions: Maritimes, Gulf, Newfoundland, Pacific.
+# Each year (2020 and 2021), different bays may have been sampled within each
+# region.
+# Sampling locations were generally designed to sample at 3 locations within 
+# each bay: near the shellfish aquaculture farms, further away from shellfish, 
+# and near the mouth of the bay. This was designed to test how zooplankton
+# populations are affected by shellfish aquaculture, but also by tides (e.g., 
+# water coming into/out of the bay).
+# There may also have been different types of tows, depending on the location
+# Punctual station: tow taken from one spot 
+# Transect: tow was towed behind boat
+
+## PURPOSE OF CODE: 
+# This code will create maps for the AMP sampling sites for each AMP region
+# Leaflet maps will be created, which create a panel in the Viewer panel where
+# users can zoom in/out, over a basemap.
+# Punctual stations (points) will be shown in one colour, transects (lines) as 
+# another.
+
+## EXTRA INFO:
 # Metadata files are not public
-# Code by Stephen Finnis July 2022
+# Code by Stephen Finnis 2022
 ################################################################################
 
 ## Get things set up
@@ -18,21 +37,24 @@ graphics.off()
 ## Read in relevant data processing code
 
 # Get the processed metadata files
+# These contain the sampling location, tow type, etc.
+# Will return data frames with metadata info for each AMP region
 source("DataProcessing/metadataProcessing.R")
 
 ################################################################################
-## Make leaflet maps (i.e., can zoom in/out in the Viewer panel)
-# Sampling locations will be displayed as circles for non-transects
-# Transects will be drawn as lines
-# There's sampling data for 4 regions: Newfoundland, Maritimes, Gulf, and Pacific
+## Create function to Make leaflet maps 
+# Function will read in the metadata for each region (mapData) and then create 
+# maps. It is easier to have one function do this, rather than have separate
+# code for each sampling region.
+# Sampling locations will be displayed as purple circles for non-transects 
+# (punctual stations). Transects will be drawn as blue lines.
 
-# Create a function to create maps for any region
+# Define function
 mapMaker = function(mapData) {
   
-  # I'm sure there's a better way to do this. But first, split the data
-  # This separates point from line data. There is a column for punctual vs transect
+  # Separates point from line data. There is a column for punctual vs transect
   # but it's inconsistent (spelling, typos etc.) so instead base it if there is an
-  # "end" latitude (could be longitude instead) column with data
+  # "end" latitude (could be longitude instead) column with data.
   # In some cases, "NA" was typed into the column. These must be checked for in two ways
   punctual = subset(mapData, is.na(latitudeEnd) | latitudeEnd == "NA")
   # Convert to a numeric for entries that are actual numbers
@@ -61,7 +83,7 @@ mapMaker = function(mapData) {
     addScaleBar(position = 'topright')
 
   # Add the survey transects as lines from start (latitude/longitude) to end (..End)
-  # First eed to make sure this actually has data or will get an error message
+  # First need to make sure this actually has data or will get an error message
   if (nrow(transect)>=1){ 
     for(i in 1:nrow(transect)){
     mapTemplate = addPolylines(mapTemplate, lat = c(transect[i,]$latitude, transect[i,]$latitudeEnd), 
@@ -69,21 +91,21 @@ mapMaker = function(mapData) {
     }
   }
   
-  # Return processed data frame
+  # Return the leaflet map with all the data plotted on it
   return(mapTemplate) 
 }
 
-# Call the functions and draw the maps
-# Some sites with NAs may get errors. Just ignore this
-nlMap = mapMaker(nlZoo) # Newfoundland
-nlMap
-pacMap = mapMaker(pacZoo) # Pacific
-pacMap
-marMap = mapMaker(marZoo) # Maritimes
-marMap
-gulfMap = mapMaker(gulfZoo) # Gulf
-gulfMap
+################################################################################
+## Call the mapmaker function defined above to create the maps
 
+# Some sites with NAs may get errors. Just ignore these
+mapMaker(nlZoo) # Newfoundland
+mapMaker(pacZoo) # Pacific
+mapMaker(marZoo) # Maritimes
+mapMaker(gulfZoo) # Gulf
+
+################################################################################
+################################################################################
 ################################################################################
 ## THINGS I CAN PROBABLY DELETE BUT I'M KEEPING JUST IN CASE:
 
