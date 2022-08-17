@@ -22,8 +22,6 @@
 ## Get things set up
 
 # Clear console
-rm(list=ls())
-graphics.off()
 
 # Function to load multiple packages
 ipak = function(pkg){
