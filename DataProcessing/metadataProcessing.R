@@ -1,20 +1,20 @@
 ################################################################################
 ## PROCESSING METADATA
 
-## Background:
+## BACKGROUND:
 # The metadata files describe the sampling for each Aquaculture Monitoring 
 # Program (AMP) region (Maritimes, Gulf, Newfoundland, Pacific)
 # This includes lat/lon of tow, sample name, net type, volume of water towed, etc.
 # Metadata files include data for both zooplankton analysis (FlowCam) and flow 
 # cytometry (separate analysis).
 
-## Purpose of code:
+## PURPOSE OF CODE:
 # This code reads in the metadata files, selects on relevant data for zooplankton
 # analysis, and returns the processed data
 # This processed data is needed for other analyses (e.g., creating study area
 # maps and linking FlowCam data files to each tow)
 
-## Extra info:
+## ADDITIONAL INFO:
 # Metadata files are not public
 # Code by Stephen Finnis 2022
 ################################################################################

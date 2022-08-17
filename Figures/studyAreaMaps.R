@@ -22,7 +22,7 @@
 # Punctual stations (points) will be shown in one colour, transects (lines) as 
 # another.
 
-## EXTRA INFO:
+## ADDITIONAL INFO:
 # Metadata files are not public
 # Code by Stephen Finnis 2022
 ################################################################################
