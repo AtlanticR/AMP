@@ -258,7 +258,7 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
 
 ################################################################################
-# Create column of adjusted counts
+## Make adjustments to the zooplankton counts
 # The counts in the data spreadsheets do NOT represent counts from the entire sample
 # The sample was divided into 10 portions (usually) and then a portion was "cleaned" (separated into different components)
 # From that, a % of the zooplankton in the subsamples were ID'd (they would only spend __ hours ID'ing)
@@ -268,28 +268,24 @@ checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, n
 # It is not easy to create a function to do all of these edits since some things are
 # not the same between files (e.g., ending with "250UM" vs "250" vs "250um") and this is instead done manually.
 
-
-
 ######## Maritimes 2021 ########
 
 # Remove the R2 from the file name
 # This represents a second run of the sample because the first one had some sort of problem
 # For some datasets, "R2" has been removed from data file names. For some it's not. 
-Maritimes2021Perc$FlowCamSampleName = str_replace(Maritimes2021Perc$FlowCamSampleName,"_R2", "")
+Mar21Perc$FlowCamSampleName = str_replace(Mar21Perc$FlowCamSampleName,"_R2", "")
 
 # Join the dataframes of counts with the dataframe of the adjustments
-mar21Adj =full_join(mar21, Maritimes2021Perc, by=c("sample" = "FlowCamSampleName"))
-
-# Create a column with adjusted counts. Original count is only a percentage of entire sample
-# because only a percentage has been cleaned and then subsequently identified
-mar21Adj$adjCount = mar21Adj$count / mar21Adj$PercSampleCleaned / mar21Adj$PercZooIdentified
+mar21adj =full_join(mar21, Mar21Perc, by=c("sample" = "FlowCamSampleName")) %>%
+  # Add column with adjusted counts
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
 
 ######## Gulf 2020 ######## 
 
 # For some of these data files, there is no HT/LT in the names. These can still be matched to metadata based on what Jeff Barrell provided
 
 # Join the dataframes of counts with the dataframe of the adjustments
-gulf20Adj = full_join(gulf20, Gulf2020Perc, by=c("sample" = "FlowCamSampleName"))
+gulf20Adj = full_join(gulf20, Gulf20Perc, by=c("sample" = "FlowCamSampleName"))
 
 # The 5mm data will show up as NA because these are not included in the "Zooplankton Samples xlsx" and have
 # nothing to join to. However, for these, 100% of the sample was analyzed.
@@ -337,21 +333,18 @@ nl20Adj$adjCount = nl20Adj$count / nl20Adj$PercSampleCleaned / nl20Adj$PercZooId
 ########  Newfoundland 2021 ########  
 
 # Join the dataframes of counts with the dataframe of the adjustments
-nl21Adj =full_join(nl21, Nl2021Perc, by=c("sample" = "FlowCamSampleName"))
+nl21Adj =full_join(nl21, Nl21Perc, by=c("sample" = "FlowCamSampleName")) %>%
+  # The 5mm data will show up as NA because these are not included in the "Zooplankton Samples xlsx" and have
+  # nothing to join to. However, for these, 100% of the sample was analyzed.
+  # Therefore, replace these NAs with 1 (100% as a fraction)
+  mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
+  mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
+  # Create a column with adjusted counts
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
+  # Remove _5mm file name ending and replace with _250. This will associate the 5mm size fraction with the rest
+  # of the sample from that location
+  mutate(sample = str_replace(sample, "_5mm", "_250"))
 
-# The 5mm data will show up as NA because these are not included in the "Zooplankton Samples xlsx" and have
-# nothing to join to. However, for these, 100% of the sample was analyzed.
-# Therefore, replace these NAs with 1 (100% as a fraction)
-nl21Adj$PercSampleCleaned[is.na(nl21Adj$PercSampleCleaned)] = 1
-nl21Adj$PercZooIdentified[is.na(nl21Adj$PercZooIdentified)] = 1
-
-# Create a column with adjusted counts. Original count is only a percentage of entire sample
-# because only a percentage has been cleaned and then subsequently identified
-nl21Adj$adjCount = nl21Adj$count / nl21Adj$PercSampleCleaned / nl21Adj$PercZooIdentified
-
-# Remove _5mm file name ending and replace with _250. This will associate the 5mm size fraction with the rest
-# of the sample from that location
-nl21Adj$sample = str_replace(nl21Adj$sample,"_5mm", "_250")
 
 ########  Pacific 2020 ########  
 
