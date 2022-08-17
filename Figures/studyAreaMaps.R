@@ -84,7 +84,7 @@ mapMaker = function(mapData) {
 
   # Add the survey transects as lines from start (latitude/longitude) to end (..End)
   # First need to make sure this actually has data or will get an error message
-  if (nrow(transect)>=1){ 
+  if (nrow(transect)>=1){ # check: is there data?
     for(i in 1:nrow(transect)){
     mapTemplate = addPolylines(mapTemplate, lat = c(transect[i,]$latitude, transect[i,]$latitudeEnd), 
                            lng = c(transect[i,]$longitude, transect[i,]$longitudeEnd))
@@ -97,6 +97,8 @@ mapMaker = function(mapData) {
 
 ################################################################################
 ## Call the mapmaker function defined above to create the maps
+# Might have to zoom in a bit more to get better views of the bays within each 
+# region.
 
 # Some sites with NAs may get errors. Just ignore these
 mapMaker(nlZoo) # Newfoundland
