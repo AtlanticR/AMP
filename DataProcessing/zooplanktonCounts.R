@@ -39,9 +39,18 @@ ipak = function(pkg){
 }
 
 # Choose necessary packages
-packages = c("dplyr", "ggplot2", "ggrepel", "ggthemes", "jcolors", "leaflet", "mapr", "mapview", "readxl", "stringr",
+packages = c("ggplot2", "ggrepel", "ggthemes", "jcolors", "leaflet", "mapr", "mapview", "readxl", "stringr",
              "tidyr", "tools", "useful", "vegan", "wpa")
 ipak(packages)
+
+################################################################################
+## Read in other scripts
+
+setwd("C:/Users/FINNISS/Desktop/AMPCode")
+
+# See source files for a full explanation of the data
+source("DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
+source("DataProcessing/metadataProcessing.R") # get metadata
 
 ################################################################################
 ## GET THE DATA FILE NAMES
@@ -231,7 +240,7 @@ return(siteDf)
 }
 
 ################################################################################
-## Create data frames of each dataset
+## Create dataframes of each dataset
 
 # Run the speciesDF function and create the dataframes for dataset
 # This returns a dataframe with columns for sample, class, count, particles
@@ -259,9 +268,7 @@ checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, n
 # It is not easy to create a function to do all of these edits since some things are
 # not the same between files (e.g., ending with "250UM" vs "250" vs "250um") and this is instead done manually.
 
-# Read in code from this file
-# See this file for full explanation of the data
-source("FlowCamPercents.R")
+
 
 ######## Maritimes 2021 ########
 
