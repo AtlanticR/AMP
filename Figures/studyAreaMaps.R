@@ -114,8 +114,6 @@ mapMaker(gulfZoo) # Gulf
 ## Code for making the maps separately: 
 # I might need these later if each map has very custom things to add
 
-## Just in case I want to make them separately (Delete these later)
-
 ## Newfoundland 
 # Start the basemap (set zoomControl to false to hide the zoom buttons on map)
 nlMap = leaflet(options = leafletOptions(zoomControl = F)) %>% 
@@ -170,7 +168,6 @@ for(i in 1:nrow(gulfZoo)){
 
 # Draw the map
 gulfMap
-
 
 ## Maritimes
 # Start the basemap (set zoomControl to false to hide the zoom buttons on map)
