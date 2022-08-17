@@ -1,11 +1,11 @@
 ################################################################################
 ################################################################################
-### Script to read in FlowCam sample adjustments
+### FLOWCAM SAMPLE ADJUSTMENTS
 
 ## BACKGROUND:
-# For each plankton sample, while the entire sample is run through the FlowCam 
-# and basic properties like particle size are measured. 
-# HOWEVER, not all of the zooplankton ID'd!! It is very time consuming.
+# For each plankton sample, the entire sample is run through the FlowCam and
+# basic properties like particle size are measured. 
+# HOWEVER, not all of the zooplankton are ID'd!! It is very time consuming.
 # Instead, only a portion of the sample is actually ID'd and this must be 
 # correctly adjusted for. These adjustments may vary from sample to sample.
 # More detail is provided below in the "EXPLANATION OF PROCESS" section.
@@ -22,7 +22,7 @@
 
 ## EXPLANATION OF PROCESS (what the FlowCam Tech/taxonomists did):
 # Identifying the zooplankton is a laborious process and takes too long for one 
-# sample. Instead, (for MOST datasets) the sample is first split into 10 equal 
+# entire sample. Instead, (for MOST datasets) the sample is first split into 10 equal 
 # parts. From that, only a few of these subsamples are "cleaned" i.e, zooplankton 
 # are separated out. The taxonomists only look at a few of those subsamples 
 # (usually 3, but sometimes fewer if there are lots of plankton).
@@ -32,12 +32,13 @@
 # Therefore, the counts in each data file must be:
 # Divided by the % of Sample Cleaned and then divided again by the % of (post-
 # cleaned) Zooplankton Identified.
+# This will turn the counts into (approx.) the total # of plankton per sample.
 # Note, the counts also need to be divided by the volume of water sampled to get
 # ind m^-3 but that information is in the metadata spreadsheets and the 
 # calculation will be done separately.
-# Note: counts will also need to be divided by 4, because after the sample
+# ALSO: counts will  need to be divided by 4, because after the sample
 # was obtained, it was divided in 4 (1 sample for Flowcam, 1 as a backup, 
-# the others to ... I forget).
+# the others to ... I forget). This is also done in ZooplanktonCounts.R
 
 ## DEFINITIONS:
 # "Cleaning": the sorting of images into the following classes: Zooplankton, 0-250μm Length, Cut Images, 
