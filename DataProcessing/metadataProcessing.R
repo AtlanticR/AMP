@@ -1,11 +1,22 @@
 ################################################################################
-# Making Aquaculture Monitoring Program maps of sampling locations
-# Make leaflet maps for the AMP sampling sites out of the metadata files
-# Create generic functions to process/clean the data, then map these locations
-# Sampling locations are both points (discrete i.e., punctual stations) and
-# lines (transects)
+## PROCESSING METADATA
+
+## Background:
+# The metadata files describe the sampling for each Aquaculture Monitoring 
+# Program (AMP) region (Maritimes, Gulf, Newfoundland, Pacific)
+# This includes lat/lon of tow, sample name, net type, volume of water towed, etc.
+# Metadata files include data for both zooplankton analysis (FlowCam) and flow 
+# cytometry (separate analysis).
+
+## Purpose of code:
+# This code reads in the metadata files, selects on relevant data for zooplankton
+# analysis, and returns the processed data
+# This processed data is needed for other analyses (e.g., creating study area
+# maps and linking FlowCam data files to each tow)
+
+## Extra info:
 # Metadata files are not public
-# Code by Stephen Finnis July 2022
+# Code by Stephen Finnis 2022
 ################################################################################
 
 ## Get things set up
@@ -41,7 +52,7 @@ pacMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_Pacific_Jan262
 gulfMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo")
 
 ################################################################################
-## Data cleaning
+## Make data processing function
 
 # Create a function to only select relevant data from the metadata
 processMeta = function(xlData) {
@@ -51,9 +62,10 @@ processMeta = function(xlData) {
                     yearStart != 2019) # do not want 2019 data
   
   ## Fix waterVolume (volume of water filtered by plankton net)
-  # Calculation comes from the zoo_inst sheet in the metadata
+  # Calculation comes from the zoo_inst sheet in the metadata spreadsheets
   # volume of cylinder = pi * r^2 * depth. Here, a flowmeter conversion factor is included instead of depth
-  # r is the net radius which may not always be the same!
+  # The conversion factor is specific to the flowmeter model
+  # r is the net radius. It should be in meters but in a few instances it is in cm (these are fixed below)
   
   # GULF: there are several NAs. They just forgot to do the waterVolume calculation
   dfProc$waterVolume = ifelse(is.na(dfProc$waterVolume) & dfProc$region == "Gulf", # check for NAs in Gulf region metadata
@@ -61,7 +73,7 @@ processMeta = function(xlData) {
                               dfProc$waterVolume) # if false, just leave the original value as is
   
   # PACIFIC: 
-  # For some of the sites (ones with 50 x 150 cm Net), they forgot to convert radius in cm --> meters
+  # For some of the sites (ones with 50 x 150 cm Net), they forgot to convert radius from cm --> meters
   # Therefore divide by 100^2 (cm --> meters conversion, then squared)
   # Note: there will still be some NAs left over. I think these are from tows with no data. Will need to double check
   dfProc$waterVolume = ifelse((dfProc$region == "Pacific" | dfProc$region == "Pac") & dfProc$equipmentType == "50 x 150 cm Net", # check for NAs in Gulf region metadata
@@ -73,7 +85,11 @@ processMeta = function(xlData) {
   return(dfProc) # return processed data frame
 }
 
-# Process the data
+################################################################################
+## Process the data
+
+# Pass the raw metadata xlsx files into the processMeta function above
+# Will return dataframe of processed metadata for each region
 marZoo = processMeta(marMeta) # Maritimes zooplankton data
 nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
