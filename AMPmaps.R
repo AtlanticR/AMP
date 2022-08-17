@@ -50,11 +50,23 @@ processMeta = function(xlData) {
                        netMesh == 236) & 
                     yearStart != 2019) # do not want 2019 data
   
-  # CHECK TO SEE IF THERE ARE STILL ANY ISSUES
+  ## Fix waterVolume (volume of water filtered by plankton net)
   # Calculation comes from the zoo_inst sheet in the metadata
   # volume of cylinder = pi * r^2 * depth. Here, a flowmeter conversion factor is included instead of depth
-  dfProc$waterVolume = ifelse(is.na(dfProc$waterVolume), 0.25^2 * dfProc$flowmeter * 26873 / 999999, dfProc$waterVolume)
+  # r is the net radius which may not always be the same!
+  
+  # GULF: there are several NAs. They just forgot to do the waterVolume calculation
+  dfProc$waterVolume = ifelse(is.na(dfProc$waterVolume) & dfProc$region == "Gulf", # check for NAs in Gulf region metadata
+                              0.25^2 * dfProc$flowmeter * 26873 / 999999, # if true, fill in with volume calculation
+                              dfProc$waterVolume) # if false, just leave the original value as is
 
+  # MARITIMES and NEWFOUNDLAND: no waterVolume issues
+  
+  # PACIFIC: 
+  
+  
+  
+  
   
   return(dfProc) # return processed data frame
 }
