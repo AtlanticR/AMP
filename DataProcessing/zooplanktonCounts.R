@@ -45,25 +45,25 @@ ipak(packages)
 
 ################################################################################
 ## GET THE DATA FILE NAMES
-
-
-
-# (Gulf 2020, Gulf 2021, Maritimes 2021, NL 2020, NL 2021, Pacific 2020, Pacific 
-# June 2021, Pacific March 2021, Pacific Sept 2021).
-
-
+# First, get the names of the dataset folders to search through. 
+# This is just how the data were provided to me. They include:
+# Gulf 2020, Gulf 2021, Maritimes 2021, NL 2020, NL 2021, Pacific 2020, Pacific 
+# June 2021, Pacific March 2021, Pacific Sept 2021.
+# Then, get all of the file names in all of those folders. 
+# Just because it's useful, I get the full directory name, and just the file name
 
 # Define the directory where data need to be read from 
 allFolders = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/"
 
 # Get a list of all the folders that are within that directory
+# These are what I refer to as the "datasets" (Gulf 2020, Gulf 2021, etc)
 allDataNames =
   list.files(
     allFolders,
     full.names = T, # don't want full directory names
   )
 
-# Want a list of csv files containing all the zooplankton counts
+# Now, create a list of the csv files within each folder that contain the zooplankton counts
 # There are slightly different file structures based on how the taxonomists did their work
 # Some datasets do not have a "Zooplankton Identification Data" folder (they were "cleaned" while ID'ing)
 # Therefore we need to check for files in two different directories (but both end in "Classification Summary")
@@ -75,16 +75,16 @@ allDataNames =
 # AAMP Pacific Sept 2021 Zooplankton Data
 
 # In some cases I need the full directory names and sometimes I don't
-# I found it easiest to just get these separately
+# I found it easiest to just create these separately
 
 ## Get full directory names
-# Initialize empty list
+# These will be stored in a "list of lists". Each dataset will be stored as a list.
+# Within that, the files found within each dataset will be included as a list.
 dirFull = list()
 
-# Loop through every folder in allDataNames
 for(i in 1:length(allDataNames)){
   dirFull[[i]] = list.files(
-    # List the files! Some will have a "Zooplankton Identification Data" folder. Some won't.
+    # By setting two paths, this will search through both options of whether there is a Zoo... folder
     path = c(paste(allDataNames[i], "/Classification Summary", sep = ""),
       paste(allDataNames[i], "/Zooplankton Identification Data/Classification Summary", sep = "")),
     full.names = T, # Get full directory names
@@ -93,7 +93,6 @@ for(i in 1:length(allDataNames)){
 
 ## Get just the file names (i.e., not the full directory names)
 # This is helpful for naming things and matching to the metadata spreadsheet
-# Initialize empty list
 dirShort = list()
 
 for(i in 1:length(allDataNames)){
@@ -107,9 +106,12 @@ for(i in 1:length(allDataNames)){
 }
 
 ################################################################################
-## Create dataframes with data
+## MAKE FUNCTION TO READ IN ZOOPLANKTON COUNT DATA
+# This function reads in the data file names, extracts the relevant information 
+# from each spreadsheet.
+# Function will also remove unnecessary classes (i.e., not zooplankton) and fix
+# typos to ensure consistency between datasets.
 
-# Create a function that will make dataframes with species counts for each dataset
 # Pass in the list of files with full directory name (xl_dataFull) and just file names (xl_dataShort)
 speciesDF = function(xlDataFull, xlDataShort) {
   
@@ -124,13 +126,10 @@ if (compare.list(xlDataShort[1], dirShort[[4]][1])){
   # Loop through all the data and extract the class (plankton taxa), count (# of 
   # cells in the sample), and particles (# cells/ml)
   for(i in 1:length(xlDataFull)) {  
-    # Read in the files (it's a list of lists)
-    # Skip the first two lines of data
     df = read.csv(xlDataFull[i], skip = 2) %>% 
-      # Keep everything before the "End Metadata Statistics" part (remove that and after)
+      # Keep everything before the "End Metadata Statistics" part
       filter(row_number() < which(Name =='======== End Metadata Statistics ========')) %>%
-      # Rename the columns to match the other data files
-      # format: new = cold
+      # Rename the columns to match the other data files. Format: new = cold
       rename(class = Name, count = Count, particles = Particles...ml)
     # Add sample name as a column
     df$sample = xlDataShort[i]
@@ -145,7 +144,6 @@ if (compare.list(xlDataShort[1], dirShort[[4]][1])){
   # cells in the sample), and particles (# cells/ml)
   for(i in 1:length(xlDataFull)){
 
-    # Read in the files
     data = read.csv(xlDataFull[i]) 
     
     # Extract full row of data which contain class, count and particle information 
@@ -163,21 +161,18 @@ if (compare.list(xlDataShort[1], dirShort[[4]][1])){
 } 
   
 # Bind together this list of dataframes into one big data frame
-siteDf = dplyr::bind_rows(datalist)
-
-# Convert counts to numeric
-siteDf$count = as.numeric(siteDf$count)
-
-# Fix generic typos/edit to ensure consistency between entries: 
-# Remove all underscores and replace them with spaces
-siteDf$class = us_to_space(siteDf$class)
-# Make entire string lowercase
-siteDf$class = str_to_lower(siteDf$class)
-# Then capitalize the first letter
-siteDf$class = str_to_sentence(siteDf$class)
-# Remove instances of multiple spaces between words
-siteDf$class = str_squish(siteDf$class)
-siteDf$class = str_replace(siteDf$class,"spp", "spp.")
+siteDf = dplyr::bind_rows(datalist) %>%
+  # Convert counts to numeric
+  mutate(count = as.numeric(count)) %>%
+  # Remove all underscores and replace them with spaces
+  mutate(class = us_to_space(class)) %>%
+  # Make entire string lowercase
+  mutate(class = str_to_lower(class)) %>%
+  # Then capitalize the first letter
+  mutate(class = str_to_sentence(class)) %>%
+  # Remove instances of multiple spaces between words
+  mutate(class = str_squish(class)) %>%
+  mutate(class = str_replace(class, "spp", "spp."))
   
 # Remove unwanted classes
 # These do not contain relevant zooplankton data
@@ -240,7 +235,6 @@ return(siteDf)
 
 # Run the speciesDF function and create the dataframes for dataset
 # This returns a dataframe with columns for sample, class, count, particles
-# Note this might need to be turned into wide table format eventually
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
