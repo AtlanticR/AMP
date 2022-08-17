@@ -71,4 +71,3 @@ names(list_all) = sheets
 
 # Turn each sheet (list entry) into individual dataframes. Each dataframe will be named the sheet name
 list2env(list_all,envir=.GlobalEnv)
-
