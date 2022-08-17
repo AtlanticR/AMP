@@ -1,40 +1,68 @@
 ################################################################################
-# Script to read in FlowCam data
-# This script will read the percent of sample analyzed by the FlowCam
-# This script is meant to be called by other scripts, rather than a standalone script
 ################################################################################
-## Background notes
+### Script to read in FlowCam sample adjustments
+
+## BACKGROUND:
+# For each plankton sample, while the entire sample is run through the FlowCam 
+# and basic properties like particle size are measured. 
+# HOWEVER, not all of the zooplankton ID'd!! It is very time consuming.
+# Instead, only a portion of the sample is actually ID'd and this must be 
+# correctly adjusted for. These adjustments may vary from sample to sample.
+# More detail is provided below in the "EXPLANATION OF PROCESS" section.
+
+## PURPOSE OF CODE:
+# This script will read in the adjustment factors that need to be accounted for
+# for each sample. 
+# Separate dataframes with the necessary adjustments will be created for each 
+# dataset. Here, dataset refers to how the FlowCam data were provided to me 
+# (Gulf 2020, Gulf 2021, Maritimes 2021, NL 2020, NL 2021, Pacific 2020, Pacific 
+# June 2021, Pacific March 2021, Pacific Sept 2021).
+# This script does NOT make the adjustments to the counts. That is done separately
+# in the "ZooplanktonCounts.R" processing file.
+
+## EXPLANATION OF PROCESS (what the FlowCam Tech/taxonomists did):
+# Identifying the zooplankton is a laborious process and takes too long for one 
+# sample. Instead, (for MOST datasets) the sample is first split into 10 equal 
+# parts. From that, only a few of these subsamples are "cleaned" i.e, zooplankton 
+# are separated out. The taxonomists only look at a few of those subsamples 
+# (usually 3, but sometimes fewer if there are lots of plankton).
+# From that, taxonomists have a designated amount of time they can spend per 
+# sample. Sometimes they do not have time to get through entire sample.
+
+# Therefore, the counts in each data file must be:
+# Divided by the % of Sample Cleaned and then divided again by the % of (post-
+# cleaned) Zooplankton Identified.
+# Note, the counts also need to be divided by the volume of water sampled to get
+# ind m^-3 but that information is in the metadata spreadsheets and the 
+# calculation will be done separately.
+# Note: counts will also need to be divided by 4, because after the sample
+# was obtained, it was divided in 4 (1 sample for Flowcam, 1 as a backup, 
+# the others to ... I forget).
+
+## DEFINITIONS:
+# "Cleaning": the sorting of images into the following classes: Zooplankton, 0-250μm Length, Cut Images, 
+# Debris, Fragments of Zooplankton, Benthic, Clumped Zooplankton, Debris or Zooplankton, Bubbles.
+# "% of Sample Cleaned": the part of the fraction analyzed by taxonomists (i.e., % of subsamples they looked at)
+# "% of (post cleaned) Zooplankton Identified": the amount of plankton from these subsamples they had time to analyze.
+
+## STEPS I TOOK:
 # I combined each "Zooplankton Samples xlsx" into one spreadsheet, where each
 # sheet represents a different dataset (e.g., Gulf 2020, Gulf 2021, etc.)
-# This was to clean up various formatting issues in Excel (a time saver)
+# This was to clean up various formatting issues in Excel (a time saver).
 
-# The "Zooplankton Samples" spreadsheets, found within each dataset directory,
+# The "Zooplankton Samples" spreadsheets were found within each dataset directory.
 # These Contain information regarding each FlowCam sample.
 # I took the first table from the "Samples" sheet in each spreadsheet
-# The columns we want are:
-# FlowCam Sample Name (to match with the data files)
-# % of Sample Cleaned
-# % of (post cleaned) Zooplankton Identified
+# The columns I copied out were:
+# 1. FlowCam Sample Name (to match with the data files)
+# 2. % of Sample Cleaned
+# 3. % of (post cleaned) Zooplankton Identified
 
-# Cleaning: refers to the sorting of images into the following classes: Zooplankton, 0-250μm Length, Cut Images, 
-# Debris, Fragments of Zooplankton, Benthic, Clumped Zooplankton, Debris or Zooplankton, Bubbles.
+# Data files are not public
+# Code by Stephen Finnis 2022
 
 ################################################################################
-## Explanation of process:
-# Note: the entire sample is run through the FlowCam and abasic properties like particle size are measured. 
-# BUT not all of the zooplankton ID'd!! It is very time consuming since they have to be manually ID'd.
-# Instead, (for MOST datasets) the sample is first split into 10 equal parts
-# From that, only a few of these subsamples are "cleaned" i.e, zooplankton are separated out
-# Therefore, % of Sample Cleaned represents part of the fraction analyzed by taxonomists (i.e., % of subsamples looked at)
-# From that, taxonomists have a designated amount of time they can spend per sample. Sometimes they do not have time to get through entire sample
-
-# Therefore the counts must be:
-# Divided by the % of Sample Cleaned and then divided again by the % of (post cleaned) Zooplankton Identified
-
-# Note, the counts also need to be divided by the volume of water sampled to gets ind m^-3 but that information is in the metadata
-# spreadsheet and the calculation will be done separately
 ################################################################################
-
 ## Load packages
 
 # Function to load multiple packages
@@ -50,12 +78,12 @@ packages = c("plyr", "dplyr", "purrr", "readxl", "stringr", "tidyr", "tools", "u
 ipak(packages)
 
 ################################################################################
-# Read in data
+## Read in data and create dataframes for each dataset
 
-# Determine file path for permit data (created by Charlotte Smith)
+# Set the file path to the spreadsheet I created
 xl_data = file.path("C:/Users/FINNISS/Desktop/FlowCamPercent.xlsx")
 
-# Get the sheet names from the spreadsheet (there is one sheet per year, from 2010 to 2020)
+# Get the sheet names from the spreadsheet (there is one sheet per dataset
 sheets = excel_sheets(path = xl_data)
 
 # Read in the data from each sheet in the Excel file. Each sheet will be its own list
