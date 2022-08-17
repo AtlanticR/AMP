@@ -1,10 +1,34 @@
 ################################################################################
-# AMP making different charts with the zooplankton data
-# Created by Stephen Finnis 2022
-# 
 ################################################################################
+### ZOOPLANKTON ABUNDANCE
 
-## Get things set up
+## BACKGROUND:
+# Zooplankton from the Aquaculture Monitoring Program (AMP) have been sampled from
+# four different DFO regions (Pacific, Gulf, Maritimes, Newfoundland) in several
+# different years. 
+# These samples were run through the FlowCam and taxonomists identified the species.
+# These counts need to be read in, and then corrected to represent the # of 
+# individuals per cubic meter of seawater
+
+## PURPOSE OF CODE:
+# This code is intended to:
+# -Read in the necessary information from the data files
+# -Ensure consistency between data file entries (e.g., consistent spelling)
+# -Adjust the counts by the amount of sample analyzed (from FlowCamPercentAnalyzed.R)
+# -Adjust the counts again by volume of water sampled (from metadataProcessing.R)
+# -Adjust the counts again by dividing by 4 (since the samples were divided in 
+# 4 and only one of the samples was run through the FlowCam)
+# -Final units for each taxa are individuals per cubic meter of water (abundance)
+# The output will be a dataframe for each region with the abundance of each taxa
+# within each sample
+# These will be used as the data for statistical analyses/making graphs, etc.
+
+## ADDITIONAL INFO:
+# Created by Stephen Finnis 2022
+# Data files are not public
+################################################################################
+################################################################################
+## GET THE RELEVANT R PACKAGES
 
 # Function to load multiple packages
 ipak = function(pkg){
@@ -20,7 +44,14 @@ packages = c("dplyr", "ggplot2", "ggrepel", "ggthemes", "jcolors", "leaflet", "m
 ipak(packages)
 
 ################################################################################
-## Set up the data
+## GET THE DATA FILE NAMES
+
+
+
+# (Gulf 2020, Gulf 2021, Maritimes 2021, NL 2020, NL 2021, Pacific 2020, Pacific 
+# June 2021, Pacific March 2021, Pacific Sept 2021).
+
+
 
 # Define the directory where data need to be read from 
 allFolders = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/"
