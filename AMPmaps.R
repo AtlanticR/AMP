@@ -59,14 +59,16 @@ processMeta = function(xlData) {
   dfProc$waterVolume = ifelse(is.na(dfProc$waterVolume) & dfProc$region == "Gulf", # check for NAs in Gulf region metadata
                               0.25^2 * dfProc$flowmeter * 26873 / 999999, # if true, fill in with volume calculation
                               dfProc$waterVolume) # if false, just leave the original value as is
-
-  # MARITIMES and NEWFOUNDLAND: no waterVolume issues
   
   # PACIFIC: 
+  # For some of the sites (ones with 50 x 150 cm Net), they forgot to convert radius in cm --> meters
+  # Therefore divide by 100^2 (cm --> meters conversion, then squared)
+  # Note: there will still be some NAs left over. I think these are from tows with no data. Will need to double check
+  dfProc$waterVolume = ifelse((dfProc$region == "Pacific" | dfProc$region == "Pac") & dfProc$equipmentType == "50 x 150 cm Net", # check for NAs in Gulf region metadata
+                              as.numeric(dfProc$waterVolume) / 100^2, # if true, fill in with volume calculation
+                              dfProc$waterVolume) # if false, just leave the original value as is
   
-  
-  
-  
+  # MARITIMES and NEWFOUNDLAND: no waterVolume issues
   
   return(dfProc) # return processed data frame
 }
