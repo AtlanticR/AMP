@@ -14,22 +14,11 @@
 rm(list=ls())
 graphics.off()
 
-# Function to load multiple packages
-ipak = function(pkg){
-  new.pkg = pkg[!(pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) 
-    install.packages(new.pkg, dependencies = TRUE)
-  sapply(pkg, require, character.only = TRUE)
-}
-
-# Choose necessary packages
-packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl")
-ipak(packages)
-
 ################################################################################
-## Load the data data
+## Read in relevant data processing code
 
-
+# Get the processed metadata files
+source("DataProcessing/metadataProcessing.R")
 
 ################################################################################
 ## Make leaflet maps (i.e., can zoom in/out in the Viewer panel)
@@ -96,8 +85,9 @@ gulfMap = mapMaker(gulfZoo) # Gulf
 gulfMap
 
 ################################################################################
-## DELETE THESE??
-# This is my code for making the maps separately 
+## THINGS I CAN PROBABLY DELETE BUT I'M KEEPING JUST IN CASE:
+
+## Code for making the maps separately: 
 # I might need these later if each map has very custom things to add
 
 ## Just in case I want to make them separately (Delete these later)
@@ -139,7 +129,6 @@ pacMap = leaflet(options = leafletOptions(zoomControl = F)) %>%
 
 # Draw the map
 pacMap
-
 
 ## Gulf
 
