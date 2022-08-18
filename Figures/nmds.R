@@ -22,12 +22,18 @@ legend("topright", legend = c(stress09), cex=1, bty="n") #btw=n gets rid of blac
 # Get NMDS coordinates from plot
 data.scores10 = as.data.frame(scores(marNMDS, display="sites"))
 
+g1 = 
 
-  ggplot() + 
-  geom_point(data = data.scores10, aes(x=NMDS1, y=NMDS2, fill=as.factor(marSpecies$facilityName)), size= 5, pch=21)+ # Use pch=21 to get black outline circles
+ggplot() + 
+  geom_data(data = data.scores10, aes(x=NMDS1, y=NMDS2, fill=as.factor(marSpecies$facilityName),
+                                      pch = as.factor(marSpecies$tideRange), size = 5))+
+  geom_point()+ # Use pch=21 to get black outline circles
   #scale_size(range=c(2,8), name="Distance", limits=c(minDis, maxDis))+
+  scale_fill_discrete(name = "Bay")+
+  scale_shape_manual(values=c(21, 22, 23), name = "Tide Range")+ 
+
   annotate("text", x = max(data.scores10$NMDS1), y=max(data.scores10$NMDS2), label = stress09, size=3.5, hjust=1)+
-    scale_fill_discrete(name = "Bay")+
+  #labs(fill="Bay", shape="Tide Range")+
   theme_bw()+
   theme(axis.text = element_blank(),
         #axis.title = element_blank(),
@@ -38,3 +44,6 @@ data.scores10 = as.data.frame(scores(marNMDS, display="sites"))
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
+
+
+ggsave("test.png", g1, scale = 1.7)
