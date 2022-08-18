@@ -25,9 +25,8 @@ data.scores10 = as.data.frame(scores(marNMDS, display="sites"))
 g1 = 
 
 ggplot() + 
-  geom_data(data = data.scores10, aes(x=NMDS1, y=NMDS2, fill=as.factor(marSpecies$facilityName),
-                                      pch = as.factor(marSpecies$tideRange), size = 5))+
-  geom_point()+ # Use pch=21 to get black outline circles
+  geom_point(data = data.scores10, aes(x=NMDS1, y=NMDS2, fill=as.factor(marSpecies$facilityName),
+                                       pch = as.factor(marSpecies$tideRange)), size = 5)+ # Use pch=21 to get black outline circles
   #scale_size(range=c(2,8), name="Distance", limits=c(minDis, maxDis))+
   scale_fill_discrete(name = "Bay")+
   scale_shape_manual(values=c(21, 22, 23), name = "Tide Range")+ 
@@ -43,7 +42,10 @@ ggplot() +
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
-        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
+        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
+  # Need to override and show these as a new new shape otherwise it won't show up
+  guides(fill = guide_legend(override.aes = list(shape = 21)),
+         shape = guide_legend(override.aes = list(fill = "black")))
 
 
 ggsave("test.png", g1, scale = 1.7)
