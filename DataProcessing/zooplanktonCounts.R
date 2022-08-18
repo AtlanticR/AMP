@@ -276,7 +276,7 @@ checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, n
 Mar21Perc$FlowCamSampleName = str_replace(Mar21Perc$FlowCamSampleName,"_R2", "")
 
 # Join the dataframes of counts with the dataframe of the adjustments
-mar21adj =full_join(mar21, Mar21Perc, by=c("sample" = "FlowCamSampleName")) %>%
+mar21Adj =full_join(mar21, Mar21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   # Add column with adjusted counts
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
 
@@ -389,19 +389,22 @@ pac21SeptAdj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
 # 
 # 
 # 
-# # Maritimes 2021
-# metaMarFix = 
-#   marZoo %>%
-#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart) %>%
-#   # Rename one of the samples from the metadata where the file name is different
-#   mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
-# 
-# 
-# 
-# 
-# # Maritimes 2021
-# marMerge = full_join(mar21Adj, metaMarFix, by=c("sample" = "sampleCode"))
-# 
+# Maritimes 2021
+metaMarFix =
+  marZoo %>%
+  select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName) %>%
+  # Rename one of the samples from the metadata where the file name is different
+  mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
+
+# Maritimes 2021
+# merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
+marMerge = full_join(mar21Adj, metaMarFix, by=c("sample" = "sampleCode")) %>%
+  # convert waterVolume from litres to m^3
+  # divide by 4 because tow was split in 4
+  mutate(abund = adjCount / (waterVolume / 1000) / 4) %>%
+  # get rid of these because they're ugly and distracting
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
+
 # 
 # 
 # pacSept21Merge = full_join(pac21SeptAdj, metaPacSept21Fix, by=c("sample" = "sampleCode"))
