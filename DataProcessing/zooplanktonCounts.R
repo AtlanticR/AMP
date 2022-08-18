@@ -392,7 +392,7 @@ pac21SeptAdj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
 # Maritimes 2021
 metaMarFix =
   marZoo %>%
-  select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName) %>%
+  select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, target) %>%
   # Rename one of the samples from the metadata where the file name is different
   mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
 
