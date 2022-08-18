@@ -366,51 +366,51 @@ pac21SeptAdj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
 
 ### REMEMBER TO ALSO DIVIDE BY 4 BECAUSE THE SAMPLE WAS SPLIT IN 4
 
-
-
-# gulf 2021
-metaGulfFix = 
-  gulfZoo %>%
-  select(facilityName, sampleCode, waterVolume, tideRange, yearStart) %>%
-  filter(yearStart==2021)
-
-
-# nl 2021 DONT HAVE METADATA FOR THIS YET
-metaNlFix = 
-  nlZoo %>%
-  select(facilityName, sampleCode, waterVolume, tideRange, yearStart)
-
-
-# Pacific Sept 2021
-metaPacSept21Fix = 
-  pacZoo %>%
-  select(facilityName, sampleCode, waterVolume, tideRange, yearStart, monthStart) %>%
-  filter(yearStart==2021 & monthStart == 09)
-
-
-
-# Maritimes 2021
-metaMarFix = 
-  marZoo %>%
-  select(facilityName, sampleCode, waterVolume, tideRange, yearStart) %>%
-  # Rename one of the samples from the metadata where the file name is different
-  mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
-
-
-
-
-# Maritimes 2021
-marMerge = full_join(mar21Adj, metaMarFix, by=c("sample" = "sampleCode"))
-
-
-
-pacSept21Merge = full_join(pac21SeptAdj, metaPacSept21Fix, by=c("sample" = "sampleCode"))
-
-
-
-mar21NewTest= 
-  mar21New %>%
-  select(sample)
-
-x =full_join(mar21Adj, metaMarTest, by=c("sample" = "sampleCode"))
+# 
+# 
+# # gulf 2021
+# metaGulfFix = 
+#   gulfZoo %>%
+#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart) %>%
+#   filter(yearStart==2021)
+# 
+# 
+# # nl 2021 DONT HAVE METADATA FOR THIS YET
+# metaNlFix = 
+#   nlZoo %>%
+#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart)
+# 
+# 
+# # Pacific Sept 2021
+# metaPacSept21Fix = 
+#   pacZoo %>%
+#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart, monthStart) %>%
+#   filter(yearStart==2021 & monthStart == 09)
+# 
+# 
+# 
+# # Maritimes 2021
+# metaMarFix = 
+#   marZoo %>%
+#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart) %>%
+#   # Rename one of the samples from the metadata where the file name is different
+#   mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
+# 
+# 
+# 
+# 
+# # Maritimes 2021
+# marMerge = full_join(mar21Adj, metaMarFix, by=c("sample" = "sampleCode"))
+# 
+# 
+# 
+# pacSept21Merge = full_join(pac21SeptAdj, metaPacSept21Fix, by=c("sample" = "sampleCode"))
+# 
+# 
+# 
+# mar21NewTest= 
+#   mar21New %>%
+#   select(sample)
+# 
+# x =full_join(mar21Adj, metaMarTest, by=c("sample" = "sampleCode"))
 
