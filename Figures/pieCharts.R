@@ -101,10 +101,13 @@ ggplot(gulf20, aes(x="", y=perc, fill=class)) +
 
 
 
+
+
+
 # Pie chart for one station
 
 # Bar chart of one station
-ggplot(gulf20, aes(x=class, y=sumCount, fill=class)) +
+ggplot(gulf20, aes(x=class, y=count, fill=class)) +
   geom_bar(stat="identity", width=1) +
   theme(legend.position = "none",
         axis.text.x=element_blank(),
