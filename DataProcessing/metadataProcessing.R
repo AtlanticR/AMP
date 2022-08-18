@@ -40,14 +40,14 @@ ipak(packages)
 
 # Set directory
 # Look into here package and probably replace this 
-setwd("C:/Users/FINNISS/Desktop")
+# setwd("C:/Users/FINNISS/Desktop")
 
 # Load in metadata data files
 # mar = Maritimes
-marMeta = read_excel("FlowCamMetadata\\AMP Metadata Plankton_2021_Maritimes_21Dec2021.xlsx", sheet = "zoo") 
-nlMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_NL_Jan132022_OG.xlsx", sheet = "zoo")
-pacMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_Pacific_Jan262022.xlsx", sheet = "zoo")
-gulfMeta = read_excel("FlowCamMetadata\\AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo")
+marMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP Metadata Plankton_2021_Maritimes_21Dec2021.xlsx", sheet = "zoo") 
+nlMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP_Metadata_Plankton_2021_NL_Jan132022_OG.xlsx", sheet = "zoo")
+pacMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP_Metadata_Plankton_2021_Pacific_Jan262022.xlsx", sheet = "zoo")
+gulfMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo")
 
 ################################################################################
 ## Make data processing function
