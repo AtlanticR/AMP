@@ -46,11 +46,11 @@ ipak(packages)
 ################################################################################
 ## Read in other scripts
 
-setwd("C:/Users/FINNISS/Desktop/AMPCode")
+# setwd("C:/Users/FINNISS/Desktop/AMPCode")
 
 # See source files for a full explanation of the data
-source("DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
-source("DataProcessing/metadataProcessing.R") # get metadata
+source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
+source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R") # get metadata
 
 ################################################################################
 ## GET THE DATA FILE NAMES
@@ -308,7 +308,7 @@ gulf21Adj =full_join(gulf21, Gulf21Perc, by=c("sample" = "FlowCamSampleName")) %
   mutate(sample = str_replace(sample, "_5mm", "_250"))
 
 ######## Newfoundland 2020 ######## 
-nl20Adj =full_join(nl20, Nl2020Perc, by=c("sample" = "FlowCamSampleName")) %>%
+nl20Adj =full_join(nl20, Nl20Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
 
 ########  Newfoundland 2021 ########  
