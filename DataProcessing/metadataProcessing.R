@@ -19,10 +19,6 @@
 # Code by Stephen Finnis 2022
 ################################################################################
 
-## Get things set up
-
-# Clear console
-
 # Function to load multiple packages
 ipak = function(pkg){
   new.pkg = pkg[!(pkg %in% installed.packages()[, "Package"])]
@@ -94,8 +90,8 @@ processMeta = function(xlData) {
   
   dfProc = dfProc %>%
     mutate(location = ifelse(region == "Gulf", gulfLoc$myLabel, NA)) %>%
-    mutate(flowCamMatch = ifelse(region == "Gulf", gulfLoc$flowcamCode))
-  
+    mutate(flowCamMatch = ifelse(region == "Gulf", gulfLoc$flowcamCode, NA))
+
   return(dfProc) # return processed data frame
 }
 
@@ -104,9 +100,10 @@ processMeta = function(xlData) {
 
 # Pass the raw metadata xlsx files into the processMeta function above
 # Will return dataframe of processed metadata for each region
+# I really should rename these variables!!
 marZoo = processMeta(marMeta) # Maritimes zooplankton data
 nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
 
-write.csv(gulfZoo, "testGulf.csv")
+# write.csv(gulfZoo, "testGulf.csv")
