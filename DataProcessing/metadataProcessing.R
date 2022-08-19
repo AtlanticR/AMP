@@ -83,10 +83,7 @@ processMeta = function(xlData) {
   
   # MARITIMES and NEWFOUNDLAND: no waterVolume issues
 
-
-  
-  
-    
+   
   ## Need an identifier for where within each bay the stations are located
   # I displayed these in Google Earth and then determined if they were in the South, Mid, North part of the bay
   # Note: ifelse can be nested in many different ways. If it's Maritimes or Gulf, put the myLabel, otherwise put as NA
