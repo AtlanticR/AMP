@@ -170,6 +170,7 @@ for(i in 1:nrow(gulfZoo)){
 gulfMap
 
 ## Maritimes
+
 # Start the basemap (set zoomControl to false to hide the zoom buttons on map)
 marMap = leaflet(options = leafletOptions(zoomControl = F)) %>% 
   
@@ -203,3 +204,26 @@ marMap
 # ggplot(data = argyle, aes(x=longitude, y=latitude, label = stationNum)) + 
 #   geom_text()
 # 
+
+
+
+## Look for a sampling issue with the Maritimes data in Sober Island
+# One of the transects is too long. I think there is an issue with it. 
+
+
+# Plot them see which one looks weird
+# mistake = marZoo %>%
+#   filter(facilityName == "Sober Island Oyster") %>%
+#   filter(location != "North") %>%
+#   filter(sampleCode == "21_08_27_Mar_S01_Z07_1115_250") # OK THIS ONE IS WEIRD THEN
+# 
+# theRest = marZoo %>%
+#   filter(facilityName == "Sober Island Oyster") %>%
+#   filter(location != "North")
+# 
+# ggplot() + 
+#   geom_segment(data = theRest, aes(x=longitude, y=latitude, xend = longitudeEnd, yend = latitudeEnd), col = "black")+
+#   geom_segment(data = mistake, aes(x=longitude, y=latitude, xend = longitudeEnd, yend = latitudeEnd), col = "red")
+  
+
+
