@@ -295,7 +295,12 @@ gulf20Adj = full_join(gulf20, Gulf20Perc, by=c("sample" = "FlowCamSampleName")) 
   # This had no associated data
   filter(sample!="AMMP_Gulf_StPeters_2_20200901HT_250UM_2") %>%
   mutate(sample = str_replace(sample, "_R2", "")) %>%
-  mutate(sample = str_replace(sample, "_1", "")) %>%
+  
+  # Gulf 2020 have underscores in the middle of the string AND at the end
+  # I need to remove the one at the end 
+  mutate(sample = ifelse(endsWith(sample, "_1"), # check if it ends with "_1"
+                         gsub('.{2}$', '', sample), # if it does, remove last 2 characters (i.e., "_1")
+                         sample)) %>% # if not, just leave it
   mutate(sample = str_replace(sample, "_5mm", ""))
 
 ######## Gulf 2021 ########  
@@ -368,11 +373,25 @@ pac21SeptAdj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
 
 # 
 # 
-# # gulf 2021
-# metaGulfFix = 
-#   gulfZoo %>%
-#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart) %>%
-#   filter(yearStart==2021)
+# gulf 2021
+metaGulf =
+  gulfZoo %>%
+  select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, target, location, flowCamMatch)
+
+# Combine 2020 and 2021 flowcam data
+gulfAll = rbind(gulf20Adj, gulf21Adj)
+
+# Merge metadata with FlowCam data  
+# merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
+gulfMerge = full_join(gulfAll, metaGulf, by=c("sample" = "flowCamMatch")) %>%
+  # convert waterVolume from litres to m^3
+  # divide by 4 because tow was split in 4
+  mutate(abund = adjCount / (waterVolume / 1000) / 4) %>%
+  # get rid of these because they're ugly and distracting
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
+
+
+
 # 
 # 
 # # nl 2021 DONT HAVE METADATA FOR THIS YET
@@ -390,7 +409,7 @@ pac21SeptAdj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
 # 
 # 
 # Maritimes 2021
-metaMarFix =
+metaMar =
   marZoo %>%
   select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, target, location) %>%
   # Rename one of the samples from the metadata where the file name is different
@@ -398,7 +417,7 @@ metaMarFix =
 
 # Maritimes 2021
 # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
-marMerge = full_join(mar21Adj, metaMarFix, by=c("sample" = "sampleCode")) %>%
+marMerge = full_join(mar21Adj, metaMar, by=c("sample" = "sampleCode")) %>%
   # convert waterVolume from litres to m^3
   # divide by 4 because tow was split in 4
   mutate(abund = adjCount / (waterVolume / 1000) / 4) %>%
