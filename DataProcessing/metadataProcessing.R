@@ -49,6 +49,11 @@ nlMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP_Metadata_Plank
 pacMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP_Metadata_Plankton_2021_Pacific_Jan262022.xlsx", sheet = "zoo")
 gulfMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo")
 
+# Read in my spreadsheet with the location names, i.e., "north", "mid", or "south" in bay
+marLoc = read.csv("C:/Users/FINNISS/Desktop/marLocation.csv")
+
+
+
 ################################################################################
 ## Make data processing function
 
@@ -79,6 +84,11 @@ processMeta = function(xlData) {
                               dfProc$waterVolume) # if false, just leave the original value as is
   
   # MARITIMES and NEWFOUNDLAND: no waterVolume issues
+  
+  ## Need an identifier for where within each bay the stations are located
+  # I displayed these in Google Earth and then determined if they were in the South, Mid, North part of the bay
+  dfProc = dfProc %>%
+    mutate(location = ifelse(region == "Mar", marLoc$MyLabel, NA))
   
   return(dfProc) # return processed data frame
 }
