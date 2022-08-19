@@ -1,15 +1,18 @@
 ### NMDS TESTS
 
+# Set directory
+source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 
-
-
-
+# alter the dataframe so it is in appropriate format for NMDS
+# names_from: The column whose values will be used as column names
+# values_from: The column whose values will be used as cell values
 marSpecies = marMerge %>% pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
-
-
+# Do NMDS but only include species data
 marNMDS = metaMDS(sqrt(marSpecies[,c(6:50)]), distance = "bray", autotransform=FALSE)
+
+# Making base plot NMDS
 plot(marNMDS$points, type="n")
 # Add the sites in
 text(marNMDS, display="sites", labels=row.names(marSpecies), cex=1, pos=3)
@@ -20,19 +23,18 @@ legend("topright", legend = c(stress09), cex=1, bty="n") #btw=n gets rid of blac
 
 
 # Get NMDS coordinates from plot
-data.scores10 = as.data.frame(scores(marNMDS, display="sites"))
+marCoords = as.data.frame(scores(marNMDS, display="sites"))
 
 g1 = 
 
 ggplot() + 
-  geom_point(data = data.scores10, aes(x=NMDS1, y=NMDS2, fill=as.factor(marSpecies$facilityName),
+  geom_point(data = marCoords, aes(x=NMDS1, y=NMDS2, fill=as.factor(marSpecies$facilityName),
                                        pch = as.factor(marSpecies$tideRange)), size = 5)+ # Use pch=21 to get black outline circles
-  #scale_size(range=c(2,8), name="Distance", limits=c(minDis, maxDis))+
+  # Change legend names
   scale_fill_discrete(name = "Bay")+
   scale_shape_manual(values=c(21, 22, 23), name = "Tide Range")+ 
 
-  annotate("text", x = max(data.scores10$NMDS1), y=max(data.scores10$NMDS2), label = stress09, size=3.5, hjust=1)+
-  #labs(fill="Bay", shape="Tide Range")+
+  annotate("text", x = max(marCoords$NMDS1), y=max(marCoords$NMDS2), label = stress09, size=3.5, hjust=1)+
   theme_bw()+
   theme(axis.text = element_blank(),
         #axis.title = element_blank(),
@@ -48,4 +50,6 @@ ggplot() +
          shape = guide_legend(override.aes = list(fill = "black")))
 
 
-ggsave("test.png", g1, scale = 1.7)
+# Need to use ggsave to make Figures
+# In Windows (vs Mac), the plots in the Viewer are pixelated and just so ugly
+# ggsave("test.png", g1, scale = 1.7)
