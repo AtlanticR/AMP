@@ -13,6 +13,18 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 
 piePrep = function(plotData) {
 
+  # For Maritimes & Gulf, I have abundances ("abund")! 
+  # For all others, I do not. Just the adjusted count (/% cleaned etc)
+  if("abund" %in% colnames(plotData))
+  {
+    plotData$count = plotData$abund
+  } else {
+    plotData$count = plotData$adjCount
+  }
+  
+  # Test if it worked
+  # print(plotData$count)
+  
 # Do some cleaning of the data
 plotData = plotData %>% 
   
@@ -23,7 +35,7 @@ plotData = plotData %>%
   # Need to create an "Other" class so the pie charts don't have too many slices
   # Keep the 5 most abundant classes, name the rest "Other"
   mutate(rank = rank(-countBay), 
-         classNew = ifelse(rank <= 5, class, 'Other')) %>%
+         classNew = ifelse(rank <= 7, class, 'Other')) %>%
   
   # Manipulate the dataframe to show the percentage of each class
   # This will condense the dataframe (it's easier to plot this way)
@@ -39,6 +51,51 @@ plotData = plotData %>%
 
 return(plotData)
 }
+
+################################################################################
+# Break up data by bay/inlet
+# Maritimes: Argyle, Sober Island, Country Harbour, Whitehead
+# Gulf: Cocagne, Malpeque, St. Peters
+# Newfoundland: Southeast Arm
+# Pacific: Lemmens
+
+# For Maritimes and Gulf I have true abundances! Since they have been corrected by water volume
+
+
+# Maritimes
+argyle = marMerge %>%
+  subset(facilityName=="Argyle")
+
+sober = marMerge %>%
+  subset(facilityName == "Sober Island Oyster")
+
+whitehead = marMerge %>%
+  subset(facilityName == "WhiteHead")
+
+cHarbour = marMerge %>%
+  subset(facilityName == "Country Harbour")
+
+# Gulf
+malpeque = gulfMerge %>%
+  subset(facilityName == "Malpeque")
+
+stPeters = gulfMerge %>%
+  subset(facilityName == "StPeters")
+
+cocagne = gulfMerge %>%
+  subset(facilityName == "Cocagne")
+
+
+
+argylePlot = piePrep(argyle)
+
+
+
+
+
+
+
+
 
 ################################################################################
 # Process data for pie charts
