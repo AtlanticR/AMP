@@ -185,3 +185,21 @@ for(i in 1:nrow(marZoo)){
 
 # Draw the map
 marMap
+
+################################################################################
+################################################################################
+
+## Test where the sampling sites fall within the bay
+
+# write.csv(marZoo, "testMar.csv")
+# 
+# marZoo = marZoo %>%
+#   mutate(stationNum = rownames(marZoo))
+# 
+# 
+# argyle = marZoo %>%
+#   filter(facilityName == "Argyle")
+# 
+# ggplot(data = argyle, aes(x=longitude, y=latitude, label = stationNum)) + 
+#   geom_text()
+# 
