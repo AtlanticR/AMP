@@ -391,13 +391,25 @@ gulfMerge = full_join(gulfAll, metaGulf, by=c("sample" = "flowCamMatch")) %>%
   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
 
 
-
-# 
-# 
 # # nl 2021 DONT HAVE METADATA FOR THIS YET
-# metaNlFix = 
+# metaNl =
 #   nlZoo %>%
-#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart)
+#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, target) %>%
+#   filter(yearStart == 2020)
+# 
+# # Merge metadata with FlowCam data  
+# # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
+# nlMerge = full_join(nl20Adj, metaNl, by=c("sample" = "sampleCode")) %>%
+#   # convert waterVolume from litres to m^3
+#   # divide by 4 because tow was split in 4
+#   mutate(abund = adjCount / (waterVolume / 1000) / 4) %>%
+#   # get rid of these because they're ugly and distracting
+#   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
+# 
+# 
+# 
+
+
 # 
 # 
 # # Pacific Sept 2021
