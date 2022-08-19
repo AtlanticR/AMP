@@ -82,15 +82,18 @@ processMeta = function(xlData) {
                               dfProc$waterVolume) # if false, just leave the original value as is
   
   # MARITIMES and NEWFOUNDLAND: no waterVolume issues
+
+
   
+  
+    
   ## Need an identifier for where within each bay the stations are located
   # I displayed these in Google Earth and then determined if they were in the South, Mid, North part of the bay
+  # Note: ifelse can be nested in many different ways. If it's Maritimes or Gulf, put the myLabel, otherwise put as NA
   dfProc = dfProc %>%
-    mutate(location = ifelse(region == "Mar", marLoc$myLabel, NA))
-  
-  dfProc = dfProc %>%
-    mutate(location = ifelse(region == "Gulf", gulfLoc$myLabel, NA)) %>%
-    mutate(flowCamMatch = ifelse(region == "Gulf", gulfLoc$flowcamCode, NA))
+    mutate(location = ifelse(region == "Mar", marLoc$myLabel,
+                             ifelse(region == "Gulf", gulfLoc$myLabel, NA))) %>%
+    mutate(flowCamMatch = ifelse(region == "Gulf", gulfLoc$flowcamCode, NA)) # add code from Jeff Barrell
 
   return(dfProc) # return processed data frame
 }
