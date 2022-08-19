@@ -51,7 +51,7 @@ gulfMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP_Metadata_Pla
 
 # Read in my spreadsheet with the location names, i.e., "north", "mid", or "south" in bay
 marLoc = read.csv("C:/Users/FINNISS/Desktop/marLocation.csv")
-
+gulfLoc = read.csv("C:/Users/FINNISS/Desktop/gulfLocation.csv")
 
 
 ################################################################################
@@ -90,6 +90,9 @@ processMeta = function(xlData) {
   dfProc = dfProc %>%
     mutate(location = ifelse(region == "Mar", marLoc$MyLabel, NA))
   
+  dfProc = dfProc %>%
+    mutate(location = ifelse(region == "Gulf", gulfLoc$MyLabel, NA))
+  
   return(dfProc) # return processed data frame
 }
 
@@ -102,3 +105,5 @@ marZoo = processMeta(marMeta) # Maritimes zooplankton data
 nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
+
+write.csv(gulfZoo, "testGulf.csv")
