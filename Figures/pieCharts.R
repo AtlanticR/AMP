@@ -11,8 +11,10 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 ################################################################################
 ## Alter data format for creation of pie charts
 
-piePrep = function(plotData) {
+pieChart = function(plotData) {
 
+  ### PROCESS THE DATA
+  
   # For Maritimes & Gulf, I have abundances ("abund")! 
   # For all others, I do not. Just the adjusted count (/% cleaned etc)
   if("abund" %in% colnames(plotData))
@@ -25,31 +27,59 @@ piePrep = function(plotData) {
   # Test if it worked
   # print(plotData$count)
   
-# Do some cleaning of the data
-plotData = plotData %>% 
+  # Do some cleaning of the data
+  plotData = plotData %>% 
+    
+    # Want counts per taxa (class) for the whole bay, not by tow
+    group_by(class) %>%
+    summarize(countBay = sum(count)) %>%
+    
+    # Need to create an "Other" class so the pie charts don't have too many slices
+    # Keep the 5 most abundant classes, name the rest "Other"
+    mutate(rank = rank(-countBay), 
+           classNew = ifelse(rank <= 7, class, 'Other')) %>%
+    
+    # Manipulate the dataframe to show the percentage of each class
+    # This will condense the dataframe (it's easier to plot this way)
+    group_by(classNew) %>%
+    summarise(sumCount = sum(countBay)) %>%
+    mutate(perc = sumCount / sum(sumCount)*100) %>%
+    
+    # Add a column called "pos" to get positions of where the percent labels should go
+    # Code obtained from: https://r-charts.com/part-whole/pie-chart-labels-outside-ggplot2/
+    mutate(csum = rev(cumsum(rev(perc))), 
+          pos = perc/2 + lead(csum, 1),
+          pos = if_else(is.na(pos), perc/2, pos))
   
-  # Want counts per taxa (class) for the whole bay, not by tow
-  group_by(class) %>%
-  summarize(countBay = sum(count)) %>%
   
-  # Need to create an "Other" class so the pie charts don't have too many slices
-  # Keep the 5 most abundant classes, name the rest "Other"
-  mutate(rank = rank(-countBay), 
-         classNew = ifelse(rank <= 7, class, 'Other')) %>%
-  
-  # Manipulate the dataframe to show the percentage of each class
-  # This will condense the dataframe (it's easier to plot this way)
-  group_by(classNew) %>%
-  summarise(sumCount = sum(countBay)) %>%
-  mutate(perc = sumCount / sum(sumCount)*100) %>%
-  
-  # Add a column called "pos" to get positions of where the percent labels should go
-  # Code obtained from: https://r-charts.com/part-whole/pie-chart-labels-outside-ggplot2/
-  mutate(csum = rev(cumsum(rev(perc))), 
-        pos = perc/2 + lead(csum, 1),
-        pos = if_else(is.na(pos), perc/2, pos))
+  ### PLOT THE DATA
+  g1 = 
+    # Make the pie chart
+    ggplot(plotData, aes(x="", y=perc, fill=classNew)) +
+    geom_bar(stat="identity") +
+    geom_col(color = "black")+ # add black border around slices
+    coord_polar("y", start=0)+ # make it a pie chart
+    scale_fill_brewer(palette = "Set2")+
+    # For labelling percents within pie slices:
+    # geom_text(aes(label = round(perc, digits=2)),
+    #           position = position_stack(vjust = 0.5),
+    #           size = 3) +
+    geom_label_repel(data = plotData,
+                     aes(y = pos, label = paste0(round(perc,1), "%")),
+                     size = 3, nudge_x = 1, show.legend = FALSE)+
+    #ggtitle("Maritimes 2021")+ # fix this to be automated
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.background = element_rect(fill = "white"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.spacing = element_blank(),
+      title=element_blank())
 
-return(plotData)
+# Return the ggplot
+return(g1)
 }
 
 ################################################################################
@@ -85,81 +115,39 @@ stPeters = gulfMerge %>%
 cocagne = gulfMerge %>%
   subset(facilityName == "Cocagne")
 
+# Newfoundland
+seArm = rbind(nl20Adj, nl21Adj)
 
-
-argylePlot = piePrep(argyle)
-
-
-
-
-
-
-
+# Pacific (here, I'm combining all of it)
+lemmens = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 
 
 ################################################################################
-# Process data for pie charts
-gulf20Plot = piePrep(gulf20)
-gulf21Plot = piePrep(gulf21)
-mar21Plot = piePrep(mar21)
-nl20Plot = piePrep(nl20)
-nl21Plot = piePrep(nl21)
-pac20Plot = piePrep(pac20)
-pacJun21Plot = piePrep(pacJun21)
-pacMar21Plot = piePrep(pacMar21)
-pacSep21Plot = piePrep(pacSep21)
+# Make the pie charts! These won't show up until you type the variable name
+argylePie = pieChart(argyle)
+soberPie = pieChart(sober)
+whiteheadPie = pieChart(whitehead)
+cHarbourPie = pieChart(cHarbour)
+malpequePie = pieChart(malpeque)
+stPetersPie = pieChart(stPeters)
+cocagnePie = pieChart(cocagne)
+seArmPie = pieChart(seArm)
+lemmensPie = pieChart(lemmens)
 
 ################################################################################
-# Create function for making pie charts!
 
-piePlot = function(pieData) {
-  
-  # Make the pie chart
-  ggplot(pieData, aes(x="", y=perc, fill=classNew)) +
-    geom_bar(stat="identity") +
-    geom_col(color = "black")+ # add black border around slices
-    coord_polar("y", start=0)+ # make it a pie chart
-    scale_fill_brewer(palette = "Set2")+
-    # For labelling percents within pie slices:
-    # geom_text(aes(label = round(perc, digits=2)),
-    #           position = position_stack(vjust = 0.5),
-    #           size = 3) +
-    geom_label_repel(data = pieData,
-                     aes(y = pos, label = paste0(round(perc,1), "%")),
-                     size = 3, nudge_x = 1, show.legend = FALSE)+
-    #ggtitle("Maritimes 2021")+ # fix this to be automated
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(),
-      axis.title = element_blank(),
-      panel.background = element_rect(fill = "white"),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      panel.spacing = element_blank(),
-      title=element_blank())
-}
 
-# Plot these
-piePlot(gulf20Plot)
-piePlot(gulf21Plot)
-piePlot(mar21Plot)
-piePlot(nl20Plot)
-piePlot(nl21Plot)
-piePlot(pac20Plot)
-piePlot(pacJun21Plot)
-piePlot(pacMar21Plot)
-piePlot(pacSep21Plot)
+
+
+
+
+
+###### THINGS I WILL PROBABLY DELETE BUT I'M TOO SCARED TO DELETE
 
 
 
 ggplot(gulf20, aes(x="", y=perc, fill=class)) +
   geom_bar(stat="identity")
-
-
-
-
-
-
 
 # Pie chart for one station
 
@@ -171,10 +159,6 @@ ggplot(gulf20, aes(x=class, y=count, fill=class)) +
         axis.ticks.x = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank())
-
-
-
-
 
 
 # Stacked bar chart
@@ -190,13 +174,6 @@ ggplot(marBothReduced, aes(x=sample, y=as.numeric(count), fill=class)) +
 ggplot(data, aes(fill=condition, y=value, x=specie)) + 
   geom_bar(position="dodge", stat="identity")
 
-
-
-
-###### THINGS I WILL PROBABLY DELETE BUT I'M TOO SCARED TO DELETE
-
-
-
 # RESTRUCTURING DATASETS:
 # Convert data into better format
 # Each row is a station, each column is a class. Each cell represents the counts. 
@@ -211,11 +188,10 @@ mar21New =
   # mutate_all(~replace(.,is.na(.), 0)) # replace NAs with 0
   
 
-
-
-
-
 ################################################################################
+
+
+
 ## Process the Newfoundland 2020 data separately
 # For some reason the csvs are in a different format 
 
