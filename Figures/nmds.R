@@ -22,6 +22,7 @@ marCoords = as.data.frame(scores(marNMDS, display="sites"))
 marStress = paste("2D Stress: ", round(marNMDS$stress, digits=2))
 
 # Plot with Bay and Tide Range
+g1 = 
 ggplot() + 
   geom_point(data = marCoords, aes(x=NMDS1, y=NMDS2, fill=as.factor(marSpecies$facilityName),
                                        pch = as.factor(marSpecies$tideRange)), size = 5)+ # Use pch=21 to get black outline circles
@@ -45,11 +46,12 @@ ggplot() +
 
 # Need to use ggsave to make Figures
 # In Windows (vs Mac), the plots in the Viewer are pixelated and just so ugly
-# ggsave("test.png", g1, scale = 1.7)
+# ggsave("test.png", g1)
 
 #########
 
 # Plot Maritimes 2020 d 2021 with Bay and Location (South, Mid, North)
+g2 = 
 ggplot() + 
   geom_point(data = marCoords, aes(x=NMDS1, y=NMDS2, fill=as.factor(marSpecies$facilityName),
                                    pch = as.factor(marSpecies$location)), size = 5)+ # Use pch=21 to get black outline circles
@@ -69,10 +71,10 @@ ggplot() +
         plot.background = element_blank(),
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
   # Need to override and show these as a new new shape otherwise it won't show up
-  guides(fill = guide_legend(override.aes = list(shape = 21)),
-         shape = guide_legend(override.aes = list(fill = "black")))
+  guides(fill = guide_legend(override.aes = list(shape = 21), order = 1),
+         shape = guide_legend(override.aes = list(fill = "black")), order=2)
 
-
+ggsave("test2.png", g2)
 
 
 ##### GULF 2020 and 2021 DATA
@@ -100,14 +102,15 @@ gulfCoords = as.data.frame(scores(gulfNMDS, display="sites"))
 # How stressed am I today
 gulfStress = paste("2D Stress: ", round(gulfNMDS$stress, digits=2))
 
+g3 = 
 ggplot() + 
-  geom_point(data = gulfCoords, aes(x=NMDS1, y=NMDS2, fill=as.factor(gulfSpecies$facilityName),
-                                   pch = as.factor(gulfSpecies$location)), size = 5)+ # Use pch=21 to get black outline circles
+  geom_point(data = gulfCoords, aes(x=NMDS1, y=NMDS2, fill=as.factor(gulfSpecies$facilityName)),
+                                   pch = 21, size = 7, alpha = 0.85)+ # Use pch=21 to get black outline circles
   # Change legend names
   scale_fill_discrete(name = "Location")+
   scale_shape_manual(values=c(21, 22, 23, 24, 25), name = "Location within bay")+ 
   
-  annotate("text", x = max(gulfCoords$NMDS1), y=max(gulfCoords$NMDS2), label = stress09, size=3.5, hjust=1)+
+  annotate("text", x = max(gulfCoords$NMDS1), y=max(gulfCoords$NMDS2), label = gulfStress, size=3.5, hjust=1)+
   theme_bw()+
   theme(axis.text = element_blank(),
         #axis.title = element_blank(),
@@ -123,7 +126,7 @@ ggplot() +
          shape = guide_legend(override.aes = list(fill = "black")))
 
 
-
+# ggsave("test3.png", g3)
 
 
 
