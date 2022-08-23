@@ -141,11 +141,11 @@ lemmensPie = pieChart(lemmens)
 
 ################################################################################
 
-first = grid.arrange(argylePie, soberPie, ncol = 2)
-second = grid.arrange(cHarbourPie, whiteheadPie, ncol = 2)
-third = grid.arrange(cocagnePie, malpequePie, ncol = 2)
-fourth = grid.arrange(stPetersPie, seArmPie, ncol = 2)
-fifth = grid.arrange(lemmensPie, lemmensPie, ncol = 2)
+first = grid.arrange(argylePie[[1]], soberPie[[1]], ncol = 2)
+second = grid.arrange(cHarbourPie[[1]], whiteheadPie[[1]], ncol = 2)
+third = grid.arrange(cocagnePie[[1]], malpequePie[[1]], ncol = 2)
+fourth = grid.arrange(stPetersPie[[1]], seArmPie[[1]], ncol = 2)
+fifth = grid.arrange(lemmensPie[[1]], lemmensPie[[1]], ncol = 2)
 
 # ggsave("first.png", first)
 # ggsave("second.png", second)
@@ -155,9 +155,9 @@ fifth = grid.arrange(lemmensPie, lemmensPie, ncol = 2)
 
 ###### THINGS I WILL PROBABLY DELETE BUT I'M TOO SCARED TO DELETE
 
+argylePie[2]
 
-
-ggplot(argyle, aes(x="", y=perc, fill=class)) +
+ggplot(argylePie[[2]], aes(x="", y=perc, fill=classNew)) +
   geom_bar(stat="identity")
 
 # Pie chart for one station
