@@ -393,8 +393,8 @@ gulfAll = rbind(gulf20Adj, gulf21Adj)
 # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
 gulfMerge = full_join(gulfAll, metaGulf, by=c("sample" = "flowCamMatch")) %>%
   # convert waterVolume from litres to m^3
-  # divide by 4 because tow was split in 4
-  mutate(abund = adjCount / (waterVolume / 1000) / 4) %>%
+  # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
+  mutate(abund = adjCount / (waterVolume / 1000) * 4) %>%
   # get rid of these because they're ugly and distracting
   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
 
