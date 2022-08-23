@@ -80,8 +80,11 @@ pieChart = function(plotData) {
       panel.spacing = element_blank(),
       title=element_blank())
 
+  # return as list so you get both the ggplot and processed data (for making other charts)
+  returnList = list(g1, plotData)
+  
 # Return the ggplot (grob?)
-return(g1)
+return(returnList)
 }
 
 ################################################################################
@@ -154,7 +157,7 @@ fifth = grid.arrange(lemmensPie, lemmensPie, ncol = 2)
 
 
 
-ggplot(gulf20, aes(x="", y=perc, fill=class)) +
+ggplot(argyle, aes(x="", y=perc, fill=class)) +
   geom_bar(stat="identity")
 
 # Pie chart for one station
