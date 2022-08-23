@@ -257,6 +257,14 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 # Check for consistency between classes
 checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
 
+
+# Counts of each species in whole dataset
+# z = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21)
+# 
+# z = z %>% 
+#   group_by(class) %>% 
+#   summarise(count = sum(count))
+
 ################################################################################
 ## Make adjustments to the zooplankton counts
 # The counts in the data spreadsheets do NOT represent counts from the entire sample
