@@ -66,19 +66,21 @@ pieChart = function(plotData) {
     #           size = 3) +
     geom_label_repel(data = plotData,
                      aes(y = pos, label = paste0(round(perc,1), "%")),
-                     size = 3, nudge_x = 1, show.legend = FALSE)+
+                     size = 5, nudge_x = 1, show.legend = FALSE)+
     #ggtitle("Maritimes 2021")+ # fix this to be automated
     theme(
       axis.text = element_blank(),
       axis.ticks = element_blank(),
       axis.title = element_blank(),
+      legend.text=element_text(size = 14),
+      #panel.border = element_rect(colour = "black", fill=NA, size=5),
       panel.background = element_rect(fill = "white"),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       panel.spacing = element_blank(),
       title=element_blank())
 
-# Return the ggplot
+# Return the ggplot (grob?)
 return(g1)
 }
 
@@ -136,11 +138,17 @@ lemmensPie = pieChart(lemmens)
 
 ################################################################################
 
+first = grid.arrange(argylePie, soberPie, ncol = 2)
+second = grid.arrange(cHarbourPie, whiteheadPie, ncol = 2)
+third = grid.arrange(cocagnePie, malpequePie, ncol = 2)
+fourth = grid.arrange(stPetersPie, seArmPie, ncol = 2)
+fifth = grid.arrange(lemmensPie, lemmensPie, ncol = 2)
 
-
-
-
-
+# ggsave("first.png", first)
+# ggsave("second.png", second)
+# ggsave("third.png", third)
+# ggsave("fourth.png", fourth)
+# ggsave("fifth.png",fifth)
 
 ###### THINGS I WILL PROBABLY DELETE BUT I'M TOO SCARED TO DELETE
 
