@@ -75,8 +75,8 @@ mapMaker = function(mapData) {
                      # NOTE: NOT MANY COLOUR OPTIONS
                      # Need a workaround if want a specific colour (otherwise will be black)
                      fillColor = 'purple', 
-                     radius = 4, 
-                     fillOpacity = 0.9, 
+                     radius = 9, 
+                     fillOpacity = 0.7, 
                      stroke = T) %>%
   
     # Add a scalebar
@@ -87,7 +87,7 @@ mapMaker = function(mapData) {
   if (nrow(transect)>=1){ # check: is there data?
     for(i in 1:nrow(transect)){
     mapTemplate = addPolylines(mapTemplate, lat = c(transect[i,]$latitude, transect[i,]$latitudeEnd), 
-                           lng = c(transect[i,]$longitude, transect[i,]$longitudeEnd))
+                           lng = c(transect[i,]$longitude, transect[i,]$longitudeEnd), weight = 10)
     }
   }
   
