@@ -11,9 +11,11 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 ################################################################################
 ## Alter data format for creation of pie charts
 
-
+# Something is majorly off with these counts though they're too high
 
 # Maritimes
+
+# Just get data from one bay
 argyle = marMerge %>%
   subset(facilityName=="Argyle")
 
@@ -25,11 +27,14 @@ argyleCondense = argyle %>%
   summarize(countPerClass = sum(abund)) %>%
   mutate(rank = rank(-countPerClass),
          classNew = ifelse(rank <=4, class, "Other"))
-  
+
+# Need to these new classes as a column in the dataframe
 argyleNew = argyle %>%
   left_join(argyleCondense %>%
               select(classNew, class, countPerClass), by = c("class" = "class")) %>%
   group_by(classNew, sample, tideRange, location) %>%
+  # If you don't recompute counts, the "Other" class will have a bunch of black lines
+  # if you set the outline colour to black in geom_bar
   summarise(sumCount = sum(abund))
 
 
@@ -72,6 +77,7 @@ rrColorPalette<- c("#009E73", "#E69F00", "#0072B2", "#CC79A7", "#F0E442","#D55E0
 show_col(rrColorPalette)
 
 
+
 ggplot(argyleNew, aes(x=sample, y=sumCount, fill=classNew)) +
   geom_bar(stat="identity", color = "black")+
   facet_grid(cols = vars(location), scales = "free_x", space = "free_x")+
@@ -89,9 +95,11 @@ ggplot(argyleNew, aes(x=sample, y=sumCount, fill=classNew)) +
     #axis.title.x = element_text(margin = margin(t = 0.5, b = 0.5, unit = "cm")),
     #axis.title.y = element_blank(),
     axis.text.x = element_blank(),
-    #axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-    axis.text = element_text(size = 10),
+    axis.text.y = element_text(size = 11),
+    axis.text = element_text(size = 14),
     #legend.position = "none",
+    legend.title = element_text(size=13),
     panel.grid.major.y = element_blank(),
-    panel.spacing = unit(0.5, "cm")
+    panel.spacing = unit(0.5, "cm"),
+    strip.text.x = element_text(size = 15)
   )
