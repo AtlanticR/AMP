@@ -72,6 +72,14 @@ stackedBarChart = function(plotData) {
 argyle = marMerge %>%
   subset(facilityName=="Argyle")
 
+argyleCondense = argyle %>%
+  # Want counts per taxa (class) for the whole bay, not by tow
+  group_by(class, tideRange) %>%
+  summarize(countBay = sum(abund)) %>%
+  mutate(rank = rank(-countBay),
+         classNew = ifelse(rank <=7, class, "Other"))
+  
+
 sober = marMerge %>%
   subset(facilityName == "Sober Island Oyster")
 
@@ -99,7 +107,26 @@ lemmens = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 
 
 ################################################################################
+library(wbstats)
+library(scales)
+
+#update_geom_font_defaults(font_rc_light)
 
 
-ggplot(sober, aes(x=sample, y=abund, fill=class)) +
-  geom_bar(stat="identity")
+ggplot(argyleCondense, aes(x=sample, y=countBay, fill=classNew)) +
+  geom_bar(stat="identity")+
+  facet_grid(cols = vars(tideRange), scales = "free_x", space = "free_x")+
+  #facet_wrap(~tideRange, scales = "free_x")+
+  #theme_minimal(base_family = "Roboto Condensed") +
+ # theme_minimal()+
+  theme(plot.margin = margin(0.5, 0.5, 0.5, 0.5, unit = "cm"),
+    plot.title = element_text(size = 15, face = "bold"),
+    #strip.text.x = element_text(angle = 270, face = "bold"),
+    strip.placement = "outside",
+    #axis.title.x = element_text(margin = margin(t = 0.5, b = 0.5, unit = "cm")),
+    #axis.title.y = element_blank(),
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+    axis.text = element_text(size = 10),
+    #legend.position = "none",
+    panel.grid.major.y = element_blank()
+  )
