@@ -46,28 +46,37 @@ lemmens = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 
 ################################################################################
 
+stackedBarChart = function(bayData){
+  
+  # Find the __ most abundant taxa. Label all others as "Other"
+  # Otherwise there are too many legend items
+  bayOther = bayData %>%
+    # Want counts per taxa (class) for the whole bay, not by tow
+    group_by(class) %>%
+    summarize(countPerClass = sum(abund)) %>%
+    mutate(rank = rank(-countPerClass),
+           # Keep 4 most abundant classes, make the rest "Other"
+           classNew = ifelse(rank <=4, class, "Other"))
+  
+  # Add this these new classes as a column in the original dataframe
+  bayPlotDf = bayData %>%
+    left_join(argyleOther %>%
+                # Might be a better way, but I don't want to join the ENTIRE dataframe
+                select(classNew, class, countPerClass), by = c("class" = "class")) %>%
+    group_by(classNew, sample, tideRange, location) %>%
+    # If you don't recompute counts, the "Other" class will have a bunch of black lines
+    # if you set the outline colour to black in geom_bar
+    summarise(sumCount = sum(abund))
+  
+  
+  
+  
+}
 
 
 
 
 
-# Find the __ most abundant taxa. Label all others as "Other"
-# Otherwise there are too many legend items
-argyleCondense = argyle %>%
-  # Want counts per taxa (class) for the whole bay, not by tow
-  group_by(class) %>%
-  summarize(countPerClass = sum(abund)) %>%
-  mutate(rank = rank(-countPerClass),
-         classNew = ifelse(rank <=4, class, "Other"))
-
-# Need to these new classes as a column in the dataframe
-argyleNew = argyle %>%
-  left_join(argyleCondense %>%
-              select(classNew, class, countPerClass), by = c("class" = "class")) %>%
-  group_by(classNew, sample, tideRange, location) %>%
-  # If you don't recompute counts, the "Other" class will have a bunch of black lines
-  # if you set the outline colour to black in geom_bar
-  summarise(sumCount = sum(abund))
 
 
 
@@ -86,7 +95,7 @@ show_col(rrColorPalette)
 yLabel = expression(paste("Abundance (ind", m^{-3}, ")"))
 
 
-ggplot(argyleNew, aes(x=sample, y=sumCount, fill=classNew)) +
+ggplot(argylePlot, aes(x=sample, y=sumCount, fill=classNew)) +
   geom_bar(stat="identity", color = "black")+
   facet_grid(cols = vars(location), scales = "free_x", space = "free_x")+
   scale_x_discrete(name = "Station")+
