@@ -107,15 +107,17 @@ stackedBarChart = function(bayData){
   
 }
 
+
+# Process them
 argyleProcess = stackedBarChart(argyle)
 soberProcess = stackedBarChart(sober)
 whiteheadProcess = stackedBarChart(whitehead)
 cHarbourProcess = stackedBarChart(whitehead)
 
-
+# View plot
 cHarbourProcess[[2]]
 
-
+# But think about this... is there a faster way to do this? Should I split by bay in the function?
 
 ################################################################################
 
