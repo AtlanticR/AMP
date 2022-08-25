@@ -19,27 +19,6 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 argyle = marMerge %>%
   subset(facilityName=="Argyle")
 
-# Find the __ most abundant taxa. Label all others as "Other"
-# Otherwise there are too many legend items
-argyleCondense = argyle %>%
-  # Want counts per taxa (class) for the whole bay, not by tow
-  group_by(class) %>%
-  summarize(countPerClass = sum(abund)) %>%
-  mutate(rank = rank(-countPerClass),
-         classNew = ifelse(rank <=4, class, "Other"))
-
-# Need to these new classes as a column in the dataframe
-argyleNew = argyle %>%
-  left_join(argyleCondense %>%
-              select(classNew, class, countPerClass), by = c("class" = "class")) %>%
-  group_by(classNew, sample, tideRange, location) %>%
-  # If you don't recompute counts, the "Other" class will have a bunch of black lines
-  # if you set the outline colour to black in geom_bar
-  summarise(sumCount = sum(abund))
-
-
-
-
 sober = marMerge %>%
   subset(facilityName == "Sober Island Oyster")
 
@@ -65,10 +44,37 @@ seArm = rbind(nl20Adj, nl21Adj)
 # Pacific (here, I'm combining all of it)
 lemmens = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 
+################################################################################
+
+
+
+
+
+
+# Find the __ most abundant taxa. Label all others as "Other"
+# Otherwise there are too many legend items
+argyleCondense = argyle %>%
+  # Want counts per taxa (class) for the whole bay, not by tow
+  group_by(class) %>%
+  summarize(countPerClass = sum(abund)) %>%
+  mutate(rank = rank(-countPerClass),
+         classNew = ifelse(rank <=4, class, "Other"))
+
+# Need to these new classes as a column in the dataframe
+argyleNew = argyle %>%
+  left_join(argyleCondense %>%
+              select(classNew, class, countPerClass), by = c("class" = "class")) %>%
+  group_by(classNew, sample, tideRange, location) %>%
+  # If you don't recompute counts, the "Other" class will have a bunch of black lines
+  # if you set the outline colour to black in geom_bar
+  summarise(sumCount = sum(abund))
+
+
+
+
+
 
 ################################################################################
-library(wbstats)
-library(scales)
 
 #update_geom_font_defaults(font_rc_light)
 
@@ -76,16 +82,16 @@ library(scales)
 rrColorPalette<- c("#009E73", "#E69F00", "#0072B2", "#CC79A7", "#F0E442","#D55E00", "#56B4E9","#999999")
 show_col(rrColorPalette)
 
+# Write the y-axis label outside of ggplot so I don't get (as) lost in brackets
+yLabel = expression(paste("Abundance (ind", m^{-3}, ")"))
 
 
 ggplot(argyleNew, aes(x=sample, y=sumCount, fill=classNew)) +
   geom_bar(stat="identity", color = "black")+
   facet_grid(cols = vars(location), scales = "free_x", space = "free_x")+
-  scale_y_continuous(labels = scales::comma) +
-  scale_fill_brewer(palette = "Accent")+
-  #scale_fill_brewer(palette = rrColorPalette)+
-  #facet_wrap(~tideRange, scales = "free_x")+
-  #scale_x_discrete(expand = c(0, 5))+
+  scale_x_discrete(name = "Station")+
+  scale_y_continuous(labels = scales::comma, name = yLabel) +
+  scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
   #theme_minimal(base_family = "Roboto Condensed") +
   theme_bw()+
   theme(plot.margin = margin(0.5, 0.5, 0.5, 0.5, unit = "cm"),
