@@ -114,8 +114,19 @@ soberProcess = stackedBarChart(sober)
 whiteheadProcess = stackedBarChart(whitehead)
 cHarbourProcess = stackedBarChart(whitehead)
 
+malpequeProcess = stackedBarChart(malpeque)
+cocagneProcess = stackedBarChart(cocagne)
+stPetersProcess = stackedBarChart(stPeters)
+
 # View plot
+argyleProcess[[2]]
+soberProcess[[2]]
+whiteheadProcess[[2]]
 cHarbourProcess[[2]]
+
+malpequeProcess[[2]]
+cocagneProcess[[2]]
+stPetersProcess[[2]]
 
 # But think about this... is there a faster way to do this? Should I split by bay in the function?
 
