@@ -87,8 +87,6 @@ dirFull = lapply(allDataNames, function(dataName){
 ## Get just the file names (i.e., not the full directory names)
 # This is helpful for naming things and matching to the metadata spreadsheet
 dirShort = lapply(allDataNames, function(dataName){
-
-
   outDir = list.files(
     path = c(paste(dataName, "/Classification Summary", sep = ""),
              paste(dataName, "/Zooplankton Identification Data/Classification Summary", sep = "")),
@@ -96,7 +94,6 @@ dirShort = lapply(allDataNames, function(dataName){
     pattern = ".csv")
   # Remove the file extension
   outDir = sub('\\.csv$', '', outDir)
-  
   return(outDir)
 
 })
