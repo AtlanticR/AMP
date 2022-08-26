@@ -89,7 +89,18 @@ allDataNames =
 ## Get full directory names
 # These will be stored in a "list of lists". Each dataset will be stored as a list.
 # Within that, the files found within each dataset will be included as a list.
-dirFull = list()
+dirFull = lapply(allDataNames, function(dataName){
+  outDir = list.files(
+    # By setting two paths, this will search through both options of whether there is a Zoo... folder
+    path = c(paste(dataName, "/Classification Summary", sep = ""),
+             paste(dataName, "/Zooplankton Identification Data/Classification Summary", sep = "")),
+    full.names = T, # Get full directory names
+    pattern = ".csv")
+  return(outDir)
+})
+
+
+
 
 for(i in 1:length(allDataNames)){
   dirFull[[i]] = list.files(
