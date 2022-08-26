@@ -124,118 +124,112 @@ for(i in 1:length(allDataNames)){
 # Pass in the list of files with full directory name (xl_dataFull) and just file names (xl_dataShort)
 speciesDF = function(xlDataFull, xlDataShort) {
   
-# Make an empty list to store the data
-datalist = list()
-
-# The data for Newfoundland 2020 has a different layout and needs to be processed separately!
-# if statement checks if the list of data being passed in matches the Newfoundland 2020 data (the 4th element in the list)
-# Does not compare the ENTIRE list of elements. Just checks if the FIRST element is the same (so there is only one TRUE instead of many)
-if (compare.list(xlDataShort[1], dirShort[[4]][1])){
+  # Make an empty list to store the data
+  datalist = list()
   
-  # Loop through all the data and extract the class (plankton taxa), count (# of 
-  # cells in the sample), and particles (# cells/ml)
-  for(i in 1:length(xlDataFull)) {  
-    df = read.csv(xlDataFull[i], skip = 2) %>% 
-      # Keep everything before the "End Metadata Statistics" part
-      filter(row_number() < which(Name =='======== End Metadata Statistics ========')) %>%
-      # Rename the columns to match the other data files. Format: new = cold
-      rename(class = Name, count = Count, particles = Particles...ml)
-    # Add sample name as a column
-    df$sample = xlDataShort[i]
-    # add each element to a new list
-    datalist[[i]] = df
+  # The data for Newfoundland 2020 has a different layout and needs to be processed separately!
+  # if statement checks if the list of data being passed in matches the Newfoundland 2020 data (the 4th element in the list)
+  # Does not compare the ENTIRE list of elements. Just checks if the FIRST element is the same (so there is only one TRUE instead of many)
+  if (compare.list(xlDataShort[1], dirShort[[4]][1])){
+    
+    # Loop through all the data and extract the class (plankton taxa), count (# of 
+    # cells in the sample), and particles (# cells/ml)
+    for(i in 1:length(xlDataFull)) {  
+      df = read.csv(xlDataFull[i], skip = 2) %>% 
+        # Keep everything before the "End Metadata Statistics" part
+        filter(row_number() < which(Name =='======== End Metadata Statistics ========')) %>%
+        # Rename the columns to match the other data files. Format: new = cold
+        rename(class = Name, count = Count, particles = Particles...ml)
+      # Add sample name as a column
+      df$sample = xlDataShort[i]
+      # add each element to a new list
+      datalist[[i]] = df
+    }
+    
+  # For all other data (not NL 2020)
+  } else {
+  
+    # Loop through all the data and extract the class (plankton taxa), count (# of 
+    # cells in the sample), and particles (# cells/ml)
+    for(i in 1:length(xlDataFull)){
+  
+      data = read.csv(xlDataFull[i]) 
+      
+      # Extract full row of data which contain class, count and particle information 
+      class = data[which(str_detect(data[,1], "Class$")), ] 
+      count = data[which(str_detect(data[,1], "Count")), ]
+      particles = data[which(str_detect(data[,1], "Particles")), ]
+      
+      # Combine this all into a dataframe
+      # Don't want the full row, we only want the 2nd column with the actual data
+      # Label it with the file name (without directory/extension)
+      df = as.data.frame(cbind("sample" = xlDataShort[i],
+        "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
+      datalist[[i]] = df
+    }
   }
   
-# For all other data (not NL 2020)
-} else {
-
-  # Loop through all the data and extract the class (plankton taxa), count (# of 
-  # cells in the sample), and particles (# cells/ml)
-  for(i in 1:length(xlDataFull)){
-
-    data = read.csv(xlDataFull[i]) 
     
-    # Extract full row of data which contain class, count and particle information 
-    class = data[which(str_detect(data[,1], "Class$")), ] 
-    count = data[which(str_detect(data[,1], "Count")), ]
-    particles = data[which(str_detect(data[,1], "Particles")), ]
+  # Bind together this list of dataframes into one big data frame
+  siteDf = dplyr::bind_rows(datalist) %>%
+    # Convert counts to numeric
+    mutate(count = as.numeric(count)) %>%
+    # Remove all underscores and replace them with spaces
+    mutate(class = us_to_space(class)) %>%
+    # Make entire string lowercase
+    mutate(class = str_to_lower(class)) %>%
+    # Then capitalize the first letter
+    mutate(class = str_to_sentence(class)) %>%
+    # Remove instances of multiple spaces between words
+    mutate(class = str_squish(class)) %>%
+    mutate(class = str_replace(class, "spp", "spp."))
     
-    # Combine this all into a dataframe
-    # Don't want the full row, we only want the 2nd column with the actual data
-    # Label it with the file name (without directory/extension)
-    df = as.data.frame(cbind("sample" = xlDataShort[i],
-      "class" = class[,2], "count" = count[,2], "particles" = particles[,2]))
-    datalist[[i]] = df
-  }
-} 
+  # Remove unwanted classes
+  # These do not contain relevant zooplankton data
+  # Explanations of these terms are in "Zooplankton Samples" xlsx for each site (in the "Data and Classes" sheet)
   
-# Bind together this list of dataframes into one big data frame
-siteDf = dplyr::bind_rows(datalist) %>%
-  # Convert counts to numeric
-  mutate(count = as.numeric(count)) %>%
-  # Remove all underscores and replace them with spaces
-  mutate(class = us_to_space(class)) %>%
-  # Make entire string lowercase
-  mutate(class = str_to_lower(class)) %>%
-  # Then capitalize the first letter
-  mutate(class = str_to_sentence(class)) %>%
-  # Remove instances of multiple spaces between words
-  mutate(class = str_squish(class)) %>%
-  mutate(class = str_replace(class, "spp", "spp."))
+  # These are the things to remove
+  excludeList = c("Benthic", "Bubbles", "Clumped zooplankton", "Clumped zooplankton/debris", "Clumped zooplankton debris", 
+                   "Cut images", "Debris", "Debris of zooplankton", "Diatom", "Duplicate images", "Extra taxa", "Fragments of zooplankton",
+                  "Leftover", "Leftovers")
   
-# Remove unwanted classes
-# These do not contain relevant zooplankton data
-# Explanations of these terms are in "Zooplankton Samples" xlsx for each site (in the "Data and Classes" sheet)
-siteDf = siteDf %>%
-  subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
-           class != "Benthic" &
-           class != "Bubbles" &
-           class != "Clumped zooplankton" &
-           class != "Clumped zooplankton/debris" &
-           class != "Clumped zooplankton debris" &
-           class != "Cut images" &
-           class != "Debris" &
-           class != "Debris or zooplankton" & 
-           class != "Diatom" &
-           class != "Duplicate images" &
-           class != "Extra taxa" &
-           class != "Fragments of zooplankton" &
-           class != "Leftover" &
-           class != "Leftovers") %>%
-  
-  # Fix typos in classes
-  # Also ensure the classes are consistent between all locations
-  mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
-  mutate(class = replace(class, class == "Calanoid civ-vi", "Calanoida civ-vi")) %>%
-  mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
-  mutate(class = replace(class, class == "Centropages spp civ-vi", "Centropages civ-vi")) %>%
-  mutate(class = replace(class, class == "Cirripedia nauplius", "Cirripedia nauplii")) %>%
-  mutate(class = replace(class, class == "Ctenophora larva", "Ctenophora larvae")) %>%
-  mutate(class = replace(class, class == "Cyclopoida spp.", "Cyclopoida")) %>%
-  mutate(class = replace(class, class == "Cumacea juvenileadult", "Cumacea juvenile adult")) %>%
-  mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
-  mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
-  mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
-  mutate(class = replace(class, class == "Decpoda brachyura zoea", "Decapoda brachyura zoea")) %>%
-  mutate(class = replace(class, class == "Gastropoda limacina spp. larvaeadult", "Gastropoda limacina spp. larvae adult")) %>%
-  mutate(class = replace(class, class == "Monstrilloida", "Monstrilloida spp.")) %>%
-  mutate(class = replace(class, class == "Mysidacea juvenileadult", "Mysidacea juvenile adult")) %>%
-  mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
-  mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
-  mutate(class = replace(class, class == "Osteichthys larvae", "Osteichthyes larvae")) %>%
-  mutate(class = replace(class, class == "Osteichthyes eggs", " Osteichthyes egg")) %>%
-  mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
-  mutate(class = replace(class, class == "Ostracoda spp.", "Ostracoda")) %>%
-  mutate(class = replace(class, class == "Platyhelmenthes nemertea larva", "Platyhelmenthes nemertea larvae")) %>%
-  mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
-  mutate(class = replace(class, class == "Platyhelminthes nemertea larvae", "Platyhelmenthes nemertea larvae")) %>%
-  mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
-  mutate(class = replace(class, class == "Zooplankton", "Zooplankton (unid)")) %>%
-  mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)"))
-  
-# Return the final corrected dataframe!
-# Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
-return(siteDf)
+  siteDf = siteDf %>%
+    subset(!grepl("[0-9]", class)) %>% # remove the "Class 1-9" data
+    subset(!(class %in% excludeList)) %>%
+    
+    # Fix typos in classes
+    # Also ensure the classes are consistent between all locations
+    mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
+    mutate(class = replace(class, class == "Calanoid civ-vi", "Calanoida civ-vi")) %>%
+    mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
+    mutate(class = replace(class, class == "Centropages spp civ-vi", "Centropages civ-vi")) %>%
+    mutate(class = replace(class, class == "Cirripedia nauplius", "Cirripedia nauplii")) %>%
+    mutate(class = replace(class, class == "Ctenophora larva", "Ctenophora larvae")) %>%
+    mutate(class = replace(class, class == "Cyclopoida spp.", "Cyclopoida")) %>%
+    mutate(class = replace(class, class == "Cumacea juvenileadult", "Cumacea juvenile adult")) %>%
+    mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
+    mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
+    mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
+    mutate(class = replace(class, class == "Decpoda brachyura zoea", "Decapoda brachyura zoea")) %>%
+    mutate(class = replace(class, class == "Gastropoda limacina spp. larvaeadult", "Gastropoda limacina spp. larvae adult")) %>%
+    mutate(class = replace(class, class == "Monstrilloida", "Monstrilloida spp.")) %>%
+    mutate(class = replace(class, class == "Mysidacea juvenileadult", "Mysidacea juvenile adult")) %>%
+    mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Osteichthys larvae", "Osteichthyes larvae")) %>%
+    mutate(class = replace(class, class == "Osteichthyes eggs", " Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Ostracoda spp.", "Ostracoda")) %>%
+    mutate(class = replace(class, class == "Platyhelmenthes nemertea larva", "Platyhelmenthes nemertea larvae")) %>%
+    mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
+    mutate(class = replace(class, class == "Platyhelminthes nemertea larvae", "Platyhelmenthes nemertea larvae")) %>%
+    mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Zooplankton", "Zooplankton (unid)")) %>%
+    mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)"))
+    
+  # Return the final corrected dataframe!
+  # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
+  return(siteDf)
 
 }
 
