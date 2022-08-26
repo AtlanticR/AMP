@@ -169,7 +169,6 @@ speciesDF = function(xlDataFull, xlDataShort) {
     }
   }
   
-    
   # Bind together this list of dataframes into one big data frame
   siteDf = dplyr::bind_rows(datalist) %>%
     # Convert counts to numeric
@@ -192,41 +191,45 @@ speciesDF = function(xlDataFull, xlDataShort) {
   excludeList = c("Benthic", "Bubbles", "Clumped zooplankton", "Clumped zooplankton/debris", "Clumped zooplankton debris", 
                    "Cut images", "Debris", "Debris of zooplankton", "Diatom", "Duplicate images", "Extra taxa", "Fragments of zooplankton",
                   "Leftover", "Leftovers")
+
+  typoFixes = list("Calananoida (unid)" = "Calanoida (unid)",
+                   "Calanoid civ-vi" = "Calanoida civ-vi",
+                   "Calanoid cv-vi" = "Calanoida cv-vi",
+                   "Centropages spp civ-vi" = "Centropages civ-vi",
+                   "Cirripedia nauplius" = "Cirripedia nauplii",
+                   "Ctenophora larva" = "Ctenophora larvae",
+                   "Cyclopoida spp." = "Cyclopoida",
+                   "Cumacea juvenileadult" = "Cumacea juvenile adult",
+                   "Decapoda brachyura zoea larvae larvae" = "Decapoda brachyura zoea larvae",
+                   "Decapoda nonbrachyura zoea" = "Decapoda non-brachyura zoea",
+                   "Decapoda nonbrachyura zoea larvae" = "Decapoda non-brachyura zoea larvae",
+                   "Decpoda brachyura zoea" = "Decapoda brachyura zoea",
+                   "Gastropoda limacina spp. larvaeadult" = "Gastropoda limacina spp. larvae adult",
+                   "Monstrilloida" = "Monstrilloida spp.",
+                   "Mysidacea juvenileadult" = "Mysidacea juvenile adult",
+                   "Osteichthys egg" = "Osteichthyes egg",
+                   "Osteichthys eggs" = "Osteichthyes egg",
+                   "Osteichthys larvae" = "Osteichthyes larvae",
+                   "Osteichthyes eggs" = " Osteichthyes egg",
+                   "Ostheichthys eggs" = "Osteichthyes egg",
+                   "Ostracoda spp." = "Ostracoda",
+                   "Platyhelmenthes nemertea larva" = "Platyhelmenthes nemertea larvae",
+                   "Platyhelmenthes nemertrea larvae" = "Platyhelmenthes nemertea larvae",
+                   "Platyhelminthes nemertea larvae" = "Platyhelmenthes nemertea larvae",
+                   "Unid zooplankton" = "Zooplankton (unid)",
+                   "Zooplankton" = "Zooplankton (unid)",
+                   "Zooplankton (unid))" = "Zooplankton (unid)")
   
   siteDf = siteDf %>%
     subset(!grepl("[0-9]", class)) %>% # remove the "Class 1-9" data
     subset(!(class %in% excludeList)) %>%
     
-    # Fix typos in classes
-    # Also ensure the classes are consistent between all locations
-    mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
-    mutate(class = replace(class, class == "Calanoid civ-vi", "Calanoida civ-vi")) %>%
-    mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
-    mutate(class = replace(class, class == "Centropages spp civ-vi", "Centropages civ-vi")) %>%
-    mutate(class = replace(class, class == "Cirripedia nauplius", "Cirripedia nauplii")) %>%
-    mutate(class = replace(class, class == "Ctenophora larva", "Ctenophora larvae")) %>%
-    mutate(class = replace(class, class == "Cyclopoida spp.", "Cyclopoida")) %>%
-    mutate(class = replace(class, class == "Cumacea juvenileadult", "Cumacea juvenile adult")) %>%
-    mutate(class = replace(class, class == "Decapoda brachyura zoea larvae larvae", "Decapoda brachyura zoea larvae")) %>%
-    mutate(class = replace(class, class == "Decapoda nonbrachyura zoea", "Decapoda non-brachyura zoea")) %>%
-    mutate(class = replace(class, class == "Decapoda nonbrachyura zoea larvae", "Decapoda non-brachyura zoea larvae")) %>%
-    mutate(class = replace(class, class == "Decpoda brachyura zoea", "Decapoda brachyura zoea")) %>%
-    mutate(class = replace(class, class == "Gastropoda limacina spp. larvaeadult", "Gastropoda limacina spp. larvae adult")) %>%
-    mutate(class = replace(class, class == "Monstrilloida", "Monstrilloida spp.")) %>%
-    mutate(class = replace(class, class == "Mysidacea juvenileadult", "Mysidacea juvenile adult")) %>%
-    mutate(class = replace(class, class == "Osteichthys egg", "Osteichthyes egg")) %>%
-    mutate(class = replace(class, class == "Osteichthys eggs", "Osteichthyes egg")) %>%
-    mutate(class = replace(class, class == "Osteichthys larvae", "Osteichthyes larvae")) %>%
-    mutate(class = replace(class, class == "Osteichthyes eggs", " Osteichthyes egg")) %>%
-    mutate(class = replace(class, class == "Ostheichthys eggs", "Osteichthyes egg")) %>%
-    mutate(class = replace(class, class == "Ostracoda spp.", "Ostracoda")) %>%
-    mutate(class = replace(class, class == "Platyhelmenthes nemertea larva", "Platyhelmenthes nemertea larvae")) %>%
-    mutate(class = replace(class, class == "Platyhelmenthes nemertrea larvae", "Platyhelmenthes nemertea larvae")) %>%
-    mutate(class = replace(class, class == "Platyhelminthes nemertea larvae", "Platyhelmenthes nemertea larvae")) %>%
-    mutate(class = replace(class, class == "Unid zooplankton", "Zooplankton (unid)")) %>%
-    mutate(class = replace(class, class == "Zooplankton", "Zooplankton (unid)")) %>%
-    mutate(class = replace(class, class == "Zooplankton (unid))", "Zooplankton (unid)"))
-    
+    # Quentin's recommendation of how to fix species typos
+    # Ask what "!!!" means
+    # This replaces my old way which was: (every change was a new line)
+    # mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
+    mutate(class = recode(class, !!!typoFixes))
+
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
   return(siteDf)
