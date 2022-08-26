@@ -4,6 +4,11 @@
 # The tide data look a bit unusual. Want to create dotplots for each bay to look
 # at the distribution of values within each class (High, Mid, Low)
 # Many sites do not actually have these divisions, so I am identifying unusual data
+
+
+### This is just a script for making graphs for a meeting!
+# These are not good copy graphs and the code/comments will not be beautiful sry
+
 ################################################################################
 
 # Get the processed metadata files
@@ -50,3 +55,26 @@ ggplot(data = tidePac, aes(x = tideRange, y = as.numeric(tideLevel),  fill=tideR
 ggplot()+
   geom_boxplot(data = nlZoo, aes(y = tideLevel, col=tideRange))+
   facet_wrap(~facilityName, scales = "free")
+
+
+################################################################################
+################################################################################
+################################################################################
+### I ALSO NEED TO DOUBLE CHECK FLOW CYTOMETRY DATA
+
+processMetaFC = function(xlData) {
+  dfProc = subset(xlData, sampleType == "C" & # only get Zooplankton data
+                    yearStart != 2019) # do not want 2019 data
+}  
+
+marFC = processMeta(marMeta) # Maritimes zooplankton data
+nlFC = processMeta(nlMeta) # Newfoundland
+pacFC = processMeta(pacMeta) # Pacific
+gulfFD = processMeta(gulfMeta) # Gulf
+
+
+
+
+
+
+
