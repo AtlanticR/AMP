@@ -99,31 +99,22 @@ dirFull = lapply(allDataNames, function(dataName){
   return(outDir)
 })
 
-
-
-
-for(i in 1:length(allDataNames)){
-  dirFull[[i]] = list.files(
-    # By setting two paths, this will search through both options of whether there is a Zoo... folder
-    path = c(paste(allDataNames[i], "/Classification Summary", sep = ""),
-      paste(allDataNames[i], "/Zooplankton Identification Data/Classification Summary", sep = "")),
-    full.names = T, # Get full directory names
-    pattern = ".csv")
-}
-
 ## Get just the file names (i.e., not the full directory names)
 # This is helpful for naming things and matching to the metadata spreadsheet
-dirShort = list()
+dirShort = lapply(allDataNames, function(dataName){
 
-for(i in 1:length(allDataNames)){
-  dirShort[[i]] = list.files(
-    path = c(paste(allDataNames[i], "/Classification Summary", sep = ""),
-             paste(allDataNames[i], "/Zooplankton Identification Data/Classification Summary", sep = "")),
+
+  outDir = list.files(
+    path = c(paste(dataName, "/Classification Summary", sep = ""),
+             paste(dataName, "/Zooplankton Identification Data/Classification Summary", sep = "")),
     full.names = F, # Just get the file names
     pattern = ".csv")
   # Remove the file extension
-  dirShort[[i]] = sub('\\.csv$', '', dirShort[[i]])
-}
+  outDir = sub('\\.csv$', '', outDir)
+  
+  return(outDir)
+
+})
 
 ################################################################################
 ## MAKE FUNCTION TO READ IN ZOOPLANKTON COUNT DATA
