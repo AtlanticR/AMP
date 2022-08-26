@@ -129,23 +129,23 @@ lemmens = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 
 ################################################################################
 # Make the pie charts! These won't show up until you type the variable name
-argylePie = pieChart(argyle)
-soberPie = pieChart(sober)
-whiteheadPie = pieChart(whitehead)
-cHarbourPie = pieChart(cHarbour)
-malpequePie = pieChart(malpeque)
-stPetersPie = pieChart(stPeters)
-cocagnePie = pieChart(cocagne)
-seArmPie = pieChart(seArm)
-lemmensPie = pieChart(lemmens)
+argylePieChart = pieChart(argyle)
+soberPieChart = pieChart(sober)
+whiteheadPieChart = pieChart(whitehead)
+cHarbourPieChart = pieChart(cHarbour)
+malpequePieChart = pieChart(malpeque)
+stPetersPieChart = pieChart(stPeters)
+cocagnePieChart = pieChart(cocagne)
+seArmPieChart = pieChart(seArm)
+lemmensPieChart = pieChart(lemmens)
 
 ################################################################################
 
-first = grid.arrange(argylePie[[1]], soberPie[[1]], ncol = 2)
-second = grid.arrange(cHarbourPie[[1]], whiteheadPie[[1]], ncol = 2)
-third = grid.arrange(cocagnePie[[1]], malpequePie[[1]], ncol = 2)
-fourth = grid.arrange(stPetersPie[[1]], seArmPie[[1]], ncol = 2)
-fifth = grid.arrange(lemmensPie[[1]], lemmensPie[[1]], ncol = 2)
+first = grid.arrange(argylePieChart[[1]], soberPieChart[[1]], ncol = 2)
+second = grid.arrange(cHarbourPieChart[[1]], whiteheadPieChart[[1]], ncol = 2)
+third = grid.arrange(cocagnePieChart[[1]], malpequePieChart[[1]], ncol = 2)
+fourth = grid.arrange(stPetersPieChart[[1]], seArmPieChart[[1]], ncol = 2)
+fifth = grid.arrange(lemmensPieChart[[1]], lemmensPieChart[[1]], ncol = 2)
 
 # ggsave("first.png", first)
 # ggsave("second.png", second)
@@ -157,7 +157,7 @@ fifth = grid.arrange(lemmensPie[[1]], lemmensPie[[1]], ncol = 2)
 
 argylePie[2]
 
-ggplot(argylePie[[2]], aes(x="", y=perc, fill=classNew)) +
+ggplot(argylePieChart[[2]], aes(x="", y=perc, fill=classNew)) +
   geom_bar(stat="identity")
 
 # Pie chart for one station
