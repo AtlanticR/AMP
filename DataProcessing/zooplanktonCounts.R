@@ -24,7 +24,6 @@
 # These will be used as the data for statistical analyses/making graphs, etc.
 
 ## ADDITIONAL INFO:
-# Created by Stephen Finnis 2022
 # Data files are not public
 ################################################################################
 ################################################################################
@@ -46,11 +45,8 @@ ipak(packages)
 ################################################################################
 ## Read in other scripts
 
-# setwd("C:/Users/FINNISS/Desktop/AMPCode")
 
 # See source files for a full explanation of the data
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R") # get metadata
 
 ################################################################################
 ## GET THE DATA FILE NAMES
@@ -62,7 +58,7 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R") #
 # Just because it's useful, I get the full directory name, and just the file name
 
 # Define the directory where data need to be read from 
-allFolders = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/"
+allFolders = "C:/Users//Desktop/AMMP FlowCam Zooplankton Data/"
 
 # Get a list of all the folders that are within that directory
 # These are what I refer to as the "datasets" (Gulf 2020, Gulf 2021, etc)
@@ -89,11 +85,21 @@ allDataNames =
 ## Get full directory names
 # These will be stored in a "list of lists". Each dataset will be stored as a list.
 # Within that, the files found within each dataset will be included as a list.
-dirFull = list()
+
+
+
+
+dirFull <- lapply(allDataNames, function(dataName) {
+  outDir = list.files(
+    path = c(paste(dataName, "/Classification Summary", sep = ""),
+             paste(dataName, "/Zooplankton Identification Data/Classification Summary", sep = "")),
+    full.names = T, # Get full directory names
+    pattern = ".csv")
+  return(outDir)
+} )
 
 for(i in 1:length(allDataNames)){
   dirFull[[i]] = list.files(
-    # By setting two paths, this will search through both options of whether there is a Zoo... folder
     path = c(paste(allDataNames[i], "/Classification Summary", sep = ""),
       paste(allDataNames[i], "/Zooplankton Identification Data/Classification Summary", sep = "")),
     full.names = T, # Get full directory names
@@ -134,6 +140,23 @@ if (compare.list(xlDataShort[1], dirShort[[4]][1])){
   
   # Loop through all the data and extract the class (plankton taxa), count (# of 
   # cells in the sample), and particles (# cells/ml)
+  
+  
+  do.call(function(dataFull, dataShort){
+    df = read.csv(dataFull, skip = 2) %>% 
+      # Keep everything before the "End Metadata Statistics" part
+      filter(row_number() < which(Name =='======== End Metadata Statistics ========')) %>%
+      # Rename the columns to match the other data files. Format: new = cold
+      rename(class = Name, count = Count, particles = Particles...ml)
+    # Add sample name as a column
+    df$sample = dataShort
+    # add each element to a new list
+    dataOut = df
+    return(dataOut)
+  }, xlDataFull$col1, xlDataShort$col2)
+  
+  
+  
   for(i in 1:length(xlDataFull)) {  
     df = read.csv(xlDataFull[i], skip = 2) %>% 
       # Keep everything before the "End Metadata Statistics" part
@@ -186,8 +209,12 @@ siteDf = dplyr::bind_rows(datalist) %>%
 # Remove unwanted classes
 # These do not contain relevant zooplankton data
 # Explanations of these terms are in "Zooplankton Samples" xlsx for each site (in the "Data and Classes" sheet)
+excludeList <- c("Benthic", "Bubbles", "...")
+
+
 siteDf = siteDf %>%
   subset(!grepl("[0-9]", class) & # remove the "Class 1-9" data
+           !(class %in% excludeList)
            class != "Benthic" &
            class != "Bubbles" &
            class != "Clumped zooplankton" &
@@ -205,6 +232,12 @@ siteDf = siteDf %>%
   
   # Fix typos in classes
   # Also ensure the classes are consistent between all locations
+  typoFixes <- list("Calananoida (unid)"="Calanoida (unid)",
+                    "Calanoid civ-vi" = "Calanoida civ-vi")
+  
+  mutate(class = recode(class, !!!typoFixes)
+
+  
   mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
   mutate(class = replace(class, class == "Calanoid civ-vi", "Calanoida civ-vi")) %>%
   mutate(class = replace(class, class == "Calanoid cv-vi", "Calanoida cv-vi")) %>%
