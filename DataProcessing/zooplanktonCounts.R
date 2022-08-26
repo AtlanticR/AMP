@@ -28,27 +28,12 @@
 # Data files are not public
 ################################################################################
 ################################################################################
-## GET THE RELEVANT R PACKAGES
-
-# Function to load multiple packages
-ipak = function(pkg){
-  new.pkg = pkg[!(pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) 
-    install.packages(new.pkg, dependencies = TRUE)
-  sapply(pkg, require, character.only = TRUE)
-}
-
-# Choose necessary packages
-packages = c("ggplot2", "ggrepel", "ggthemes", "gridExtra", "jcolors", "leaflet", "mapr", "mapview", "readxl", "scales", "stringr",
-             "tidyr", "tools", "useful", "vegan", "wbstats", "wpa")
-ipak(packages)
-
-################################################################################
 ## Read in other scripts
 
 # setwd("C:/Users/FINNISS/Desktop/AMPCode")
 
 # See source files for a full explanation of the data
+source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/rPackages.R") # read in all required R packages
 source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
 source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R") # get metadata
 

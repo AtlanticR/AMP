@@ -19,17 +19,8 @@
 # Code by Stephen Finnis 2022
 ################################################################################
 
-# Function to load multiple packages
-ipak = function(pkg){
-  new.pkg = pkg[!(pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) 
-    install.packages(new.pkg, dependencies = TRUE)
-  sapply(pkg, require, character.only = TRUE)
-}
-
-# Choose necessary packages
-packages = c("dplyr", "ggplot2", "leaflet", "mapr", "mapview", "readxl")
-ipak(packages)
+# read in all required R packages
+source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/rPackages.R") 
 
 ################################################################################
 ## Load the data data

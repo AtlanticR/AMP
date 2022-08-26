@@ -64,19 +64,9 @@
 
 ################################################################################
 ################################################################################
-## Load packages
 
-# Function to load multiple packages
-ipak = function(pkg){
-  new.pkg = pkg[!(pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) 
-    install.packages(new.pkg, dependencies = TRUE)
-  sapply(pkg, require, character.only = TRUE)
-}
-
-# Choose necessary packages
-packages = c("plyr", "dplyr", "purrr", "readxl", "stringr", "tidyr", "tools", "useful")
-ipak(packages)
+# read in all required R packages
+source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/rPackages.R") 
 
 ################################################################################
 ## Read in data and create dataframes for each dataset

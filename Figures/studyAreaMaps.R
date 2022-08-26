@@ -27,18 +27,14 @@
 # Code by Stephen Finnis 2022
 ################################################################################
 
-## Get things set up
-
-# Clear console
-rm(list=ls())
-graphics.off()
-
 ################################################################################
 ## Read in relevant data processing code
 
 # Get the processed metadata files
 # These contain the sampling location, tow type, etc.
 # Will return data frames with metadata info for each AMP region
+
+source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/rPackages.R") # read in all required R packages
 source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R")
 
 ################################################################################
