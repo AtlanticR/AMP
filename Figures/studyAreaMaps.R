@@ -33,8 +33,6 @@
 # Get the processed metadata files
 # These contain the sampling location, tow type, etc.
 # Will return data frames with metadata info for each AMP region
-
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/rPackages.R") # read in all required R packages
 source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R")
 
 ################################################################################
