@@ -107,3 +107,32 @@ pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
 
 # write.csv(gulfZoo, "testGulf.csv")
+
+
+
+################################################################################
+## Looking at the tide data
+
+# Maritimes
+# UGHHHHH there are overlaps in the "High" and "Mid" for Sober Island Oyster
+ggplot()+
+  geom_boxplot(data = marZoo, aes(y = tideLevel, col=tideRange))+
+  facet_wrap(~facilityName, scales = "free")
+
+# Gulf
+ggplot()+
+  geom_boxplot(data = gulfZoo, aes(y = tideLevel, col=tideRange))+
+  facet_wrap(~facilityName, scales = "free")
+
+# Pacific
+ggplot()+
+  geom_boxplot(data = pacZoo, aes(y = tideLevel, col=tideRange))+
+  facet_wrap(~monthStart, scales = "free")
+
+# Newfoundland
+# Nvm there's no tide level data
+ggplot()+
+  geom_boxplot(data = nlZoo, aes(y = tideLevel, col=tideRange))+
+  facet_wrap(~facilityName, scales = "free")
+
+
