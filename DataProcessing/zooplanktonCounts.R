@@ -172,8 +172,8 @@ speciesDF = function(xlDataFull, xlDataShort) {
   # Explanations of these terms are in "Zooplankton Samples" xlsx for each site (in the "Data and Classes" sheet)
   
   # These are the things to remove
-  excludeList = c("Benthic", "Bubbles", "Clumped zooplankton", "Clumped zooplankton/debris", "Clumped zooplankton debris", 
-                   "Cut images", "Debris", "Debris of zooplankton", "Diatom", "Duplicate images", "Extra taxa", "Fragments of zooplankton",
+  excludeList = c("Benthic", "Bubbles", "Clumped zooplankton", "Clumped zooplankton/debris", "Clumped zooplanlton/debris", "Clumped zooplankton debris", 
+                   "Cut images", "Debris", "Debris of zooplankton", "Debris or zooplankton", "Diatom", "Duplicate images", "Extra taxa", "Fragments of zooplankton",
                   "Leftover", "Leftovers")
 
   typoFixes = list("Calananoida (unid)" = "Calanoida (unid)",
@@ -188,9 +188,11 @@ speciesDF = function(xlDataFull, xlDataShort) {
                    "Decapoda nonbrachyura zoea" = "Decapoda non-brachyura zoea",
                    "Decapoda nonbrachyura zoea larvae" = "Decapoda non-brachyura zoea larvae",
                    "Decpoda brachyura zoea" = "Decapoda brachyura zoea",
+                   "Euphausiacea furcillia" = "Euphausiacea furcilia",
                    "Gastropoda limacina spp. larvaeadult" = "Gastropoda limacina spp. larvae adult",
                    "Monstrilloida" = "Monstrilloida spp.",
                    "Mysidacea juvenileadult" = "Mysidacea juvenile adult",
+                   " Osteichthyes egg" = "Osteichthyes egg",
                    "Osteichthys egg" = "Osteichthyes egg",
                    "Osteichthys eggs" = "Osteichthyes egg",
                    "Osteichthys larvae" = "Osteichthyes larvae",
@@ -200,7 +202,9 @@ speciesDF = function(xlDataFull, xlDataShort) {
                    "Platyhelmenthes nemertea larva" = "Platyhelmenthes nemertea larvae",
                    "Platyhelmenthes nemertrea larvae" = "Platyhelmenthes nemertea larvae",
                    "Platyhelminthes nemertea larvae" = "Platyhelmenthes nemertea larvae",
+                   "Podon/pleopis spp." = "Podon pleopis spp.",
                    "Unid zooplankton" = "Zooplankton (unid)",
+                   "Unidentified zooplankton" = "Zooplankton (unid)",
                    "Zooplankton" = "Zooplankton (unid)",
                    "Zooplankton (unid))" = "Zooplankton (unid)")
   
@@ -212,7 +216,9 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # Ask what "!!!" means
     # This replaces my old way which was: (every change was a new line)
     # mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
-    mutate(class = recode(class, !!!typoFixes))
+    mutate(class = recode(class, !!!typoFixes)) %>%
+    # idk why this one wouldn't fix itself above??? Something to do with the space before the word
+    mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
 
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
@@ -240,11 +246,11 @@ checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, n
 
 
 # Counts of each species in whole dataset
-# z = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21)
-# 
-# z = z %>% 
-#   group_by(class) %>% 
-#   summarise(count = sum(count))
+z = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21)
+
+z = z %>%
+  group_by(class) %>%
+  summarise(count = sum(count))
 
 ################################################################################
 ## Make adjustments to the zooplankton counts
