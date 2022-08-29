@@ -13,5 +13,9 @@ ipak = function(pkg){
 
 # Choose necessary packages
 packages = c("dplyr", "ggplot2", "ggrepel", "ggthemes", "gridExtra", "jcolors", "leaflet", "mapr", "mapview",
-             "plyr", "purrr", "readxl", "scales", "stringr", "tidyr", "tools", "useful", "vegan", "wbstats", "wpa")
+             "purrr", "readxl", "scales", "stringr", "tidyr", "tools", "useful", "vegan", "wbstats", "wpa")
 ipak(packages)
+
+
+# I NEED TO LOOK INTO PLYR PACKAGE AND HOW TO LOAD ALONG WITH DPLYR
+# I need plyr for one thing. but it also suppresses other function within dplyr
