@@ -179,15 +179,20 @@ speciesDF = function(xlDataFull, xlDataShort) {
   typoFixes = list("Calananoida (unid)" = "Calanoida (unid)",
                    "Calanoid civ-vi" = "Calanoida civ-vi",
                    "Calanoid cv-vi" = "Calanoida cv-vi",
-                   "Centropages spp civ-vi" = "Centropages civ-vi",
+                   "Centropages spp. civ-vi" = "Centropages civ-vi",
                    "Cirripedia nauplius" = "Cirripedia nauplii",
                    "Ctenophora larva" = "Ctenophora larvae",
                    "Cyclopoida spp." = "Cyclopoida",
                    "Cumacea juvenileadult" = "Cumacea juvenile adult",
-                   "Decapoda brachyura zoea larvae larvae" = "Decapoda brachyura zoea larvae",
+                   "Decapoda brachyura zoea larvae larvae" = "Decapoda brachyura zoea",
                    "Decapoda nonbrachyura zoea" = "Decapoda non-brachyura zoea",
-                   "Decapoda nonbrachyura zoea larvae" = "Decapoda non-brachyura zoea larvae",
+                   "Decapoda nonbrachyura zoea larvae" = "Decapoda non-brachyura zoea",
                    "Decpoda brachyura zoea" = "Decapoda brachyura zoea",
+                   
+                   # But actually I want to get reid of the 'larvae' part!!
+                   "Decapoda brachyura zoea larvae" = "Decapoda brachyura zoea",
+                   "Decapoda non-brachyura zoea larvae" = "Decapoda non-brachyura zoea",
+                   
                    "Euphausiacea furcillia" = "Euphausiacea furcilia",
                    "Gastropoda limacina spp. larvaeadult" = "Gastropoda limacina spp. larvae adult",
                    "Monstrilloida" = "Monstrilloida spp.",
@@ -241,16 +246,41 @@ pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
 pacMar21 = speciesDF(dirFull[[8]], dirShort[[8]])
 pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 
-# Check for consistency between classes
-checkClass = data.frame(unique(sort(c(gulf20$class, gulf21$class, mar21$class, nl21$class, pac20$class, pacJun21$class, pacMar21$class, pacSep21$class))))
 
+################################################################################
+# TESTING FOR UNUSUAL SPECIES NAMES
+# Just checking if I got all the typos. 
 
-# Counts of each species in whole dataset
-z = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21)
+# I also need to find out which dataset they're from to see if it's due to differences 
+# in naming conventions between each region
+gulf20$dataset = "Gulf 2020"
+gulf21$dataset = "Gulf 2021"
+mar21$dataset = "Maritimes 2021"
+nl20$dataset = "Newfoundland 2020"
+nl21$dataset = "Newfoundland 2021"
+pac20$dataset = "Pacific 2020"
+pacJun21$dataset = "Pacific June 2021"
+pacMar21$dataset = "Pacific March 2021"
+pacSep21$dataset = "Pacific September 2021"
 
-z = z %>%
+# Get of each species in whole dataset
+taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21) %>%
   group_by(class) %>%
-  summarise(count = sum(count))
+  summarize(countPerClass = sum(count))
+
+# Get counts BY DATASET 
+taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21) %>%
+  group_by(class, dataset) %>%
+  summarize(countPerClass = sum(count)) %>%
+  filter(countPerClass > 0) # remove any zeroes
+
+# Get counts BY SAMPLE 
+taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21) %>%
+  group_by(class, dataset, sample) %>%
+  summarize(countPerClass = sum(count)) %>%
+  filter(countPerClass > 0) # remove any zeroes
+
+# write.csv(taxaCountsBay, "taxaCountsBay2.csv")
 
 ################################################################################
 ## Make adjustments to the zooplankton counts
