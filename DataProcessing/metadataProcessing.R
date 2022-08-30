@@ -98,3 +98,4 @@ pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
 
 # write.csv(gulfZoo, "testGulf.csv")
+write.csv(pacZoo, "pacZooSept21.csv")
