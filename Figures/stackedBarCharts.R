@@ -68,17 +68,43 @@ stackedBarChart = function(bayData){
     summarise(sumCount = sum(abund))
   
   
-  # Make ggplot
+  # Make ggplot for a Stacked Bar Chart
   # Write the y-axis label outside of ggplot so I don't get (as) lost in brackets
-  yLabel = expression(paste("Abundance (ind", m^{-3}, ")"))
-  
+  yLabelStacked = expression(paste("Abundance (ind ", m^{-3}, ")"))
   
   stackedGGPlot =
     ggplot(bayPlotDf, aes(x=sample, y=sumCount, fill=classNew)) +
       geom_bar(stat="identity", color = "black")+
       facet_grid(cols = vars(location), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
-      scale_y_continuous(labels = scales::comma, name = yLabel) +
+      scale_y_continuous(labels = scales::comma, name = yLabelStacked) +
+      scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
+      #theme_minimal(base_family = "Roboto Condensed") +
+      theme_bw()+
+      theme(plot.margin = margin(0.5, 0.5, 0.5, 0.5, unit = "cm"),
+            plot.title = element_text(size = 15, face = "bold"),
+            #strip.text.x = element_text(angle = 270, face = "bold"),
+            strip.placement = "outside",
+            #axis.title.x = element_text(margin = margin(t = 0.5, b = 0.5, unit = "cm")),
+            #axis.title.y = element_blank(),
+            #axis.text.x = element_text(angle = 90),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(size = 11),
+            axis.text = element_text(size = 14),
+            #legend.position = "none",
+            legend.title = element_text(size=13),
+            panel.grid.major.y = element_blank(),
+            panel.spacing = unit(0.5, "cm"),
+            strip.text.x = element_text(size = 15)
+      )
+  
+  # Make ggplot for a relative abundance chart
+  relGGPlot = 
+    ggplot(bayPlotDf, aes(x=sample, y=sumCount, fill=classNew)) +
+      geom_bar(stat = "identity", position = "fill", col = "black") +
+      scale_y_continuous(labels = percent_format(), name = "Relative Abundance")+
+      facet_grid(cols = vars(location), scales = "free_x", space = "free_x")+
+      scale_x_discrete(name = "Station")+
       scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
       #theme_minimal(base_family = "Roboto Condensed") +
       theme_bw()+
@@ -100,8 +126,9 @@ stackedBarChart = function(bayData){
       )
   
   
+  
   # return as list so you get both the ggplot and processed data
-  returnList = list(bayPlotDf, stackedGGPlot)
+  returnList = list(bayPlotDf, stackedGGPlot, relGGPlot)
   
   return(returnList)
   
@@ -118,15 +145,30 @@ malpequeProcess = stackedBarChart(malpeque)
 cocagneProcess = stackedBarChart(cocagne)
 stPetersProcess = stackedBarChart(stPeters)
 
-# View plot
+## View stacked bar charts!
+# Maritimes
 argyleProcess[[2]]
 soberProcess[[2]]
 whiteheadProcess[[2]]
 cHarbourProcess[[2]]
 
+# Gulf. Note: these are weird?
 malpequeProcess[[2]]
 cocagneProcess[[2]]
 stPetersProcess[[2]]
+
+## View relative abundance charts
+# Maritimes
+argyleProcess[[3]]
+soberProcess[[3]]
+whiteheadProcess[[3]]
+cHarbourProcess[[3]]
+
+# Gulf
+malpequeProcess[[3]]
+cocagneProcess[[3]]
+stPetersProcess[[3]]
+
 
 # But think about this... is there a faster way to do this? Should I split by bay in the function?
 
