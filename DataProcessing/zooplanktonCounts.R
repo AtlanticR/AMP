@@ -246,7 +246,6 @@ pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
 pacMar21 = speciesDF(dirFull[[8]], dirShort[[8]])
 pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 
-
 ################################################################################
 # TESTING FOR UNUSUAL SPECIES NAMES
 # Just checking if I got all the typos. 
@@ -409,9 +408,9 @@ gulfAll = rbind(gulf20Adj, gulf21Adj)
 # Merge metadata with FlowCam data  
 # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
 gulfMerge = full_join(gulfAll, metaGulf, by=c("sample" = "flowCamMatch")) %>%
-  # convert waterVolume from litres to m^3
+  # Note: waterVolume is already in m^3 not litres like I had previously thought!! Do not divide by 1000.
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
-  mutate(abund = adjCount / (waterVolume / 1000) * 4) %>%
+  mutate(abund = adjCount / waterVolume * 4) %>%
   # get rid of these because they're ugly and distracting
   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
 
@@ -425,15 +424,13 @@ gulfMerge = full_join(gulfAll, metaGulf, by=c("sample" = "flowCamMatch")) %>%
 # # Merge metadata with FlowCam data  
 # # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
 # nlMerge = full_join(nl20Adj, metaNl, by=c("sample" = "sampleCode")) %>%
-#   # convert waterVolume from litres to m^3
 #   # divide by 4 because tow was split in 4
-#   mutate(abund = adjCount / (waterVolume / 1000) / 4) %>%
+#   mutate(abund = adjCount / waterVolume / 4) %>%
 #   # get rid of these because they're ugly and distracting
 #   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
 # 
 # 
 # 
-
 
 # 
 # 
@@ -455,9 +452,8 @@ metaMar =
 # Maritimes 2021
 # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
 marMerge = full_join(mar21Adj, metaMar, by=c("sample" = "sampleCode")) %>%
-  # convert waterVolume from litres to m^3
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
-  mutate(abund = adjCount / (waterVolume / 1000) * 4) %>%
+  mutate(abund = adjCount / waterVolume * 4) %>%
   # get rid of these because they're ugly and distracting
   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
 
