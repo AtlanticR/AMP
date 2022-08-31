@@ -38,11 +38,13 @@ ggplot(data = gulfZoo, aes(x = tideRange, y = tideLevel,  fill=tideRange), pch =
 # Also I want to create facets for March, June, August/Sept since the sampling might have varied slightly between months
 tidePac = pacZoo %>%
   mutate(myMonth = monthStart) %>%
-  mutate(myMonth = str_replace(myMonth, "3", "March")) %>%
-  mutate(myMonth = str_replace(myMonth, "6", "June")) %>%
-  mutate(myMonth = str_replace(myMonth, "8", "August/Sept")) %>%
-  mutate(myMonth = str_replace(myMonth, "9", "August/Sept")) %>%
+  mutate(myMonth = str_replace(myMonth, "3", "March 2021")) %>%
+  mutate(myMonth = str_replace(myMonth, "6", "June 2021")) %>%
+  mutate(myMonth = str_replace(myMonth, "9", "Sept 2021")) %>%
   filter(!tideLevel == "NA")
+
+# Actually I also need to separate by Year since the 2020 data is different UGH!!
+tidePac$myMonth = ifelse(tidePac$yearStart == "2020", "2020", tidePac$myMonth)
 
 ggplot(data = tidePac, aes(x = tideRange, y = as.numeric(tideLevel),  fill=tideRange), pch = 21, col="black",)+
   geom_dotplot(binaxis = "y", stackdir = "center")+
