@@ -38,10 +38,10 @@ gulfMeta = read_excel("C:/Users/FINNISS/Desktop/FlowCamMetadata/AMP_Metadata_Pla
 
 # Read in my spreadsheet with the location names, i.e., "north", "mid", or "south" in bay
 # I've deleted a bunch of extra columns from the metadata
-marLoc = read.csv("C:/Users/FINNISS/Desktop/marLocation.csv")
+marLoc = read.csv("C:/Users/FINNISS/Desktop/LocationAndNameMatches/marLocation.csv")
 # This is where I also included the matches from the FlowCam sample names to the metadata (col: flowcamCode)
 # These were provided from Jeff Barrell. I need these for the Maritimes 2020 data which were different
-gulfLoc = read.csv("C:/Users/FINNISS/Desktop/gulfLocation.csv")
+gulfLoc = read.csv("C:/Users/FINNISS/Desktop/LocationAndNameMatches/gulfLocation.csv")
 
 ################################################################################
 ## Make data processing function
