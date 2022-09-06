@@ -88,8 +88,16 @@ processMeta = function(xlData) {
   # Note: ifelse can be nested in many different ways. If it's Maritimes or Gulf, put the myLabel, otherwise put as NA
   dfProc = dfProc %>%
     mutate(location = ifelse(region == "Mar", marLoc$myLabel,
-                             ifelse(region == "Gulf", gulfLoc$myLabel, NA))) %>%
-    mutate(flowCamMatch = ifelse(region == "Gulf", gulfLoc$flowcamCode, NA)) # add code from Jeff Barrell
+                             ifelse(region == "Gulf", gulfLoc$myLabel, 
+                                    ifelse(region == "NL", nlLoc$myLabel, 
+                                           ifelse(region == "Pac" & yearStart == 2020, pac20Loc$myLabel,
+                                                  ifelse(region == "Pacific" & yearStart == 2021 & monthStart == 3, pacMar21Loc$myLabel,
+                                                         ifelse(region == "Pacific" & yearStart == 2021 & monthStart == 6, pacJun21Loc$myLabel,
+                                                                ifelse(region == "Pacific" & yearStart == 2021 & monthStart == 9, pacSept21Loc$myLabel,
+                                                  NA)))))))) %>%
+    
+    mutate(flowCamMatch = ifelse(region == "Gulf", gulfLoc$flowcamCode,
+                                 ifelse(region == "NL", nlLoc$flowcamCode, NA))) # add code from Jeff Barrell
 
   return(dfProc) # return processed data frame
 }
