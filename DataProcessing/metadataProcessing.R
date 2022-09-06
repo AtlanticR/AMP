@@ -42,6 +42,14 @@ marLoc = read.csv("C:/Users/FINNISS/Desktop/LocationAndNameMatches/marLocation.c
 # This is where I also included the matches from the FlowCam sample names to the metadata (col: flowcamCode)
 # These were provided from Jeff Barrell. I need these for the Maritimes 2020 data which were different
 gulfLoc = read.csv("C:/Users/FINNISS/Desktop/LocationAndNameMatches/gulfLocation.csv")
+# Newfoundland: matches provided from Olivia Gibb
+nlLoc = read.csv("C:/Users/FINNISS/Desktop/LocationAndNameMatches/nl20Location.csv")
+# Pacific: broken into 3, just like FlowCam adata
+pac20Loc = read_excel("C:/Users/FINNISS/Desktop/LocationAndNameMatches/pacific2020Location.xlsx")
+pacMar21Loc = read_excel("C:/Users/FINNISS/Desktop/LocationAndNameMatches/pacificMarch2021Location.xlsx")
+pacJun21Loc = read_excel("C:/Users/FINNISS/Desktop/LocationAndNameMatches/pacificJune2021Location.xlsx")
+pacSept21Loc = read_excel("C:/Users/FINNISS/Desktop/LocationAndNameMatches/pacificSept2021Location.xlsx")
+
 
 ################################################################################
 ## Make data processing function
@@ -96,4 +104,6 @@ marZoo = processMeta(marMeta) # Maritimes zooplankton data
 nlZoo = processMeta(nlMeta) # Newfoundland
 pacZoo = processMeta(pacMeta) # Pacific
 gulfZoo = processMeta(gulfMeta) # Gulf
+
+# write.csv(gulfZoo, "GulfTides.csv")
 
