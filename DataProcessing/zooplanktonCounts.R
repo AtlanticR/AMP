@@ -393,21 +393,31 @@ pacSept21Adj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
 #	NL 2021
 #	Pacific Sept 2021 (these are okay, but the last 2 digits with the sampling time got cut off)
 
-### REMEMBER TO ALSO DIVIDE BY 4 BECAUSE THE SAMPLE WAS SPLIT IN 4
 
-# 
-# 
+
+# Function to only get the metadata columns that are important to merge
+reducedMeta = function(metadata) {
+  # Get the columns that are actually important to merge
+  metadata = metadata %>%
+    select(sampleCode, waterVolume, tideRange, yearStart, facilityName, target, myLabel, flowcamCode)
+  return(metadata)
+}
+
+gulfMetaRed = reducedMeta(gulfMeta)
+marMetaRed = reducedMeta(marMeta)
+nlMetaRed = reducedMeta(nlMeta)
+pacMetaRed = reducedMeta(pacMeta)
+
+
 # gulf 2021
-metaGulf =
-  gulfZoo %>%
-  select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, target, location, flowCamMatch)
 
 # Combine 2020 and 2021 flowcam data
 gulfAll = rbind(gulf20Adj, gulf21Adj)
 
 # Merge metadata with FlowCam data  
 # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
-gulfMerge = full_join(gulfAll, metaGulf, by=c("sample" = "flowCamMatch")) %>%
+
+gulfMerge = full_join(gulfAll, gulfMetaRed, by=c("sample" = "flowcamCode")) %>%
   # Note: waterVolume is already in m^3 not litres like I had previously thought!! Do not divide by 1000.
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
   mutate(abund = adjCount / waterVolume * 4) %>%
@@ -443,11 +453,6 @@ gulfMerge = full_join(gulfAll, metaGulf, by=c("sample" = "flowCamMatch")) %>%
 # 
 # 
 # Maritimes 2021
-metaMar =
-  marZoo %>%
-  select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, target, location) %>%
-  # Rename one of the samples from the metadata where the file name is different
-  mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
 
 # Maritimes 2021
 # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
