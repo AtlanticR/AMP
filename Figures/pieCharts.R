@@ -270,7 +270,7 @@ y = marParticles %>% pivot_wider(names_from = class, values_from = particles)
 
 # double check: is there a l --> m^3 conversion for seawater?
 
-marZooCondensed = marZoo[,c("sampleCode","tideRange", "waterVolume")] 
+marZooCondensed = marMeta[,c("sampleCode","tideRange", "waterVolume")] 
 
 
 
