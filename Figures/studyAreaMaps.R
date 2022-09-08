@@ -95,10 +95,10 @@ mapMaker = function(mapData) {
 # region.
 
 # Some sites with NAs may get errors. Just ignore these
-mapMaker(nlZoo) # Newfoundland
-mapMaker(pacZoo) # Pacific
-mapMaker(marZoo) # Maritimes
-mapMaker(gulfZoo) # Gulf
+mapMaker(nlMeta) # Newfoundland
+mapMaker(pacMeta) # Pacific
+mapMaker(marMeta) # Maritimes
+mapMaker(gulfMeta) # Gulf
 
 ################################################################################
 ################################################################################
@@ -127,7 +127,7 @@ nlMap
 
 ## Pacific
 # I think there are a lot of sampling issues so I will have to review this all
-pacZoo = subset(pacZoo, 
+pacZoo = subset(pacMeta, 
                 !(is.na(latitude)))
 
 # Start the basemap (set zoomControl to false to hide the zoom buttons on map)
