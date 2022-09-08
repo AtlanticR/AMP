@@ -19,14 +19,14 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R")
 
 # Maritimes
 # UGHHHHH there are overlaps in the "High" and "Mid" for Sober Island Oyster
-ggplot(data = marZoo, aes(x = tideRange, y = tideLevel,  fill=tideRange), pch = 21, col="black",)+
+ggplot(data = marMeta, aes(x = tideRange, y = tideLevel,  fill=tideRange), pch = 21, col="black",)+
   geom_dotplot(binaxis = "y", stackdir = "center", dotsize=2.5)+
   facet_wrap(~facilityName, scales = "free")+
   theme_bw()+
   theme(strip.text.x = element_text(size = 15))
 
 # Gulf
-ggplot(data = gulfZoo, aes(x = tideRange, y = tideLevel,  fill=tideRange), pch = 21, col="black",)+
+ggplot(data = gulfMeta, aes(x = tideRange, y = tideLevel,  fill=tideRange), pch = 21, col="black",)+
   geom_dotplot(binaxis = "y", stackdir = "center", dotsize=1.5)+
   facet_wrap(~facilityName, scales = "free")+
   theme_bw()+
@@ -36,7 +36,7 @@ ggplot(data = gulfZoo, aes(x = tideRange, y = tideLevel,  fill=tideRange), pch =
 # Need to convert tideLevel to numeric because there are NAs
 # Since there are NAs, it's will create warning messages
 # Also I want to create facets for March, June, August/Sept since the sampling might have varied slightly between months
-tidePac = pacZoo %>%
+tidePac = pacMeta %>%
   mutate(myMonth = monthStart) %>%
   mutate(myMonth = str_replace(myMonth, "3", "March 2021")) %>%
   mutate(myMonth = str_replace(myMonth, "6", "June 2021")) %>%
