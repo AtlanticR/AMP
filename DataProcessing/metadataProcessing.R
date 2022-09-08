@@ -112,7 +112,7 @@ processMeta = function(xlData) {
 # Pass the raw metadata xlsx files into the processMeta function above
 # Will return dataframe of processed metadata for each region
 
-marMeta = processMeta(marMetaRaaw) %>%
+marMeta = processMeta(marMetaRaw) %>%
   left_join(marLoc)
 
 nlMeta = processMeta(nlMetaRaw) %>%
