@@ -113,7 +113,9 @@ processMeta = function(xlData) {
 # Will return dataframe of processed metadata for each region
 
 marMeta = processMeta(marMetaRaw) %>%
-  left_join(marLoc)
+  left_join(marLoc) %>%
+  # Rename one of the samples from the metadata where the file name is different
+  mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
 
 nlMeta = processMeta(nlMetaRaw) %>%
   left_join(nlLoc)
