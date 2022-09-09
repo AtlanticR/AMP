@@ -466,6 +466,7 @@ pacMetaRed = pacMetaRed %>%
 pacMerge = left_join(pacAll, pacMetaRed, by = c("sample" = "flowcamCode")) %>%
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
   mutate(abund = adjCount / sumWaterVolume * 4) %>%
+  
   # get rid of these because they're ugly and distracting
   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
 
