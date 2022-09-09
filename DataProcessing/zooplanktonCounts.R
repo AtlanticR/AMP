@@ -254,7 +254,7 @@ pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
 # in naming conventions between each region
 gulf20$dataset = "Gulf 2020"
 gulf21$dataset = "Gulf 2021"
-mar21$dataset = "Maritimes 2021"
+mar21$dataset = "Maritimes"
 nl20$dataset = "Newfoundland 2020"
 nl21$dataset = "Newfoundland 2021"
 pac20$dataset = "Pacific 2020"
@@ -385,14 +385,13 @@ pacSept21Adj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
   mutate(sample = str_replace(sample, "_5mm", ""))
 
 ################################################################################
-## TEST SECTION: MERGE WITH THE METADATA
+## MERGE WITH THE METADATA
 
 # The data do match:
 # Gulf 2021
 #	Maritimes 2021
 #	NL 2021
 #	Pacific Sept 2021 (these are okay, but the last 2 digits with the sampling time got cut off)
-
 
 
 # Function to only get the metadata columns that are important to merge
@@ -409,14 +408,12 @@ nlMetaRed = reducedMeta(nlMeta)
 pacMetaRed = reducedMeta(pacMeta)
 
 
-# gulf 2021
+########  GULF  ########  
 
 # Combine 2020 and 2021 flowcam data
 gulfAll = rbind(gulf20Adj, gulf21Adj)
 
 # Merge metadata with FlowCam data  
-# merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
-
 gulfMerge = full_join(gulfAll, gulfMetaRed, by=c("sample" = "flowcamCode")) %>%
   # Note: waterVolume is already in m^3 not litres like I had previously thought!! Do not divide by 1000.
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
@@ -425,42 +422,37 @@ gulfMerge = full_join(gulfAll, gulfMetaRed, by=c("sample" = "flowcamCode")) %>%
   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
 
 
-# # nl 2021 DONT HAVE METADATA FOR THIS YET
-# metaNl =
-#   nlZoo %>%
-#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, sampleCode, waterVolume, tideRange, yearStart, facilityName, target) %>%
-#   filter(yearStart == 2020)
-# 
-# # Merge metadata with FlowCam data  
-# # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
-# nlMerge = full_join(nl20Adj, metaNl, by=c("sample" = "sampleCode")) %>%
-#   # divide by 4 because tow was split in 4
-#   mutate(abund = adjCount / waterVolume / 4) %>%
-#   # get rid of these because they're ugly and distracting
-#   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
-# 
-# 
-# 
+########  NEWFOUNDLAND  ########
 
-# 
-# 
-# # Pacific Sept 2021
-# metaPacSept21Fix = 
-#   pacZoo %>%
-#   select(facilityName, sampleCode, waterVolume, tideRange, yearStart, monthStart) %>%
-#   filter(yearStart==2021 & monthStart == 09)
-# 
-# 
-# 
-# Maritimes 2021
+# Don't have 2021 metadata yet
+
+# # Merge metadata with FlowCam data  
+# merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
+nlMerge = full_join(nl20Adj, nlMetaRed, by=c("sample" = "flowcamCode")) %>%
+  # divide by 4 because tow was split in 4
+  mutate(abund = adjCount / waterVolume / 4) %>%
+  # get rid of these because they're ugly and distracting
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
+
+
+########  MARITIMES  ########
 
 # Maritimes 2021
 # merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
-marMerge = full_join(mar21Adj, metaMar, by=c("sample" = "sampleCode")) %>%
+marMerge = full_join(mar21Adj, marMetaRed, by=c("sample" = "sampleCode")) %>%
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
   mutate(abund = adjCount / waterVolume * 4) %>%
   # get rid of these because they're ugly and distracting
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, flowcamCode))
+
+
+########  PACIFIC  ########
+# all Pacific datasets
+pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
+
+# NOT CORRECT THE NUMBERS DON'T MATCH
+pacMerge = left_join(pacAll, pacMetaRed, by = c("sample" = "flowcamCode"))
+
 
 # 
 # 
