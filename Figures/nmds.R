@@ -155,7 +155,7 @@ pacCoords = as.data.frame(scores(pacNMDS, display="sites"))
 # How stressed am I today
 pacStress = paste("2D Stress: ", round(pacNMDS$stress, digits=2))
 
-g3 = 
+g4 = 
   ggplot() + 
   geom_point(data = pacCoords, aes(x=NMDS1, y=NMDS2, fill=as.factor(pacSpecies$dataset)),
              pch = 21, size = 7, alpha = 0.85)+ # Use pch=21 to get black outline circles
@@ -185,33 +185,37 @@ g3 =
 # names_from: The column whose values will be used as column names
 # values_from: The column whose values will be used as cell values
 
-colnames(pacMerge)
+colnames(nlMerge)
+
 
 # Find a more elegant way to do this!!
-pacSpecies = pacMerge %>%
+nlSpecies = nlMerge %>%
   # Remember there will be duplicates because of the 5mm data! These need to be combined!!
-  group_by(sample, class, dataset, sumWaterVolume, yearStart, myLabel) %>% summarize(abund = sum(abund)) %>%
+  group_by(sample, class, waterVolume, yearStart, myLabel) %>% 
+  summarize(abund = sum(abund)) %>%
+  # Remove a blank entry. I don't know where this came from!
+  subset(class != "") %>%
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
 
 # Do NMDS but only include species data
-pacNMDS = metaMDS(sqrt(pacSpecies[,c(6:50)]), distance = "bray", autotransform=FALSE)
+nlNMDS = metaMDS(sqrt(nlSpecies[,c(5:42)]), distance = "bray", autotransform=FALSE)
 
 # Get NMDS coordinates from plot
-pacCoords = as.data.frame(scores(pacNMDS, display="sites"))
+nlCoords = as.data.frame(scores(nlNMDS, display="sites"))
 # How stressed am I today
-pacStress = paste("2D Stress: ", round(pacNMDS$stress, digits=2))
+nlStress = paste("2D Stress: ", round(nlNMDS$stress, digits=2))
 
-g3 = 
+g5 = 
   ggplot() + 
-  geom_point(data = pacCoords, aes(x=NMDS1, y=NMDS2, fill=as.factor(pacSpecies$dataset)),
+  geom_point(data = nlCoords, aes(x=NMDS1, y=NMDS2), fill = "blue",
              pch = 21, size = 7, alpha = 0.85)+ # Use pch=21 to get black outline circles
   # Change legend names
-  scale_fill_discrete(name = "Location")+
-  scale_shape_manual(values=c(21, 22, 23, 24, 25), name = "Location within bay")+ 
+  #scale_fill_discrete(name = "Location")+
+  #scale_shape_manual(values=c(21, 22, 23, 24, 25), name = "Location within bay")+ 
   
-  annotate("text", x = max(pacCoords$NMDS1), y=max(pacCoords$NMDS2), label = pacStress, size=3.5, hjust=1)+
+  annotate("text", x = max(nlCoords$NMDS1), y=max(nlCoords$NMDS2), label = nlStress, size=3.5, hjust=1)+
   theme_bw()+
   theme(axis.text = element_blank(),
         #axis.title = element_blank(),
@@ -221,9 +225,5 @@ g3 =
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
-        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
-  # Need to override and show these as a new new shape otherwise it won't show up
-  guides(fill = guide_legend(override.aes = list(shape = 21)),
-         shape = guide_legend(override.aes = list(fill = "black")))
-
+        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
 
