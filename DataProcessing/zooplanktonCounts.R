@@ -450,8 +450,23 @@ marMerge = full_join(mar21Adj, marMetaRed, by=c("sample" = "sampleCode")) %>%
 # all Pacific datasets
 pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 
-# NOT CORRECT THE NUMBERS DON'T MATCH
+# Need to make adjustments to the Pacific metadata
+# Otherwise things won't merge properly!!
+pacMetaRed = pacMetaRed %>%
+  filter(!is.na(flowcamCode)) %>%
+  # One site missing a water volume. Fill in with the other with the spot (for Pacific, 2 tows combined in one sample)
+  # Will not affect results much since this is one of the "Pooled" samples
+  mutate(waterVolume = replace(waterVolume, sampleCode == "21_03_03_Pac_S04_Z01_1503_250", 10.42636801)) %>%
+  # Pooled data from March 2021 are from all over the inlet. Replace with NA.
+  mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
+  mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
+  group_by(flowcamCode, myLabel, yearStart, facilityName) %>%
+  summarize(sumWaterVolume = sum(as.numeric(waterVolume)))
+
 pacMerge = left_join(pacAll, pacMetaRed, by = c("sample" = "flowcamCode"))
+
+
+
 
 
 # 
