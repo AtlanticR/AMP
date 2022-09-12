@@ -34,7 +34,7 @@ marStress = paste("2D Stress: ", round(marNMDS$stress, digits=2))
 # Find a more elegant way to do this!!
 gulfSpecies = gulfMerge %>%
   # Remember there will be duplicates because of the 5mm data! These need to be combined!!
-  group_by(sampleCode, class, facilityName, waterVolume, tideRange, yearStart, location) %>% summarize(abund = sum(abund)) %>%
+  group_by(sampleCode, class, facilityName, waterVolume, tideRange, yearStart, myLabel) %>% summarize(abund = sum(abund)) %>%
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
@@ -50,7 +50,6 @@ gulfStress = paste("2D Stress: ", round(gulfNMDS$stress, digits=2))
 
 
 # NEWFOUNDLAND
-
 
 # Find a more elegant way to do this!!
 nlSpecies = nlMerge %>%
@@ -90,6 +89,10 @@ pacCoords = as.data.frame(scores(pacNMDS, display="sites"))
 # How stressed am I today
 pacStress = paste("2D Stress: ", round(pacNMDS$stress, digits=2))
 
+################################################################################
+# Put all the data together for a mega-NMDS
+
+hi = cbind(pacSpecies, gulfSpecies)
 
 
 
