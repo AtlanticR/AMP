@@ -230,10 +230,14 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # Stages are either written as ci-something or civ-something. .* implies "every character after that"
     mutate(class = str_replace(class, "ci-.*", "")) %>%
     mutate(class = str_replace(class, "civ-.*", "")) %>%
-   
+    
     # idk why this one wouldn't fix itself above??? Something to do with the space before the word
-    mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg"))
+    mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
+    
+    group_by(sample, class) %>%
+    summarize(count = sum(count))
 
+  
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
   return(siteDf)
@@ -245,7 +249,10 @@ speciesDF = function(xlDataFull, xlDataShort) {
 
 # Run the speciesDF function and create the dataframes for dataset
 # This returns a dataframe with columns for sample, class, count, particles
-gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
+gulf20 = speciesDF(dirFull[[1]], dirShort[[1]]) %>%
+  select(-c(originalNames, particles)) %>%
+  group_by(sample, class) %>%
+  summarize(count = n())
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
 nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # This is the one in a different format
