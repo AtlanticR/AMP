@@ -8,7 +8,11 @@
 source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 
 ################################################################################
-
+## Function to create stacked bar charts and relative abundance charts
+# Takes the count data for each bay and returns:
+# 1. Dataframe with 5 most abundant species and their counts
+# 2. Stacked bar chart of this info (ggplot object)
+# 3. Relative abundance chart of this info (ggplot object)
 
 stackedBarChart = function(bayData){
   
@@ -52,8 +56,8 @@ stackedBarChart = function(bayData){
             strip.placement = "outside",
             #axis.title.x = element_text(margin = margin(t = 0.5, b = 0.5, unit = "cm")),
             #axis.title.y = element_blank(),
-            #axis.text.x = element_text(angle = 90),
-            axis.text.x = element_blank(),
+            axis.text.x = element_text(angle = 90, size = 8),
+            # axis.text.x = element_blank(),
             axis.text.y = element_text(size = 11),
             axis.text = element_text(size = 14),
             #legend.position = "none",
@@ -79,8 +83,8 @@ stackedBarChart = function(bayData){
             strip.placement = "outside",
             #axis.title.x = element_text(margin = margin(t = 0.5, b = 0.5, unit = "cm")),
             #axis.title.y = element_blank(),
-            #axis.text.x = element_text(angle = 90),
-            axis.text.x = element_blank(),
+            axis.text.x = element_text(angle = 90, size = 8),
+            #axis.text.x = element_blank(),
             axis.text.y = element_text(size = 11),
             axis.text = element_text(size = 14),
             #legend.position = "none",
@@ -98,14 +102,15 @@ stackedBarChart = function(bayData){
 }
 
 ################################################################################
+## Process each dataset
 
+# Break up the data by region. And also by bay.
 
-# Process them
 # Maritimes
 argyleProcess = stackedBarChart(marMerge %>% subset(facilityName == "Argyle"))
 soberProcess = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster"))
 whiteheadProcess = stackedBarChart(marMerge %>% subset(facilityName == "WhiteHead"))
-cHarbourProcess = stackedBarChart(marMerge %>% subset(facilityName == "CountryHarbour"))
+cHarbourProcess = stackedBarChart(marMerge %>% subset(facilityName == "Country Harbour"))
 
 # Gulf
 malpequeProcess = stackedBarChart(gulfMerge %>% subset(facilityName=="Malpeque"))
@@ -123,9 +128,10 @@ lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific S
 
 
 ################################################################################
+### View the graphs!
 
+## Stacked bar charts
 
-## View stacked bar charts!
 # Maritimes
 argyleProcess[[2]]
 soberProcess[[2]]
