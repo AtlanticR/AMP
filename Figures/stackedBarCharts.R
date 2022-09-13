@@ -8,42 +8,7 @@
 source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 
 ################################################################################
-## Alter data format for creation of pie charts
 
-# Something is majorly off with these counts though they're too high
-
-# Maritimes
-
-# Just get data from one bay
-argyle = marMerge %>%
-  subset(facilityName=="Argyle")
-
-sober = marMerge %>%
-  subset(facilityName == "Sober Island Oyster")
-
-whitehead = marMerge %>%
-  subset(facilityName == "WhiteHead")
-
-cHarbour = marMerge %>%
-  subset(facilityName == "Country Harbour")
-
-# Gulf
-malpeque = gulfMerge %>%
-  subset(facilityName == "Malpeque")
-
-stPeters = gulfMerge %>%
-  subset(facilityName == "StPeters")
-
-cocagne = gulfMerge %>%
-  subset(facilityName == "Cocagne")
-
-# Newfoundland
-seArm = rbind(nl20Adj, nl21Adj)
-
-# Pacific (here, I'm combining all of it)
-lemmens = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
-
-################################################################################
 
 stackedBarChart = function(bayData){
   
@@ -62,7 +27,7 @@ stackedBarChart = function(bayData){
     left_join(bayOther %>%
                 # Might be a better way, but I don't want to join the ENTIRE dataframe
                 select(classNew, class, countPerClass), by = c("class" = "class")) %>%
-    group_by(classNew, sample, tideRange, location) %>%
+    group_by(classNew, sample, myLabel) %>%
     # If you don't recompute counts, the "Other" class will have a bunch of black lines
     # if you set the outline colour to black in geom_bar
     summarise(sumCount = sum(abund))
@@ -75,7 +40,7 @@ stackedBarChart = function(bayData){
   stackedGGPlot =
     ggplot(bayPlotDf, aes(x=sample, y=sumCount, fill=classNew)) +
       geom_bar(stat="identity", color = "black")+
-      facet_grid(cols = vars(location), scales = "free_x", space = "free_x")+
+      facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
       scale_y_continuous(labels = scales::comma, name = yLabelStacked) +
       scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
@@ -103,7 +68,7 @@ stackedBarChart = function(bayData){
     ggplot(bayPlotDf, aes(x=sample, y=sumCount, fill=classNew)) +
       geom_bar(stat = "identity", position = "fill", col = "black") +
       scale_y_continuous(labels = percent_format(), name = "Relative Abundance")+
-      facet_grid(cols = vars(location), scales = "free_x", space = "free_x")+
+      facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
       scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
       #theme_minimal(base_family = "Roboto Condensed") +
@@ -125,8 +90,6 @@ stackedBarChart = function(bayData){
             strip.text.x = element_text(size = 15)
       )
   
-  
-  
   # return as list so you get both the ggplot and processed data
   returnList = list(bayPlotDf, stackedGGPlot, relGGPlot)
   
@@ -134,16 +97,33 @@ stackedBarChart = function(bayData){
   
 }
 
+################################################################################
+
 
 # Process them
-argyleProcess = stackedBarChart(argyle)
-soberProcess = stackedBarChart(sober)
-whiteheadProcess = stackedBarChart(whitehead)
-cHarbourProcess = stackedBarChart(whitehead)
+# Maritimes
+argyleProcess = stackedBarChart(marMerge %>% subset(facilityName == "Argyle"))
+soberProcess = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster"))
+whiteheadProcess = stackedBarChart(marMerge %>% subset(facilityName == "WhiteHead"))
+cHarbourProcess = stackedBarChart(marMerge %>% subset(facilityName == "CountryHarbour"))
 
-malpequeProcess = stackedBarChart(malpeque)
-cocagneProcess = stackedBarChart(cocagne)
-stPetersProcess = stackedBarChart(stPeters)
+# Gulf
+malpequeProcess = stackedBarChart(gulfMerge %>% subset(facilityName=="Malpeque"))
+cocagneProcess = stackedBarChart(gulfMerge %>% subset(facilityName=="Cocagne"))
+stPetersProcess = stackedBarChart(gulfMerge %>% subset(facilityName=="StPeters"))
+
+# Newfoundland (only one bay)
+seArmProcess = stackedBarChart(nlMerge)
+
+# Pacific (only one bay, but separate by dataset instead)
+lemmens20Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific 2020"))
+lemmensMar21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific March 2021"))
+lemmensJun21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific June 2021"))
+lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific September 2021"))
+
+
+################################################################################
+
 
 ## View stacked bar charts!
 # Maritimes
@@ -152,10 +132,21 @@ soberProcess[[2]]
 whiteheadProcess[[2]]
 cHarbourProcess[[2]]
 
-# Gulf. Note: these are weird?
+# Gulf. Note: these have unusually hi/lo values?
 malpequeProcess[[2]]
 cocagneProcess[[2]]
 stPetersProcess[[2]]
+
+# Newfoundland
+seArmProcess[[2]]
+
+# Pacific
+lemmens20Process[[2]]
+lemmensMar21Process[[2]]
+lemmensJun21Process[[2]]
+lemmensSept21Process[[2]]
+
+################################################################################
 
 ## View relative abundance charts
 # Maritimes
@@ -168,14 +159,3 @@ cHarbourProcess[[3]]
 malpequeProcess[[3]]
 cocagneProcess[[3]]
 stPetersProcess[[3]]
-
-
-# But think about this... is there a faster way to do this? Should I split by bay in the function?
-
-################################################################################
-
-#update_geom_font_defaults(font_rc_light)
-
-# Colours from Quentin
-rrColorPalette<- c("#009E73", "#E69F00", "#0072B2", "#CC79A7", "#F0E442","#D55E00", "#56B4E9","#999999")
-show_col(rrColorPalette)
