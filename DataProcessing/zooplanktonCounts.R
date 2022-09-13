@@ -476,22 +476,5 @@ pacMerge = left_join(pacAll, pacMetaRed, by = c("sample" = "flowcamCode")) %>%
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
   mutate(abund = adjCount / sumWaterVolume * 4) %>%
   
-  # get rid of these because they're ugly and distracting
+  # Get rid of unneeded columns
   select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
-
-
-
-
-
-# 
-# 
-# pacSept21Merge = full_join(pac21SeptAdj, metaPacSept21Fix, by=c("sample" = "sampleCode"))
-# 
-# 
-# 
-# mar21NewTest= 
-#   mar21New %>%
-#   select(sample)
-# 
-# x =full_join(mar21Adj, metaMarTest, by=c("sample" = "sampleCode"))
-
