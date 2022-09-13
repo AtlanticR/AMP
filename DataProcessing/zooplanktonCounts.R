@@ -428,7 +428,7 @@ gulfMerge = full_join(gulfAll, gulfMetaRed, by=c("sample" = "flowcamCode")) %>%
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
   mutate(abund = adjCount / waterVolume * 4) %>%
   # get rid of these because they're ugly and distracting
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, originalNames))
 
 
 ########  NEWFOUNDLAND  ########
@@ -441,7 +441,7 @@ nlMerge = full_join(nl20Adj, nlMetaRed, by=c("sample" = "flowcamCode")) %>%
   # divide by 4 because tow was split in 4
   mutate(abund = adjCount / waterVolume / 4) %>%
   # get rid of these because they're ugly and distracting
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, originalNames))
 
 
 ########  MARITIMES  ########
@@ -452,7 +452,7 @@ marMerge = full_join(mar21Adj, marMetaRed, by=c("sample" = "sampleCode")) %>%
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
   mutate(abund = adjCount / waterVolume * 4) %>%
   # get rid of these because they're ugly and distracting
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, flowcamCode))
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, flowcamCode, originalNames))
 
 
 ########  PACIFIC  ########
@@ -477,4 +477,4 @@ pacMerge = left_join(pacAll, pacMetaRed, by = c("sample" = "flowcamCode")) %>%
   mutate(abund = adjCount / sumWaterVolume * 4) %>%
   
   # Get rid of unneeded columns
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount))
+  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, originalNames))
