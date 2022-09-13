@@ -155,6 +155,8 @@ speciesDF = function(xlDataFull, xlDataShort) {
   
   # Bind together this list of dataframes into one big data frame
   siteDf = dplyr::bind_rows(datalist) %>%
+    # Keep the original class names with no adjustments
+    mutate(originalNames = class) %>%
     # Convert counts to numeric
     mutate(count = as.numeric(count)) %>%
     # Remove all underscores and replace them with spaces
@@ -222,8 +224,15 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # This replaces my old way which was: (every change was a new line)
     # mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
     mutate(class = recode(class, !!!typoFixes)) %>%
+    
+    # Remove stage information: Might have to adjust this based on the type of analysis!!!
+    # For most biodiversity stuff (not size fraction things) I do not want the "spp." stuff
+    # Stages are either written as ci-something or civ-something. .* implies "every character after that"
+    mutate(class = str_replace(class, "ci-.*", "")) %>%
+    mutate(class = str_replace(class, "civ-.*", "")) %>%
+   
     # idk why this one wouldn't fix itself above??? Something to do with the space before the word
-    mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg"))
 
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
