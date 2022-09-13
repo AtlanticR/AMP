@@ -234,14 +234,15 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # idk why this one wouldn't fix itself above??? Something to do with the space before the word
     mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
     
+    # Because stage information was removed, there now are duplicates (e.g., Calanus ci-iii and ci-iv are both just "Calanus")
+    # Need to sum the values to remove the duplicates
+    # Note: this also removes the Particles and originalName columns
     group_by(sample, class) %>%
     summarize(count = sum(count))
 
-  
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
   return(siteDf)
-
 }
 
 ################################################################################
@@ -249,10 +250,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
 
 # Run the speciesDF function and create the dataframes for dataset
 # This returns a dataframe with columns for sample, class, count, particles
-gulf20 = speciesDF(dirFull[[1]], dirShort[[1]]) %>%
-  select(-c(originalNames, particles)) %>%
-  group_by(sample, class) %>%
-  summarize(count = n())
+gulf20 = speciesDF(dirFull[[1]], dirShort[[1]]) 
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
 nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # This is the one in a different format
@@ -435,7 +433,7 @@ gulfMerge = full_join(gulfAll, gulfMetaRed, by=c("sample" = "flowcamCode")) %>%
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
   mutate(abund = adjCount / waterVolume * 4) %>%
   # get rid of these because they're ugly and distracting
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, originalNames))
+  select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount))
 
 
 ########  NEWFOUNDLAND  ########
@@ -448,7 +446,7 @@ nlMerge = full_join(nl20Adj, nlMetaRed, by=c("sample" = "flowcamCode")) %>%
   # divide by 4 because tow was split in 4
   mutate(abund = adjCount / waterVolume / 4) %>%
   # get rid of these because they're ugly and distracting
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, originalNames))
+  select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount))
 
 
 ########  MARITIMES  ########
@@ -459,7 +457,7 @@ marMerge = full_join(mar21Adj, marMetaRed, by=c("sample" = "sampleCode")) %>%
   # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
   mutate(abund = adjCount / waterVolume * 4) %>%
   # get rid of these because they're ugly and distracting
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, flowcamCode, originalNames))
+  select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount, flowcamCode))
 
 
 ########  PACIFIC  ########
@@ -484,4 +482,4 @@ pacMerge = left_join(pacAll, pacMetaRed, by = c("sample" = "flowcamCode")) %>%
   mutate(abund = adjCount / sumWaterVolume * 4) %>%
   
   # Get rid of unneeded columns
-  select(-c(count, particles, PercSampleCleaned, PercZooIdentified, adjCount, originalNames))
+  select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount))
