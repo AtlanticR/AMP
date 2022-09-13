@@ -21,7 +21,7 @@ marSpecies = marMerge %>% pivot_wider(names_from = class, values_from = abund) %
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
 # Do NMDS but only include species data
-marNMDS = metaMDS(sqrt(marSpecies[,c(8:60)]), distance = "bray", autotransform=FALSE)
+marNMDS = metaMDS(sqrt(marSpecies[,c(9:ncol(marSpecies))]), distance = "bray", autotransform=FALSE)
 
 # Get NMDS coordinates from plot
 marCoords = as.data.frame(scores(marNMDS, display="sites"))
@@ -40,13 +40,12 @@ gulfSpecies = gulfMerge %>%
 
 
 # Do NMDS but only include species data
-gulfNMDS = metaMDS(sqrt(gulfSpecies[,c(7:56)]), distance = "bray", autotransform=FALSE)
+gulfNMDS = metaMDS(sqrt(gulfSpecies[,c(7:ncol(gulfSpecies))]), distance = "bray", autotransform=FALSE)
 
 # Get NMDS coordinates from plot
 gulfCoords = as.data.frame(scores(gulfNMDS, display="sites"))
 # How stressed am I today
 gulfStress = paste("2D Stress: ", round(gulfNMDS$stress, digits=2))
-
 
 
 # NEWFOUNDLAND
@@ -63,7 +62,7 @@ nlSpecies = nlMerge %>%
 
 
 # Do NMDS but only include species data
-nlNMDS = metaMDS(sqrt(nlSpecies[,c(5:42)]), distance = "bray", autotransform=FALSE)
+nlNMDS = metaMDS(sqrt(nlSpecies[,c(5:ncol(nlSpecies))]), distance = "bray", autotransform=FALSE)
 
 # Get NMDS coordinates from plot
 nlCoords = as.data.frame(scores(nlNMDS, display="sites"))
@@ -82,7 +81,7 @@ pacSpecies = pacMerge %>%
 
 
 # Do NMDS but only include species data
-pacNMDS = metaMDS(sqrt(pacSpecies[,c(6:50)]), distance = "bray", autotransform=FALSE)
+pacNMDS = metaMDS(sqrt(pacSpecies[,c(6:ncol(pacSpecies))]), distance = "bray", autotransform=FALSE)
 
 # Get NMDS coordinates from plot
 pacCoords = as.data.frame(scores(pacNMDS, display="sites"))
@@ -92,7 +91,7 @@ pacStress = paste("2D Stress: ", round(pacNMDS$stress, digits=2))
 ################################################################################
 # Put all the data together for a mega-NMDS
 
-hi = cbind(pacSpecies, gulfSpecies)
+hi = rbind(nlMerge, pacMerge, gulfMerge, marMerge)
 
 
 
@@ -153,7 +152,7 @@ ggplot() +
   guides(fill = guide_legend(override.aes = list(shape = 21), order = 1),
          shape = guide_legend(override.aes = list(fill = "black")), order=2)
 
-ggsave("test2.png", g2)
+# ggsave("test2.png", g2)
 
 
 ##### GULF ##### 
