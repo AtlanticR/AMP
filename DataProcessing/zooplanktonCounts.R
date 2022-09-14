@@ -253,7 +253,11 @@ speciesDF = function(xlDataFull, xlDataShort) {
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]]) 
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
-nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # This is the one in a different format
+# This is the one in a different format
+nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) %>% 
+  # Also, there was one file (AAMP_NL_S01_41_20200916PM_250) that had one extra blank line.
+  # This was above "===END METADATA STATISTICS===". Remove this or else there will be a blank class with a count of zero
+  subset(class != "")
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 pac20 = speciesDF(dirFull[[6]], dirShort[[6]])
 pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
