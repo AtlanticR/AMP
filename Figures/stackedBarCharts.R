@@ -44,7 +44,7 @@ stackedBarChart = function(bayData){
   stackedGGPlot =
     ggplot(bayPlotDf, aes(x=sample, y=sumCount, fill=classNew)) +
       geom_bar(stat="identity", color = "black")+
-      facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
+      #facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
       scale_y_continuous(labels = scales::comma, name = yLabelStacked) +
       scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
