@@ -10,74 +10,42 @@
 source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 
 ################################################################################
-## Process the data
 
-
-
-### TEST FUNCTION: 
 
 
 nmdsPrep = function(mergeData) {
+  # alter the dataframe so it is in appropriate format for NMDS
+  # names_from: The column whose values will be used as column names
+  # values_from: The column whose values will be used as cell values
+  mergeData = mergeData %>% 
+    pivot_wider(names_from = class, values_from = abund) %>%
+    mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
   
-  # Group the stations so 5mm species are added to the regular counts 
-  group_by(sampleCode, class, facilityName, waterVolume, tideRange, yearStart, myLabel) %>% summarize(abund = sum(abund)) %>%
-    
+  # For NMDS calculations, must only include species data from dataframe
+  # I will constantly be removing columns, adding columns etc. 
+  # Instead define as the index where there's Acartia species (first species colum in dataframe) to the end (final column)
+  beginNMDS = which(colnames(mergeData)== "Acartia spp. ")
+  endNMDS = ncol(mergeData)
+  
+  # Do NMDS ordination but only include species data
+  ord = metaMDS(sqrt(mergeData[,c(beginNMDS:endNMDS)]), distance = "bray", autotransform=FALSE)
+  
+  # Get NMDS coordinates from plot
+  ordCoords = as.data.frame(scores(ord, display="sites"))
+  # How stressed am I today
+  ordStress = paste("2D Stress: ", round(ord$stress, digits=2))
+  
+  # Test that ordination stress is created (i.e., nmds works)
+  return(ordStress)
+  
 }
 
 
+marNMDS = nmdsPrep(marMerge)
+nlNMDS = nmdsPrep(nlMerge) #ERROR BECAUSE OF EMPTY THING
+pacNMDS = nmdsPrep(pacMerge)
+gulfNMDS = nmdsPrep(gulfMerge)
 
-# Find a more elegant way to do this!!
-gulfSpecies = gulfMerge %>%
-  # Remember there will be duplicates because of the 5mm data! These need to be combined!!
-  group_by(sampleCode, class, facilityName, waterVolume, tideRange, yearStart, myLabel) %>% summarize(abund = sum(abund)) %>%
-  pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
-
-
-
-
-
-
-
-
-
-
-
-
-# MARITIMES
-
-# alter the dataframe so it is in appropriate format for NMDS
-# names_from: The column whose values will be used as column names
-# values_from: The column whose values will be used as cell values
-marSpecies = marMerge %>% pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
-
-# Do NMDS but only include species data
-marNMDS = metaMDS(sqrt(marSpecies[,c(9:ncol(marSpecies))]), distance = "bray", autotransform=FALSE)
-
-# Get NMDS coordinates from plot
-marCoords = as.data.frame(scores(marNMDS, display="sites"))
-# How stressed am I today
-marStress = paste("2D Stress: ", round(marNMDS$stress, digits=2))
-
-
-# GULF
-
-# Find a more elegant way to do this!!
-gulfSpecies = gulfMerge %>%
-  # Remember there will be duplicates because of the 5mm data! These need to be combined!!
-  group_by(sampleCode, class, facilityName, waterVolume, tideRange, yearStart, myLabel) %>% summarize(abund = sum(abund)) %>%
-  pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
-
-
-# Do NMDS but only include species data
-gulfNMDS = metaMDS(sqrt(gulfSpecies[,c(7:ncol(gulfSpecies))]), distance = "bray", autotransform=FALSE)
-
-# Get NMDS coordinates from plot
-gulfCoords = as.data.frame(scores(gulfNMDS, display="sites"))
-# How stressed am I today
-gulfStress = paste("2D Stress: ", round(gulfNMDS$stress, digits=2))
 
 
 # NEWFOUNDLAND
@@ -100,30 +68,6 @@ nlNMDS = metaMDS(sqrt(nlSpecies[,c(5:ncol(nlSpecies))]), distance = "bray", auto
 nlCoords = as.data.frame(scores(nlNMDS, display="sites"))
 # How stressed am I today
 nlStress = paste("2D Stress: ", round(nlNMDS$stress, digits=2))
-
-
-# PACIFIC
-
-# Find a more elegant way to do this!!
-pacSpecies = pacMerge %>%
-  # Remember there will be duplicates because of the 5mm data! These need to be combined!!
-  group_by(sample, class, dataset, sumWaterVolume, yearStart, myLabel) %>% summarize(abund = sum(abund)) %>%
-  pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
-
-
-# Do NMDS but only include species data
-pacNMDS = metaMDS(sqrt(pacSpecies[,c(6:ncol(pacSpecies))]), distance = "bray", autotransform=FALSE)
-
-# Get NMDS coordinates from plot
-pacCoords = as.data.frame(scores(pacNMDS, display="sites"))
-# How stressed am I today
-pacStress = paste("2D Stress: ", round(pacNMDS$stress, digits=2))
-
-################################################################################
-# Put all the data together for a mega-NMDS
-
-hi = rbind(nlMerge, pacMerge, gulfMerge, marMerge)
 
 
 
