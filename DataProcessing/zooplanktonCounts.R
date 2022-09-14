@@ -418,17 +418,17 @@ reducedMeta = function(metadata) {
 
 # Process them
 gulfMetaRed = reducedMeta(gulfMeta)
+
 marMetaRed = reducedMeta(marMeta) %>%
   # Maritimes didn't need a flowcamCode since the flowcam files were correctly named. Was using "sampleCode"
   # However, for consistency between all datasets (so function below works), I will assign flowcamCode as sampleCode
   mutate(flowcamCode = sampleCode)
+
 nlMetaRed = reducedMeta(nlMeta)
+
 # Pacific needs a bit of extra processing! Otherwise the species dataframe won't merge correctly with metadata
 pacMetaRed = reducedMeta(pacMeta) %>%
   filter(!is.na(flowcamCode)) %>%
-  # One site missing a water volume. Fill in with the other with the spot (for Pacific, 2 tows combined in one sample)
-  # Will not affect results much since this is one of the "Pooled" samples
-  mutate(waterVolume = replace(waterVolume, sampleCode == "21_03_03_Pac_S04_Z01_1503_250", 10.42636801)) %>%
   # Pooled data from March 2021 are from all over the inlet. Replace with NA.
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
