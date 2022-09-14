@@ -12,6 +12,7 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 ################################################################################
 
 
+# Create function to make NMDS ordinations
 
 nmdsPrep = function(mergeData) {
   # alter the dataframe so it is in appropriate format for NMDS
@@ -40,34 +41,10 @@ nmdsPrep = function(mergeData) {
   
 }
 
-
 marNMDS = nmdsPrep(marMerge)
-nlNMDS = nmdsPrep(nlMerge) #ERROR BECAUSE OF EMPTY THING
+nlNMDS = nmdsPrep(nlMerge)
 pacNMDS = nmdsPrep(pacMerge)
 gulfNMDS = nmdsPrep(gulfMerge)
-
-
-
-# NEWFOUNDLAND
-
-# Find a more elegant way to do this!!
-nlSpecies = nlMerge %>%
-  # Remember there will be duplicates because of the 5mm data! These need to be combined!!
-  group_by(sample, class, waterVolume, yearStart, myLabel) %>% 
-  summarize(abund = sum(abund)) %>%
-  # Remove a blank entry. I don't know where this came from!
-  subset(class != "") %>%
-  pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
-
-
-# Do NMDS but only include species data
-nlNMDS = metaMDS(sqrt(nlSpecies[,c(5:ncol(nlSpecies))]), distance = "bray", autotransform=FALSE)
-
-# Get NMDS coordinates from plot
-nlCoords = as.data.frame(scores(nlNMDS, display="sites"))
-# How stressed am I today
-nlStress = paste("2D Stress: ", round(nlNMDS$stress, digits=2))
 
 
 
