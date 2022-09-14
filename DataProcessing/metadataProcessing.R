@@ -127,7 +127,10 @@ pacMeta = processMeta(pacMetaRaw) %>%
   # If these aren't removed, the dfs won't merge properly and there will be duplicates
   # Setting .keep_all = T means it keeps all the data but removes the duplicate (second option)  
   distinct(sampleCode, .keep_all = T) %>%
-  full_join(pacAllLoc)
+  full_join(pacAllLoc) %>%
+  # One site missing a water volume. Fill in with the other with the spot (for Pacific, 2 tows combined in one sample)
+  # Will not affect results much since this is one of the "Pooled" samples
+  mutate(waterVolume = replace(waterVolume, sampleCode == "21_03_03_Pac_S04_Z01_1503_250", 10.42636801))
 
 gulfMeta = processMeta(gulfMetaRaw) %>%
   left_join(gulfLoc)
