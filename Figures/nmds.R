@@ -12,6 +12,38 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
 ################################################################################
 ## Process the data
 
+
+
+### TEST FUNCTION: 
+
+
+nmdsPrep = function(mergeData) {
+  
+  # Group the stations so 5mm species are added to the regular counts 
+  group_by(sampleCode, class, facilityName, waterVolume, tideRange, yearStart, myLabel) %>% summarize(abund = sum(abund)) %>%
+    
+}
+
+
+
+# Find a more elegant way to do this!!
+gulfSpecies = gulfMerge %>%
+  # Remember there will be duplicates because of the 5mm data! These need to be combined!!
+  group_by(sampleCode, class, facilityName, waterVolume, tideRange, yearStart, myLabel) %>% summarize(abund = sum(abund)) %>%
+  pivot_wider(names_from = class, values_from = abund) %>%
+  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
+
+
+
+
+
+
+
+
+
+
+
+
 # MARITIMES
 
 # alter the dataframe so it is in appropriate format for NMDS
