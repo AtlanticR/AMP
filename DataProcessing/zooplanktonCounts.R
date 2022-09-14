@@ -399,45 +399,9 @@ pacSept21Adj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
   mutate(sample = str_replace(sample, "_5mm", ""))
 
 ################################################################################
-## MERGE WITH THE METADATA
+## Merge FlowCam data with the metadata
 
-# The data do match:
-# Gulf 2021
-#	Maritimes 2021
-#	NL 2021
-#	Pacific Sept 2021 (these are okay, but the last 2 digits with the sampling time got cut off)
-
-
-# Function to only get the metadata columns that are important to merge
-reducedMeta = function(metadata) {
-  # Get the columns that are actually important to merge
-  metadata = metadata %>%
-    select(sampleCode, waterVolume, tideRange, yearStart, facilityName, target, myLabel, flowcamCode)
-  return(metadata)
-}
-
-# Process them
-gulfMetaRed = reducedMeta(gulfMeta)
-
-marMetaRed = reducedMeta(marMeta) %>%
-  # Maritimes didn't need a flowcamCode since the flowcam files were correctly named. Was using "sampleCode"
-  # However, for consistency between all datasets (so function below works), I will assign flowcamCode as sampleCode
-  mutate(flowcamCode = sampleCode)
-
-nlMetaRed = reducedMeta(nlMeta)
-
-# Pacific needs a bit of extra processing! Otherwise the species dataframe won't merge correctly with metadata
-pacMetaRed = reducedMeta(pacMeta) %>%
-  filter(!is.na(flowcamCode)) %>%
-  # Pooled data from March 2021 are from all over the inlet. Replace with NA.
-  mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
-  mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
-  group_by(flowcamCode, myLabel, yearStart, facilityName) %>%
-  # Adjust the water volume that is the sum of the water volume from tow of both samples
-  summarize(waterVolume = sum(as.numeric(waterVolume)))
-
-
-## Gulf and Pacific: merge the the datasets from different sampling seasons together first.
+## First, need to combine Gulf and Pacific datasets together.
 # Combine 2020 and 2021 flowcam data
 gulfAll = rbind(gulf20Adj, gulf21Adj)
 # all Pacific datasets
@@ -445,21 +409,56 @@ pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 # Maritimes: just for consistency, rename "Sample Code" as "flowcamCode" 
 
 
+# Function to only get the metadata columns that are important to merge (raw metadata files have ~30-40 columns)
+reducedMeta = function(metadata) {
+  # Get the columns that are actually important to merge
+  metadata = metadata %>%
+    select(sampleCode, waterVolume, tideRange, yearStart, facilityName, target, myLabel, flowcamCode)
+  return(metadata)
+}
 
-# Create function to merge the data!
-mergeSpeciesMeta = function(speciesDataset, metadata) {
-  mergedData = full_join(speciesDataset, metadata, by = c("sample" = "flowcamCode")) %>%
+# Run function to get reduced metadata files for each region
+gulfMetaRed = reducedMeta(gulfMeta) 
+
+marMetaRed = reducedMeta(marMeta) %>%
+  # Maritimes didn't need a flowcamCode since the flowcam files were correctly named.
+  # However, for consistency between all datasets (so function below works), I will assign flowcamCode as sampleCode
+  # flowcamCode is what will be used to link the species datasets to metadata
+  mutate(flowcamCode = sampleCode)
+
+nlMetaRed = reducedMeta(nlMeta)
+
+# Pacific needs a bit of extra processing! Otherwise the species dataframe won't merge correctly with metadata
+pacMetaRed = reducedMeta(pacMeta) %>%
+  # There are a bunch of samples with NAs where they didn't collect data. Not sure why even included. Remove these
+  filter(!is.na(flowcamCode)) %>%
+  # Pooled data from March 2021 are from all over the inlet. Replace with NA.
+  mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
+  mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
+  # Remember that each sample in the Pacific is made up of two tows that they combined together. Need to group these into one
+  group_by(flowcamCode, myLabel, yearStart, facilityName, sampleCode) %>%
+  # Adjust the water volume that is the sum of the water volume from tow of both samples
+  summarize(waterVolume = sum(as.numeric(waterVolume)))
+
+# Create function to merge the metadata with the species data from the flowcam
+mergeSpeciesMeta = function(metadata, speciesDataset) {
+  mergedData = full_join(metadata, speciesDataset,  by = c("flowcamCode" = "sample")) %>%
     # Note: waterVolume is already in m^3 not litres like I had previously thought!! Do not divide by 1000.
     # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
     mutate(abund = adjCount / waterVolume * 4) %>%
     # Remove unnecessary columns
-    select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount))
+    select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount)) %>%
+    # Group the stations so 5mm species are added to the regular counts 
+    group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, myLabel, sampleCode) %>% 
+    summarize(abund = sum(abund))
+    
 }
 
 # Run the function
-gulfMerge = mergeSpeciesMeta(gulfAll, gulfMetaRed)
-nlMerge = mergeSpeciesMeta(nl20Adj, nlMetaRed)
-marMerge = mergeSpeciesMeta(mar21Adj, marMetaRed)
-pacMerge = mergeSpeciesMeta(pacAll, pacMetaRed)
-
+# Remember: flowcamCode refers to the name of the FlowCam file
+# sampleCode refers to the code we want all files to have (in the proper format)
+gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll)
+nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj)
+marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj)
+pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll)
 
