@@ -416,57 +416,15 @@ reducedMeta = function(metadata) {
   return(metadata)
 }
 
+# Process them
 gulfMetaRed = reducedMeta(gulfMeta)
-marMetaRed = reducedMeta(marMeta)
+marMetaRed = reducedMeta(marMeta) %>%
+  # Maritimes didn't need a flowcamCode since the flowcam files were correctly named. Was using "sampleCode"
+  # However, for consistency between all datasets (so function below works), I will assign flowcamCode as sampleCode
+  mutate(flowcamCode = sampleCode)
 nlMetaRed = reducedMeta(nlMeta)
-pacMetaRed = reducedMeta(pacMeta)
-
-
-########  GULF  ########  
-
-# Combine 2020 and 2021 flowcam data
-gulfAll = rbind(gulf20Adj, gulf21Adj)
-
-# Merge metadata with FlowCam data  
-gulfMerge = full_join(gulfAll, gulfMetaRed, by=c("sample" = "flowcamCode")) %>%
-  # Note: waterVolume is already in m^3 not litres like I had previously thought!! Do not divide by 1000.
-  # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
-  mutate(abund = adjCount / waterVolume * 4) %>%
-  # get rid of these because they're ugly and distracting
-  select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount))
-
-
-########  NEWFOUNDLAND  ########
-
-# Don't have 2021 metadata yet
-
-# # Merge metadata with FlowCam data  
-# merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
-nlMerge = full_join(nl20Adj, nlMetaRed, by=c("sample" = "flowcamCode")) %>%
-  # divide by 4 because tow was split in 4
-  mutate(abund = adjCount / waterVolume / 4) %>%
-  # get rid of these because they're ugly and distracting
-  select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount))
-
-
-########  MARITIMES  ########
-
-# Maritimes 2021
-# merge with metadata, convert counts to abundance (ind m^3 of seawater), remove uggo columns
-marMerge = full_join(mar21Adj, marMetaRed, by=c("sample" = "sampleCode")) %>%
-  # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
-  mutate(abund = adjCount / waterVolume * 4) %>%
-  # get rid of these because they're ugly and distracting
-  select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount, flowcamCode))
-
-
-########  PACIFIC  ########
-# all Pacific datasets
-pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
-
-# Need to make adjustments to the Pacific metadata
-# Otherwise things won't merge properly!!
-pacMetaRed = pacMetaRed %>%
+# Pacific needs a bit of extra processing! Otherwise the species dataframe won't merge correctly with metadata
+pacMetaRed = reducedMeta(pacMeta) %>%
   filter(!is.na(flowcamCode)) %>%
   # One site missing a water volume. Fill in with the other with the spot (for Pacific, 2 tows combined in one sample)
   # Will not affect results much since this is one of the "Pooled" samples
@@ -475,11 +433,33 @@ pacMetaRed = pacMetaRed %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
   group_by(flowcamCode, myLabel, yearStart, facilityName) %>%
-  summarize(sumWaterVolume = sum(as.numeric(waterVolume)))
+  # Adjust the water volume that is the sum of the water volume from tow of both samples
+  summarize(waterVolume = sum(as.numeric(waterVolume)))
 
-pacMerge = left_join(pacAll, pacMetaRed, by = c("sample" = "flowcamCode")) %>%
-  # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
-  mutate(abund = adjCount / sumWaterVolume * 4) %>%
-  
-  # Get rid of unneeded columns
-  select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount))
+
+## Gulf and Pacific: merge the the datasets from different sampling seasons together first.
+# Combine 2020 and 2021 flowcam data
+gulfAll = rbind(gulf20Adj, gulf21Adj)
+# all Pacific datasets
+pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
+# Maritimes: just for consistency, rename "Sample Code" as "flowcamCode" 
+
+
+
+# Create function to merge the data!
+mergeSpeciesMeta = function(speciesDataset, metadata) {
+  mergedData = full_join(speciesDataset, metadata, by = c("sample" = "flowcamCode")) %>%
+    # Note: waterVolume is already in m^3 not litres like I had previously thought!! Do not divide by 1000.
+    # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
+    mutate(abund = adjCount / waterVolume * 4) %>%
+    # Remove unnecessary columns
+    select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount))
+}
+
+# Run the function
+gulfMerge = mergeSpeciesMeta(gulfAll, gulfMetaRed)
+nlMerge = mergeSpeciesMeta(nl20Adj, nlMetaRed)
+marMerge = mergeSpeciesMeta(mar21Adj, marMetaRed)
+pacMerge = mergeSpeciesMeta(pacAll, pacMetaRed)
+
+
