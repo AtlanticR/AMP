@@ -454,6 +454,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount)) %>%
     # Group the stations so 5mm species are added to the regular counts 
     group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, myLabel, sampleCode) %>% 
+    # This is needed to combine the 250 fraction with the 5mm fraction
     summarize(abund = sum(abund))
     
 }
@@ -468,5 +469,12 @@ nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj) %>%
 marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
   mutate(facetFactor = facilityName)
 pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
-  mutate(facetFactor = dataset)
-
+  mutate(facetFactor = dataset) %>%
+  # Pacific often had multiple tows combined into one sample
+  # After merging, need to again group by flowcamCode and take the average abundance for each species
+  # Need to remove waterVolume and sampleCode because those will be different
+  group_by(flowcamCode, class, facilityName, dataset, yearStart, myLabel, facetFactor) %>%
+  summarize(abund = mean(abund)) %>% 
+  # This is not technically correct. But I use 'sampleCode' in other scripts
+  # Pacific often combined data from multiple tows. Therefore, just set the sampleCode as the flowcamCode.
+  mutate(sampleCode = flowcamCode)
