@@ -32,8 +32,9 @@ nmdsPrep = function(mergeData) {
   
   # Get NMDS coordinates from plot
   ordCoords = as.data.frame(scores(ord, display="sites"))
-  # How stressed am I today
-  ordStress = paste("2D Stress: ", round(ord$stress, digits=2))
+  # Add NMDS stress
+  # Note that round() includes UP TO 2 decimal places. Does not include 0s 
+  ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
   
   # Get the number of facets there should be (either # of bays, or # of sampling months (Pacific))
   numFacet = length(unique(marMerge$facetFactor))
