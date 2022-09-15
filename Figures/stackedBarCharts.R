@@ -31,7 +31,7 @@ stackedBarChart = function(bayData){
     left_join(bayOther %>%
                 # Might be a better way, but I don't want to join the ENTIRE dataframe
                 select(classNew, class, countPerClass), by = c("class" = "class")) %>%
-    group_by(classNew, sample, myLabel) %>%
+    group_by(classNew, sampleCode, myLabel) %>%
     # If you don't recompute counts, the "Other" class will have a bunch of black lines
     # if you set the outline colour to black in geom_bar
     summarise(sumCount = sum(abund))
@@ -42,7 +42,7 @@ stackedBarChart = function(bayData){
   yLabelStacked = expression(paste("Abundance (ind ", m^{-3}, ")"))
   
   stackedGGPlot =
-    ggplot(bayPlotDf, aes(x=sample, y=sumCount, fill=classNew)) +
+    ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
       geom_bar(stat="identity", color = "black")+
       #facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
@@ -69,7 +69,7 @@ stackedBarChart = function(bayData){
   
   # Make ggplot for a relative abundance chart
   relGGPlot = 
-    ggplot(bayPlotDf, aes(x=sample, y=sumCount, fill=classNew)) +
+    ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
       geom_bar(stat = "identity", position = "fill", col = "black") +
       scale_y_continuous(labels = percent_format(), name = "Relative Abundance")+
       facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
