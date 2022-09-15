@@ -461,8 +461,12 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
 # Run the function
 # Remember: flowcamCode refers to the name of the FlowCam file
 # sampleCode refers to the code we want all files to have (in the proper format)
-gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll)
-nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj)
-marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj)
-pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll)
+gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
+  mutate(facetFactor = facilityName)
+nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj) %>%
+  mutate(facetFactor = dataset)
+marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
+  mutate(facetFactor = facilityName)
+pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
+  mutate(facetFactor = dataset)
 
