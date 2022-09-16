@@ -70,3 +70,67 @@ pacNMDS = nmdsPrep(pacMerge)
 gulfNMDS = nmdsPrep(gulfMerge)
 
 
+##### 
+# Do an NMDS for everything
+
+marMerge = marMerge %>%
+  mutate(region = "Maritimes")
+gulfMerge = gulfMerge %>%
+  mutate(region= "Gulf")
+nlMerge = nlMerge %>%
+  mutate(region = "Newfoundland")
+pacMerge = pacMerge %>% 
+  mutate(region = "Pacific")
+
+
+
+everything = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
+
+
+flipData = everything %>% 
+  pivot_wider(names_from = class, values_from = abund) %>%
+  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
+
+# For NMDS calculations, must only include species data from dataframe
+# I will constantly be removing columns, adding columns etc. 
+# Instead define as the index where there's Acartia species (first species colum in dataframe) to the end (final column)
+beginNMDSAll = which(colnames(flipData)== "Acartia spp. ")
+endNMDSAll = ncol(flipData)
+
+
+# Do NMDS ordination but only include species data
+ordAll = metaMDS(sqrt(flipData[,c(beginNMDSAll:endNMDSAll)]), distance = "bray", autotransform=FALSE)
+
+# Get NMDS coordinates from plot
+ordCoordsAll = as.data.frame(scores(ordAll, display="sites"))
+# Add NMDS stress
+# Note that round() includes UP TO 2 decimal places. Does not include 0s 
+ordStressAll = paste("2D Stress: ", format(round(ordAll$stress, digits=2), nsmall=2))
+
+# Get the number of facets there should be (either # of bays, or # of sampling months (Pacific))
+numFacet = length(unique(marMerge$facetFactor))
+# create array for pch symbols. e.g., if 4 factors will give: 21, 22, 23, 24
+numPch = c(21:(20+numFacet))
+
+length(unique(flipData$facetFactor))
+
+g1 =
+  ggplot() + 
+  #geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, col = flipData$region, pch = flipData$facetFactor), size = 5)+ # Use pch=21 to get black outline circles
+  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, col = flipData$region), size = 5)+ # Use pch=21 to get black outline circles
+  
+  # Note, for legends to be combined (instead of 1 legend for points, one for fill, the name must be the same!)
+  scale_color_manual(name = "Region")+
+  scale_shape_manual(values = c(1:12), name = "Bay")+ 
+  annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+  theme_bw()+
+  theme(axis.text = element_blank(),
+        #axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        #legend.position = "none",
+        panel.border=element_rect(color="black", size=1), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
+
