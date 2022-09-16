@@ -73,33 +73,34 @@ gulfNMDS = nmdsPrep(gulfMerge)
 ##### 
 # Do an NMDS for everything
 
+# Add new columns for DFO regions and which ocean they are located in
 marMerge = marMerge %>%
-  mutate(region = "Maritimes")
+  mutate(region = "Maritimes", ocean = "Atlantic")
 gulfMerge = gulfMerge %>%
-  mutate(region= "Gulf")
+  mutate(region= "Gulf", ocean = "Atlantic")
 nlMerge = nlMerge %>%
-  mutate(region = "Newfoundland")
+  mutate(region = "Newfoundland", ocean = "Atlantic")
 pacMerge = pacMerge %>% 
-  mutate(region = "Pacific")
+  mutate(region = "Pacific", ocean = "Pacific")
 
 
 
-everything = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
+allRegions = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
 
 
-flipData = everything %>% 
+allRegionsWide = allRegions %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
 # For NMDS calculations, must only include species data from dataframe
 # I will constantly be removing columns, adding columns etc. 
 # Instead define as the index where there's Acartia species (first species colum in dataframe) to the end (final column)
-beginNMDSAll = which(colnames(flipData)== "Acartia spp. ")
-endNMDSAll = ncol(flipData)
+beginNMDSAll = which(colnames(allRegionsWide)== "Acartia spp. ")
+endNMDSAll = ncol(allRegionsWide)
 
 
 # Do NMDS ordination but only include species data
-ordAll = metaMDS(sqrt(flipData[,c(beginNMDSAll:endNMDSAll)]), distance = "bray", autotransform=FALSE)
+ordAll = metaMDS(sqrt(allRegionsWide[,c(beginNMDSAll:endNMDSAll)]), distance = "bray", autotransform=FALSE)
 
 # Get NMDS coordinates from plot
 ordCoordsAll = as.data.frame(scores(ordAll, display="sites"))
@@ -108,29 +109,66 @@ ordCoordsAll = as.data.frame(scores(ordAll, display="sites"))
 ordStressAll = paste("2D Stress: ", format(round(ordAll$stress, digits=2), nsmall=2))
 
 # Get the number of facets there should be (either # of bays, or # of sampling months (Pacific))
-numFacet = length(unique(marMerge$facetFactor))
 # create array for pch symbols. e.g., if 4 factors will give: 21, 22, 23, 24
-numPch = c(21:(20+numFacet))
+oceanArray = c(21:(20+length(unique(allRegions$ocean)))) 
+regionArray = c(21:(20+length(unique(allRegions$region)))) 
 
-length(unique(flipData$facetFactor))
 
-g1 =
-  ggplot() + 
-  #geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, col = flipData$region, pch = flipData$facetFactor), size = 5)+ # Use pch=21 to get black outline circles
-  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, col = flipData$region), size = 5)+ # Use pch=21 to get black outline circles
-  
-  # Note, for legends to be combined (instead of 1 legend for points, one for fill, the name must be the same!)
-  scale_color_manual(name = "Region")+
-  scale_shape_manual(values = c(1:12), name = "Bay")+ 
-  annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+
+
+nmdsNames = ordCoordsAll %>%
+  mutate(region = allRegionsWide$region, ocean = allRegionsWide$ocean)
+
+pacificData = nmdsNames %>%
+  filter(ocean == "Pacific")
+atlanticData = nmdsNames %>%
+  filter(ocean == "Atlantic")
+
+# OK BUT UGH i actually have to split this
+# Atlantic
+ggAtlantic = ggplot()+
+  geom_point(data = atlanticData, aes(x = NMDS1, y = NMDS2, pch = region), fill = "#F8766D", size = 5)+
+  scale_shape_manual(values = 21:23, name = "Atlantic")+
+  theme_bw()
+
+ggPacific = ggplot()+
+  geom_point(data = pacificData, aes(x = NMDS1, y = NMDS2, pch = region), fill = "#00BFC4", size = 5)+
+  scale_shape_manual(values = 24, name = "Pacific")+
+  theme_bw()
+
+install.packages("cowplot")
+library("cowplot")
+
+pacLegend = get_legend(ggPacific) 
+atlLegend = get_legend(ggAtlantic)
+
+ggBoth = 
+ggplot() + 
+  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$ocean, pch = allRegionsWide$region), size = 5)+ # Use pch=21 to get black outline circles
+
+  #scale_fill_manual(name = "Ocean")+
+  scale_shape_manual(values = regionArray, name = "Region")+ 
+  annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=3.5, hjust=1)+
   theme_bw()+
   theme(axis.text = element_blank(),
         #axis.title = element_blank(),
         axis.ticks = element_blank(),
-        #legend.position = "none",
+        legend.position = "none",
         panel.border=element_rect(color="black", size=1), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
+
+grid.arrange(pacLegend, atlLegend, ggBoth, ncol = 3)
+
+
+
+grid.arrange(
+  grobs = c(ggBoth, pacLegend, atlLegend),
+  widths = c(2, 1, 1),
+  layout_matrix = rbind(c(1, 2),
+                        c(3, 3, 4))
+)
+
 
