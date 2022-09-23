@@ -17,5 +17,9 @@ packages = c("dplyr", "ggplot2", "ggrepel", "ggthemes", "gridExtra", "jcolors", 
 ipak(packages)
 
 
+# Add this to get rid of a warning message that comes up from grouping 
+# More info here: https://statisticsglobe.com/dplyr-message-summarise-has-grouped-output-r
+options(dplyr.summarise.inform = FALSE)
+
 # I NEED TO LOOK INTO PLYR PACKAGE AND HOW TO LOAD ALONG WITH DPLYR
 # I need plyr for one thing. but it also suppresses other function within dplyr
