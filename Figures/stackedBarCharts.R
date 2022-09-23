@@ -5,7 +5,7 @@
 ################################################################################
 
 ## Get things set up
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
+source("DataProcessing/zooplanktonCounts.R")
 
 ################################################################################
 ## Function to create stacked bar charts and relative abundance charts

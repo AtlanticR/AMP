@@ -5,7 +5,7 @@
 ################################################################################
 
 ## Get things set up
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
+source("DataProcessing/zooplanktonCounts.R")
 
 ################################################################################
 ## Alter data format for creation of pie charts

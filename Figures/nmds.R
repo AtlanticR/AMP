@@ -7,7 +7,7 @@
 ## Read in other scripts
 
 # This has all the plankton data with counts for each file
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/zooplanktonCounts.R")
+source("DataProcessing/zooplanktonCounts.R")
 
 ################################################################################
 
