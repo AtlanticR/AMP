@@ -30,12 +30,8 @@
 ################################################################################
 ## Read in other scripts
 
-# setwd("C:/Users/FINNISS/Desktop/AMPCode")
-
-# See source files for a full explanation of the data
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/rPackages.R") # read in all required R packages
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R") # get metadata
+source("DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
+source("DataProcessing/metadataProcessing.R") # get metadata
 
 ################################################################################
 ## GET THE DATA FILE NAMES
@@ -47,7 +43,7 @@ source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R") #
 # Just because it's useful, I get the full directory name, and just the file name
 
 # Define the directory where data need to be read from 
-allFolders = "C:/Users/FINNISS/Desktop/AMMP FlowCam Zooplankton Data/"
+allFolders = "../AMPDataFiles/AMMP FlowCam Zooplankton Data/"
 
 # Get a list of all the folders that are within that directory
 # These are what I refer to as the "datasets" (Gulf 2020, Gulf 2021, etc)
