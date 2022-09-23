@@ -12,7 +12,7 @@
 ################################################################################
 
 # Get the processed metadata files
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/metadataProcessing.R")
+source("DataProcessing/metadataProcessing.R")
 
 ################################################################################
 ## Make the plots. Make them separate for each region and then facet by bay
