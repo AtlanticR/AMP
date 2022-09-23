@@ -25,7 +25,7 @@ source("DataProcessing/rPackages.R")
 ################################################################################
 ## Load the data
 # Files are read relative to my R Project (within "AMP"), which is separate from where the data files are stored (AMPDataFiles)
-# ".." goes back a directory
+# ".." means "go back a directory"
 # Suppress warnings ("expecting numeric but got  date") 
 marMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP Metadata Plankton_2021_Maritimes_21Dec2021.xlsx", sheet = "zoo"))
 nlMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_NL_Jan132022_OG.xlsx", sheet = "zoo"))
@@ -34,17 +34,17 @@ gulfMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_
 
 # Read in my spreadsheet with the location names, i.e., "north", "mid", or "south" in bay
 # I've deleted a bunch of extra columns from the metadata
-marLoc = read.csv("C:/Users/FINNISS/Desktop/AMP/LocationAndNameMatches/marLocation.csv")
+marLoc = read.csv("../AMPDataFiles/LocationAndNameMatches/marLocation.csv")
 # This is where I also included the matches from the FlowCam sample names to the metadata (col: flowcamCode)
 # These were provided from Jeff Barrell. I need these for the Maritimes 2020 data which were different
-gulfLoc = read.csv("C:/Users/FINNISS/Desktop/AMP/LocationAndNameMatches/gulfLocation.csv")
+gulfLoc = read.csv("../AMPDataFiles/LocationAndNameMatches/gulfLocation.csv")
 # Newfoundland: matches provided from Olivia Gibb
-nlLoc = read.csv("C:/Users/FINNISS/Desktop/AMP/LocationAndNameMatches/nl20Location.csv")
+nlLoc = read.csv("../AMPDataFiles/LocationAndNameMatches/nl20Location.csv")
 # Pacific: broken into 3, just like FlowCam adata
-pac20Loc = read_excel("C:/Users/FINNISS/Desktop/AMP/LocationAndNameMatches/pacific2020Location.xlsx")
-pacMar21Loc = read_excel("C:/Users/FINNISS/Desktop/AMP/LocationAndNameMatches/pacificMarch2021Location.xlsx")
-pacJun21Loc = read_excel("C:/Users/FINNISS/Desktop/AMP/LocationAndNameMatches/pacificJune2021Location.xlsx")
-pacSept21Loc = read_excel("C:/Users/FINNISS/Desktop/AMP/LocationAndNameMatches/pacificSept2021Location.xlsx")
+pac20Loc = read_excel("../AMPDataFiles/LocationAndNameMatches/pacific2020Location.xlsx")
+pacMar21Loc = read_excel("../AMPDataFiles/LocationAndNameMatches/pacificMarch2021Location.xlsx")
+pacJun21Loc = read_excel("../AMPDataFiles/LocationAndNameMatches/pacificJune2021Location.xlsx")
+pacSept21Loc = read_excel("../AMPDataFiles/LocationAndNameMatches/pacificSept2021Location.xlsx")
 
 # Combine all the info from the Pacific into one dataframe
 # Convert latitude/longitude to numeric otherwise there are problems when merging
