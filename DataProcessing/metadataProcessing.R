@@ -72,7 +72,7 @@ pacAllLoc = purrr::reduce(list(pacMar21Loc, pacJun21Loc, pacSept21Loc, pac20Loc)
   distinct(sampleCode, .keep_all =T) %>%
   # I also have problems matching things if there are too many fields (idk why!! maybe extra spaces)
   # Just choose the ones that are actually important that need to be merged
-  select(sampleCode, myLabel, tideGuess, tidePhase, flowcamCode)
+  select(sampleCode, myLabel, tidePhase, flowcamCode)
 
 ################################################################################
 ## Make data processing function
