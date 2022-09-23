@@ -66,13 +66,13 @@
 ################################################################################
 
 # read in all required R packages
-source("C:/Users/FINNISS/Desktop/AMPcode/DataProcessing/rPackages.R") 
+source("DataProcessing/rPackages.R") 
 
 ################################################################################
 ## Read in data and create dataframes for each dataset
 
 # Set the file path to the spreadsheet I created
-xl_data = file.path("C:/Users/FINNISS/Desktop/FlowCamPercent.xlsx")
+xl_data = file.path("../AMPDataFiles/FlowCamPercent.xlsx")
 
 # Get the sheet names from the spreadsheet (there is one sheet per dataset
 sheets = excel_sheets(path = xl_data)
