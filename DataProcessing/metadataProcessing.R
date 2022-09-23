@@ -112,7 +112,13 @@ processMeta = function(xlData) {
 marMeta = processMeta(marMetaRaw) %>%
   left_join(marLoc) %>%
   # Rename one of the samples from the metadata where the file name is different
-  mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250"))
+  mutate(sampleCode=str_replace(sampleCode, "21_08_25_Mar_S03_Z01_1548_250", "21_08_25_Mar_S03_Z01_1538_250")) %>%
+  # When mapped, latitudeEnd and longitudeEnd of 21_08_27_Mar_S01_Z07_1115_250 sample is clearly wrong. I think mistakenly
+  # entered as values from station 21_08_27_Mar_S01_Z09_1802_250 (almost the same)
+  # Replace with latitudeEnd/longitudeEnd from the other S07 station (21_08_27_Mar_S01_Z07_1743_250)
+  # 
+  mutate(latitudeEnd = replace(latitudeEnd, sampleCode == "21_08_27_Mar_S01_Z07_1115_250", 44.83887)) %>%
+  mutate(longitudeEnd = replace(longitudeEnd, sampleCode == "21_08_27_Mar_S01_Z07_1115_250", -62.47138))
 
 nlMeta = processMeta(nlMetaRaw) %>%
   left_join(nlLoc)
