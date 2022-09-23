@@ -116,7 +116,6 @@ marMeta = processMeta(marMetaRaw) %>%
   # When mapped, latitudeEnd and longitudeEnd of 21_08_27_Mar_S01_Z07_1115_250 sample is clearly wrong. I think mistakenly
   # entered as values from station 21_08_27_Mar_S01_Z09_1802_250 (almost the same)
   # Replace with latitudeEnd/longitudeEnd from the other S07 station (21_08_27_Mar_S01_Z07_1743_250)
-  # 
   mutate(latitudeEnd = replace(latitudeEnd, sampleCode == "21_08_27_Mar_S01_Z07_1115_250", 44.83887)) %>%
   mutate(longitudeEnd = replace(longitudeEnd, sampleCode == "21_08_27_Mar_S01_Z07_1115_250", -62.47138))
 
