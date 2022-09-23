@@ -32,7 +32,24 @@ nlMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Me
 pacMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_Pacific_Jan262022.xlsx", sheet = "zoo"))
 gulfMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo"))
 
-# Read in my spreadsheet with the location names, i.e., "north", "mid", or "south" in bay
+### Read in Extra Information: Tide Phase and Location in Bay
+
+## Location
+# In general, sampling sites were selected to be in "Inner", "Mid", and "Outer" portions of the bay
+# I visualized these in Google Earth and assigned them labels. Sometimes they do not follow these categories exactly
+# I am still deciding how these should be labelled
+
+## Tides
+# We want tide phase categories, i.e., High, Mid-Rising, Mid-Falling, Low which was not always directly defined in the metadata
+# Tide info in metadata does not always follow what it is supposed to (i.e., tideRange = high, mid, low. tideRiseFall = rising, falling)
+# I have therefore added a TidePhase column
+# Maritimes: comes from a combination of tideRange (high, mid, low) and tideRiseFall (rising, falling)
+# Gulf: not available yet. Thomas Guyondet is putting together
+# Newfoundland: in 2020, N/A. Samples were not taken from specific high/mid/low periods
+# Pacific: tides were either Low or High. Get this from the FlowcamSample name OR from nearby Tofino tide station (https://www.isdm-gdsi.gc.ca/isdm-gdsi/twl-mne/maps-cartes/inventory-inventaire-eng.asp?user=isdm-gdsi&region=ATL&tst=1&perm=0)
+# For some Pacific sites, when comparing sampling times to Tofino tide data, some could be classified as 'mid-falling' or 'mid-rising'
+# However, to reduce the # of classes, keep as just high/low. But tidePhaseOld has mid-rising/falling if it's ever needed
+
 # I've deleted a bunch of extra columns from the metadata
 marLoc = read.csv("../AMPDataFiles/LocationAndNameMatches/marLocation.csv")
 # This is where I also included the matches from the FlowCam sample names to the metadata (col: flowcamCode)
