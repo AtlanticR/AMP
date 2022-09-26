@@ -24,14 +24,14 @@ stackedBarChart = function(bayData){
     summarize(countPerClass = sum(abund)) %>%
     mutate(rank = rank(-countPerClass),
            # Keep 4 most abundant classes, make the rest "Other"
-           classNew = ifelse(rank <=4, class, "Other"))
+           classNew = ifelse(rank <=7, class, "Other"))
   
   # Add this these new classes as a column in the original dataframe
   bayPlotDf = bayData %>%
     left_join(bayOther %>%
                 # Might be a better way, but I don't want to join the ENTIRE dataframe
                 select(classNew, class, countPerClass), by = c("class" = "class")) %>%
-    group_by(classNew, sampleCode, myLabel) %>%
+    group_by(classNew, sampleCode, myLabel, tidePhase) %>%
     # If you don't recompute counts, the "Other" class will have a bunch of black lines
     # if you set the outline colour to black in geom_bar
     summarise(sumCount = sum(abund))
@@ -67,12 +67,24 @@ stackedBarChart = function(bayData){
             strip.text.x = element_text(size = 15)
       )
   
+  
+  # For the relative abundance plots I DON'T want "Mid" tide data
+  # I just want to compare High/Low. So remove the mid-rising and mid-falling tides
+  # CHECK THIS: but I think "Mid" and "Inner" can be combined when looking at tide effect
+  # Since it's supposed to be most pronounced at the mouth of the bay ("Outer")
+  # Therefore, combine Mid/Inner location into one category
+  bayPlotDf = bayPlotDf %>%
+    subset(tidePhase != "Mid-Rising" & tidePhase != "Mid-Falling") %>%
+    mutate(myLabel = replace(myLabel, myLabel == "Mid", "Mid/Inner")) %>%
+    mutate(myLabel = replace(myLabel, myLabel == "Inner", "Mid/Inner"))
+  
   # Make ggplot for a relative abundance chart
   relGGPlot = 
     ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
       geom_bar(stat = "identity", position = "fill", col = "black") +
-      scale_y_continuous(labels = percent_format(), name = "Relative Abundance")+
-      facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
+      scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
+      facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
+      #facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
       scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
       #theme_minimal(base_family = "Roboto Condensed") +
@@ -107,7 +119,6 @@ stackedBarChart = function(bayData){
 # Break up the data by region. And also by bay.
 
 
-
 # Maritimes
 argyleProcess = stackedBarChart(marMerge %>% subset(facilityName == "Argyle"))
 soberProcess = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster"))
@@ -123,13 +134,13 @@ stPetersProcess = stackedBarChart(gulfMerge %>% subset(facilityName=="StPeters")
 seArmProcess = stackedBarChart(nlMerge)
 
 # Pacific (only one bay, but separate by dataset instead)
-lemmens20Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific 2020"))
+lemmens20Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific August 2020"))
 lemmensMar21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific March 2021"))
 lemmensJun21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific June 2021"))
 lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific September 2021"))
 
   
-do.call(stackedBarChart, test, envir = parent.frame())
+#do.call(stackedBarChart, test, envir = parent.frame())
 
 ################################################################################
 ### View the graphs!
@@ -165,7 +176,12 @@ soberProcess[[3]]
 whiteheadProcess[[3]]
 cHarbourProcess[[3]]
 
-# Gulf
-malpequeProcess[[3]]
-cocagneProcess[[3]]
-stPetersProcess[[3]]
+# Gulf: doesn't have tides (yet)
+# NL: tide effect not studied
+
+# Pacific
+lemmens20Process[[3]]
+lemmensMar21Process[[3]]
+lemmensJun21Process[[3]]
+lemmensSept21Process[[3]]
+
