@@ -40,17 +40,16 @@ nmdsPrep = function(mergeData) {
   ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
   
   # Get the number of facets there should be (either # of bays, or # of sampling months (Pacific))
-  numTide = length(unique(marMerge$tidePhase))
+  numTide = length(unique(mergeData$tidePhase))
   # create array for pch symbols. e.g., if 4 factors will give: 21, 22, 23, 24
   numPchTide = c(21:(20+numTide))
   
-  numLoc = length(unique(marMerge$myLabel))
+  numLoc = length(unique(mergeData$myLabel))
   numPchLoc = c(21:(20+numLoc))
   
   ggTide =
   ggplot() + 
     geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = tidePhase, fill = facetFactor), size = 5)+ # Use pch=21 to get black outline circles
-    # Note, for legends to be combined (instead of 1 legend for points, one for fill, the name must be the same!)
     scale_fill_discrete(name = "Bay")+
     scale_shape_manual(values=numPchTide, name = "Tide Phase")+ 
     annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
@@ -64,8 +63,9 @@ nmdsPrep = function(mergeData) {
           panel.grid.minor = element_blank(),
           plot.background = element_blank(),
           plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
-    guides(fill = guide_legend(override.aes = list(shape=21)))
-  
+    # Set the shape as 21 otherwise they will not show up as coloured circles
+    # Set the order to 1 so the "Bay" legend item will always be above "Tide Phase"
+    guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
   
   ggLocation = 
     ggplot() + 
@@ -84,12 +84,11 @@ nmdsPrep = function(mergeData) {
           panel.grid.minor = element_blank(),
           plot.background = element_blank(),
           plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
-    guides(fill = guide_legend(override.aes = list(shape=21)))
+    guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
   
-
+  returnList = list(ggTide, ggLocation)
   
-  # Test that ordination stress is created (i.e., nmds works)
-  return(ggLocation)
+  return(returnList)
   
 }
 
@@ -99,31 +98,10 @@ pacNMDS = nmdsPrep(pacMerge)
 gulfNMDS = nmdsPrep(gulfMerge)
 
 
-marNMDS
+marNMDS[1]
+marNMDS[2]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+pacNMDS[[2]]
 
 
 
