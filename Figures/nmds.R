@@ -31,22 +31,28 @@ nmdsPrep = function(mergeData) {
   ord = metaMDS(sqrt(mergeData[,c(beginNMDS:endNMDS)]), distance = "bray", autotransform=FALSE)
   
   # Get NMDS coordinates from plot
-  ordCoords = as.data.frame(scores(ord, display="sites"))
+  ordCoords = as.data.frame(scores(ord, display="sites")) %>%
+    mutate(tidePhase = mergeData$tidePhase) %>%
+    mutate(facetFactor = mergeData$facetFactor) %>%
+    mutate(myLabel = mergeData$myLabel)
   # Add NMDS stress
   # Note that round() includes UP TO 2 decimal places. Does not include 0s 
   ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
   
   # Get the number of facets there should be (either # of bays, or # of sampling months (Pacific))
-  numFacet = length(unique(marMerge$facetFactor))
+  numTide = length(unique(marMerge$tidePhase))
   # create array for pch symbols. e.g., if 4 factors will give: 21, 22, 23, 24
-  numPch = c(21:(20+numFacet))
+  numPchTide = c(21:(20+numTide))
   
-  g1 =
+  numLoc = length(unique(marMerge$myLabel))
+  numPchLoc = c(21:(20+numLoc))
+  
+  ggTide =
   ggplot() + 
-    geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = mergeData$facetFactor, fill = mergeData$facetFactor, group=mergeData$facetFactor), size = 5)+ # Use pch=21 to get black outline circles
+    geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = tidePhase, fill = facetFactor), size = 5)+ # Use pch=21 to get black outline circles
     # Note, for legends to be combined (instead of 1 legend for points, one for fill, the name must be the same!)
     scale_fill_discrete(name = "Bay")+
-    scale_shape_manual(values=numPch, name = "Bay")+ 
+    scale_shape_manual(values=numPchTide, name = "Tide Phase")+ 
     annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
     theme_bw()+
     theme(axis.text = element_blank(),
@@ -57,10 +63,33 @@ nmdsPrep = function(mergeData) {
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           plot.background = element_blank(),
-          plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
+          plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
+    guides(fill = guide_legend(override.aes = list(shape=21)))
+  
+  
+  ggLocation = 
+    ggplot() + 
+    geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = myLabel, fill = facetFactor), size = 5)+ # Use pch=21 to get black outline circles
+    # Note, for legends to be combined (instead of 1 legend for points, one for fill, the name must be the same!)
+    scale_fill_discrete(name = "Bay")+
+    scale_shape_manual(values=numPchLoc, name = "Location")+ 
+    annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+    theme_bw()+
+    theme(axis.text = element_blank(),
+          #axis.title = element_blank(),
+          axis.ticks = element_blank(),
+          #legend.position = "none",
+          panel.border=element_rect(color="black", size=1), 
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank(),
+          plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
+    guides(fill = guide_legend(override.aes = list(shape=21)))
+  
+
   
   # Test that ordination stress is created (i.e., nmds works)
-  return(g1)
+  return(ggLocation)
   
 }
 
@@ -70,8 +99,42 @@ pacNMDS = nmdsPrep(pacMerge)
 gulfNMDS = nmdsPrep(gulfMerge)
 
 
-##### 
+marNMDS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#################################################################################
 # Do an NMDS for everything
+# Come back to this at a later date: difficulty with aligning legends
+# / need 2 legend items
+
 
 # Add new columns for DFO regions and which ocean they are located in
 marMerge = marMerge %>%
@@ -82,8 +145,6 @@ nlMerge = nlMerge %>%
   mutate(region = "Newfoundland", ocean = "Atlantic")
 pacMerge = pacMerge %>% 
   mutate(region = "Pacific", ocean = "Pacific")
-
-
 
 allRegions = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
 
@@ -114,8 +175,6 @@ oceanArray = c(21:(20+length(unique(allRegions$ocean))))
 regionArray = c(21:(20+length(unique(allRegions$region)))) 
 
 
-
-
 nmdsNames = ordCoordsAll %>%
   mutate(region = allRegionsWide$region, ocean = allRegionsWide$ocean)
 
@@ -136,11 +195,9 @@ ggPacific = ggplot()+
   scale_shape_manual(values = 24, name = "Pacific")+
   theme_bw()
 
-install.packages("cowplot")
-library("cowplot")
-
-pacLegend = get_legend(ggPacific) 
-atlLegend = get_legend(ggAtlantic)
+# Get the legend and then turn it into a grob so patchwork can be used
+pacLegend = as_grob(get_legend(ggPacific))
+atlLegend = as_grob(get_legend(ggAtlantic))
 
 ggBoth = 
 ggplot() + 
@@ -163,12 +220,23 @@ ggplot() +
 grid.arrange(pacLegend, atlLegend, ggBoth, ncol = 3)
 
 
+plot_grid(ggBoth, pacLegend, atlLegend,  ncol = 2)
+
+
+
+plot_grid(ggBoth, pacLegend, ggBoth, atlLegend,  ncol = 2, align = "v")
+
+plot_grid(atlLegend, pacLegend, ncol = 1, align = "v")
+
+
+
 
 grid.arrange(
-  grobs = c(ggBoth, pacLegend, atlLegend),
-  widths = c(2, 1, 1),
-  layout_matrix = rbind(c(1, 2),
-                        c(3, 3, 4))
+  grobs = list(ggBoth, pacLegend, atlLegend),
+  #widths = c(2,1,1,1),
+  layout_matrix = rbind(c(1,1,1, NA),
+                        c(1,1,1, 2),
+                        c(1,1,1, 3),
+                        c(1,1,1, NA))
 )
-
 
