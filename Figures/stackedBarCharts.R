@@ -106,6 +106,8 @@ stackedBarChart = function(bayData){
 
 # Break up the data by region. And also by bay.
 
+
+
 # Maritimes
 argyleProcess = stackedBarChart(marMerge %>% subset(facilityName == "Argyle"))
 soberProcess = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster"))
@@ -126,6 +128,8 @@ lemmensMar21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific Ma
 lemmensJun21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific June 2021"))
 lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific September 2021"))
 
+  
+do.call(stackedBarChart, test, envir = parent.frame())
 
 ################################################################################
 ### View the graphs!
