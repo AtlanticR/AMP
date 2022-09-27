@@ -50,6 +50,8 @@ gulfMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_
 # For some Pacific sites, when comparing sampling times to Tofino tide data, some could be classified as 'mid-falling' or 'mid-rising'
 # However, to reduce the # of classes, keep as just high/low. But tidePhaseOld has mid-rising/falling if it's ever needed
 
+# Note to self: I have the correct High Tide/Low Tide data from Jackson Chu (emailed Sept 27, 2022). Need to use/refer to this for correcting the metadata
+
 # I've deleted a bunch of extra columns from the metadata
 marLoc = read.csv("../AMPDataFiles/LocationAndNameMatches/marLocation.csv")
 # This is where I also included the matches from the FlowCam sample names to the metadata (col: flowcamCode)
