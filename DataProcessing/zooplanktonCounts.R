@@ -434,9 +434,14 @@ pacMetaRed = reducedMeta(pacMeta) %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
   # Remember that each sample in the Pacific is made up of two tows that they combined together. Need to group these into one
-  group_by(flowcamCode, myLabel, yearStart, facilityName, tidePhase, sampleCode) %>%
+  # by NOT including "sampleCode" in the grouping, the waterVolumes per flowcamCode can be summed
+  group_by(flowcamCode, myLabel, yearStart, facilityName, tidePhase) %>%
   # Adjust the water volume that is the sum of the water volume from tow of both samples
-  summarize(waterVolume = sum(as.numeric(waterVolume)))
+  summarize(waterVolume = sum(as.numeric(waterVolume))) %>%
+  # NOTE: This is not technically correct. But I use 'sampleCode' in future functions/scripts. 
+  # I want to keep this as a column name. Therefore create a sampleCode column and set it equal to flowcamCode
+  # Pacific often combined data from multiple tows and therefore multiple sampleCodes are combined within one flowcamCode
+  mutate(sampleCode = flowcamCode)
 
 # Create function to merge the metadata with the species data from the flowcam
 mergeSpeciesMeta = function(metadata, speciesDataset) {
@@ -450,12 +455,12 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, myLabel, tidePhase, sampleCode) %>% 
     # This is needed to combine the 250 fraction with the 5mm fraction
     summarize(abund = sum(abund))
-    
 }
 
 # Run the function
 # Remember: flowcamCode refers to the name of the FlowCam file
 # sampleCode refers to the code we want all files to have (in the proper format)
+# I have set the Pacific sampleCodes to be the same as the flowcamCodes since multiple tows (sampleCodes) were combined per flowCam sample (flowCamCode)
 gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
   mutate(facetFactor = facilityName)
 nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj) %>%
@@ -463,13 +468,4 @@ nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj) %>%
 marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
   mutate(facetFactor = facilityName)
 pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
-  mutate(facetFactor = dataset) %>%
-  # Pacific often had multiple tows combined into one sample
-  # After merging, need to again group by flowcamCode and take the average abundance for each species
-  # Need to remove waterVolume and sampleCode because those will be different
-  group_by(flowcamCode, class, facilityName, dataset, yearStart, myLabel, tidePhase, facetFactor) %>%
-  summarize(abund = mean(abund)) %>% 
-  # This is not technically correct. But I use 'sampleCode' in other scripts
-  # Pacific often combined data from multiple tows. Therefore, just set the sampleCode as the flowcamCode.
-  mutate(sampleCode = flowcamCode)
-
+  mutate(facetFactor = dataset) 
