@@ -86,9 +86,9 @@ nmdsPrep = function(mergeData) {
           plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
     guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
   
-  returnList = list(ggTide, ggLocation)
+  bothPlots = grid.arrange(ggTide, ggLocation)
   
-  return(returnList)
+  return(bothPlots)
   
 }
 
