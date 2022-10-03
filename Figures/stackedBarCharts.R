@@ -120,6 +120,7 @@ stackedBarChart = function(bayData){
 ## Process each dataset
 
 # Break up the data by region. And also by bay.
+# Need to type variable name to get plot to show up
 
 
 # Maritimes
