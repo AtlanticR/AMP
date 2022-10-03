@@ -23,9 +23,11 @@ stackedBarChart = function(bayData){
     group_by(class) %>%
     summarize(countPerClass = sum(abund)) %>%
     mutate(rank = rank(-countPerClass),
-           # Keep 4 most abundant classes, make the rest "Other"
-           classNew = ifelse(rank <=7, class, "Other"))
-  
+           # Keep 5 most abundant classes, make the rest "Other"
+           classNew = ifelse(rank <=5, class, "Other"))
+
+
+    
   # Add this these new classes as a column in the original dataframe
   bayPlotDf = bayData %>%
     left_join(bayOther %>%
@@ -35,6 +37,12 @@ stackedBarChart = function(bayData){
     # If you don't recompute counts, the "Other" class will have a bunch of black lines
     # if you set the outline colour to black in geom_bar
     summarise(sumCount = sum(abund))
+ 
+  # Rename a mid-rising/mid-falling so it shows up better
+  bayPlotDf = bayPlotDf %>%
+    #subset(tidePhase != "Mid-Rising" & tidePhase != "Mid-Falling") %>%
+    mutate(tidePhase = replace(tidePhase, tidePhase == "Mid-Rising", "M-R")) %>%
+    mutate(tidePhase = replace(tidePhase, tidePhase == "Mid-Falling", "M-F"))
   
   
   # Make ggplot for a Stacked Bar Chart
@@ -44,27 +52,24 @@ stackedBarChart = function(bayData){
   stackedGGPlot =
     ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
       geom_bar(stat="identity", color = "black")+
+      facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
       #facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
       scale_y_continuous(labels = scales::comma, name = yLabelStacked) +
       scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
       #theme_minimal(base_family = "Roboto Condensed") +
       theme_bw()+
-      theme(plot.margin = margin(0.5, 0.5, 0.5, 0.5, unit = "cm"),
-            plot.title = element_text(size = 15, face = "bold"),
-            #strip.text.x = element_text(angle = 270, face = "bold"),
-            strip.placement = "outside",
-            #axis.title.x = element_text(margin = margin(t = 0.5, b = 0.5, unit = "cm")),
-            #axis.title.y = element_blank(),
-            axis.text.x = element_text(angle = 90, size = 8),
-            # axis.text.x = element_blank(),
-            axis.text.y = element_text(size = 11),
-            axis.text = element_text(size = 14),
-            #legend.position = "none",
-            legend.title = element_text(size=13),
-            panel.grid.major.y = element_blank(),
-            panel.spacing = unit(0.5, "cm"),
-            strip.text.x = element_text(size = 15)
+      theme(
+        #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 11),
+        axis.ticks.x = element_blank(),
+        legend.title = element_text(size=13),
+        panel.grid.major.y = element_blank(),
+        panel.spacing = unit(0.2, "cm"), # changes spacing between facets
+        #plot.title = element_text(size = 15, face = "bold"),
+        strip.text.x = element_text(size = 13),
+        strip.placement = "outside",
       )
   
   
@@ -73,10 +78,13 @@ stackedBarChart = function(bayData){
   # CHECK THIS: but I think "Mid" and "Inner" can be combined when looking at tide effect
   # Since it's supposed to be most pronounced at the mouth of the bay ("Outer")
   # Therefore, combine Mid/Inner location into one category
-  bayPlotDf = bayPlotDf %>%
-    subset(tidePhase != "Mid-Rising" & tidePhase != "Mid-Falling") %>%
-    mutate(myLabel = replace(myLabel, myLabel == "Mid", "Mid/Inner")) %>%
-    mutate(myLabel = replace(myLabel, myLabel == "Inner", "Mid/Inner"))
+  # bayPlotDf = bayPlotDf %>%
+  #   subset(tidePhase != "Mid-Rising" & tidePhase != "Mid-Falling") %>%
+  #   mutate(myLabel = replace(myLabel, myLabel == "Mid", "Mid/Inner")) %>%
+  #   mutate(myLabel = replace(myLabel, myLabel == "Inner", "Mid/Inner"))
+
+
+  
   
   # Make ggplot for a relative abundance chart
   relGGPlot = 
@@ -84,32 +92,27 @@ stackedBarChart = function(bayData){
       geom_bar(stat = "identity", position = "fill", col = "black") +
       scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
       facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
-      #facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
+      # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
       scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
       #theme_minimal(base_family = "Roboto Condensed") +
       theme_bw()+
-      theme(plot.margin = margin(0.5, 0.5, 0.5, 0.5, unit = "cm"),
-            plot.title = element_text(size = 15, face = "bold"),
-            #strip.text.x = element_text(angle = 270, face = "bold"),
-            strip.placement = "outside",
-            #axis.title.x = element_text(margin = margin(t = 0.5, b = 0.5, unit = "cm")),
-            #axis.title.y = element_blank(),
-            axis.text.x = element_text(angle = 90, size = 8),
-            #axis.text.x = element_blank(),
-            axis.text.y = element_text(size = 11),
-            axis.text = element_text(size = 14),
-            #legend.position = "none",
-            legend.title = element_text(size=13),
-            panel.grid.major.y = element_blank(),
-            panel.spacing = unit(0.5, "cm"),
-            strip.text.x = element_text(size = 15)
+      theme(
+        #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 11),
+        axis.ticks.x = element_blank(),
+        legend.title = element_text(size=13),
+        panel.grid.major.y = element_blank(),
+        panel.spacing = unit(0.2, "cm"), # changes spacing between facets
+        #plot.title = element_text(size = 15, face = "bold"),
+        strip.text.x = element_text(size = 13),
+        strip.placement = "outside",
       )
   
-  # return as list so you get both the ggplot and processed data
-  returnList = list(bayPlotDf, stackedGGPlot, relGGPlot)
+  bothPlots = plot_grid(stackedGGPlot, relGGPlot, ncol = 1, align = "v", axis = "l")
   
-  return(returnList)
+  return(bothPlots)
   
 }
 
@@ -140,48 +143,3 @@ lemmensJun21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific Ju
 lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific September 2021"))
 
   
-#do.call(stackedBarChart, test, envir = parent.frame())
-
-################################################################################
-### View the graphs!
-
-## Stacked bar charts
-
-# Maritimes
-argyleProcess[[2]]
-soberProcess[[2]]
-whiteheadProcess[[2]]
-cHarbourProcess[[2]]
-
-# Gulf. Note: these have unusually hi/lo values?
-malpequeProcess[[2]]
-cocagneProcess[[2]]
-stPetersProcess[[2]]
-
-# Newfoundland
-seArmProcess[[2]]
-
-# Pacific
-lemmens20Process[[2]]
-lemmensMar21Process[[2]]
-lemmensJun21Process[[2]]
-lemmensSept21Process[[2]]
-
-################################################################################
-
-## View relative abundance charts
-# Maritimes
-argyleProcess[[3]]
-soberProcess[[3]]
-whiteheadProcess[[3]]
-cHarbourProcess[[3]]
-
-# Gulf: doesn't have tides (yet)
-# NL: tide effect not studied
-
-# Pacific
-lemmens20Process[[3]]
-lemmensMar21Process[[3]]
-lemmensJun21Process[[3]]
-lemmensSept21Process[[3]]
-
