@@ -30,7 +30,6 @@ pacMerge = pacMerge %>%
 
 allRegions = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
 
-
 allRegionsWide = allRegions %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
@@ -127,14 +126,52 @@ grid.arrange(ggBoth, pacLegend, atlLegend, nrow=2, ncol = 2,
                                    c(1,1,1,NA)))
 
 
+#################################################################################
+#################################################################################
+# Now just the Atlantic bays
+
+beginNMDSAtl = which(colnames(allRegionsWide)== "Acartia spp. ")
+endNMDSAtl = ncol(allRegionsWide)
+
+atlOnly = allRegionsWide %>%
+  filter(ocean == "Atlantic")
+  
+# Do NMDS ordination but only include species data
+ordAtl = metaMDS(sqrt(atlOnly[,c(beginNMDSAtl:endNMDSAtl)]), distance = "bray", autotransform=FALSE)
+
+# Get NMDS coordinates from plot
+ordCoordsAtl = as.data.frame(scores(ordAtl, display="sites")) %>%
+  mutate(tidePhase = atlOnly$tidePhase) %>%
+  mutate(facetFactor = atlOnly$facetFactor) %>%
+  mutate(myLabel = atlOnly$myLabel) %>%
+  mutate(region = atlOnly$region)
+
+# Add NMDS stress
+# Note that round() includes UP TO 2 decimal places. Does not include 0s 
+ordStressAtl = paste("2D Stress: ", format(round(ordAtl$stress, digits=2), nsmall=2))
+
+ggAtlanticOnly = ggplot()+
+  geom_point(data = ordCoordsAtl, aes(x = NMDS1, y = NMDS2, col = region, pch = facetFactor), size = 5)+
+  scale_shape_manual(values=c(1:8), name = "Bay")+
+  scale_color_manual(values = c("#F8766D", "#7CAE00", "#00BFC4"), name = "Region")+
+  annotate("text", x = max(ordCoordsAtl$NMDS1), y=max(ordCoordsAtl$NMDS2), label = ordStressAtl, size=4, hjust=1)+
+  theme_bw()+
+  theme(axis.text = element_blank(),
+        #axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        #legend.position = "none",
+        panel.border=element_rect(color="black", size=1), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
 
 
 
 
 
-
-
-
+#################################################################################
+#################################################################################
 
 
 
