@@ -433,7 +433,7 @@ pacMetaRed = reducedMeta(pacMeta) %>%
   # Pooled data from March 2021 are from all over the inlet. Replace with NA.
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
-  # Remember that each sample in the Pacific is made up of two tows that they combined together. Need to group these into one
+  # Remember that each sample in the Pacific is made up of two (or more) tows that they combined together. Need to group these into one
   # by NOT including "sampleCode" in the grouping, the waterVolumes per flowcamCode can be summed
   group_by(flowcamCode, myLabel, yearStart, facilityName, tidePhase) %>%
   # Adjust the water volume that is the sum of the water volume from tow of both samples
