@@ -226,6 +226,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # Stages are either written as ci-something or civ-something. .* implies "every character after that"
     mutate(class = str_replace(class, "ci-.*", "")) %>%
     mutate(class = str_replace(class, "civ-.*", "")) %>%
+    mutate(class = str_replace(class, "cv-.*", "")) %>%
     
     # idk why this one wouldn't fix itself above??? Something to do with the space before the word
     mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
