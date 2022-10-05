@@ -458,15 +458,24 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     summarize(abund = sum(abund))
 }
 
-# Run the function
-# Remember: flowcamCode refers to the name of the FlowCam file
-# sampleCode refers to the code we want all files to have (in the proper format)
-# I have set the Pacific sampleCodes to be the same as the flowcamCodes since multiple tows (sampleCodes) were combined per flowCam sample (flowCamCode)
+
+# Call the functions to merge the zooplankton counts with the (reduced) metadata
+# Need to also add extra columns! These are important for the plotting scripts later on
+# facetFactor is used in some scripts since regions in the Atlantic are faceted based on bay (facilityName)
+# but Pacific is faceted based on field season (dataset)
 gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
-  mutate(facetFactor = facilityName)
+  mutate(facetFactor = facilityName,
+         region = "Gulf",
+         ocean = "Atlantic")
 nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj) %>%
-  mutate(facetFactor = dataset)
+  mutate(facetFactor = dataset,
+         region = "Newfoundland",
+         ocean = "Atlantic")
 marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
-  mutate(facetFactor = facilityName)
+  mutate(facetFactor = facilityName,
+         region = "Maritimes",
+         ocean = "Atlantic")
 pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
-  mutate(facetFactor = dataset) 
+  mutate(facetFactor = dataset,
+         region = "Pacific",
+         ocean = "Pacific") 
