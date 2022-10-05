@@ -64,9 +64,6 @@ pacificData = nmdsNames %>%
 atlanticData = nmdsNames %>%
   filter(ocean == "Atlantic")
 
-install.packages("scales")
-library("scales")
-
 # This is how you get the GGPLOT colours. Put the # of classes in brackets
 hue_pal()(4)
 
@@ -150,23 +147,68 @@ ordCoordsAtl = as.data.frame(scores(ordAtl, display="sites")) %>%
 # Note that round() includes UP TO 2 decimal places. Does not include 0s 
 ordStressAtl = paste("2D Stress: ", format(round(ordAtl$stress, digits=2), nsmall=2))
 
+
+# I need to create 3 legend items for:
+# 1. Gulf as title (subpoints are Cocagne, Malpeque, StPeters)
+# 2. Maritimes (Argyle, Country Harbour, Malpeque, Sober Island Oyster)
+# 3. Newfoundland (rename as Southeast Arm)
+
+# Gulf
+ggGulf = ggplot()+
+  geom_point(data = ordCoordsAtl %>% filter(region == "Gulf"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
+  scale_fill_manual(values = c("red4", "red2", "lightpink"), name = "Gulf Region")+
+  theme_bw()+
+  theme(legend.key.size = unit(0.2, "cm"),
+        legend.text=element_text(size = 13),
+        legend.title = element_text(size = 14))
+
+
+# Maritimes
+ggMaritimes = ggplot()+
+  geom_point(data = ordCoordsAtl %>% filter(region == "Maritimes"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
+  scale_fill_manual(values = c("darkgreen", "green3", "darkolivegreen2", "mediumspringgreen"), name = "Maritimes Region")+
+  theme_bw()+
+  theme(legend.key.size = unit(0.2, "cm"),
+        legend.text=element_text(size = 13),
+        legend.title = element_text(size = 14))
+
+# Maritimes
+ggNewfoundland = ggplot()+
+  geom_point(data = ordCoordsAtl %>% filter(region == "Newfoundland"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
+  scale_fill_manual(values = c("#00BFC4"), name = "Newfoundland", labels = "Southeast Arm")+
+  theme_bw()+
+  theme(legend.key.size = unit(0.2, "cm"),
+        legend.text=element_text(size = 13),
+        legend.title = element_text(size = 14))
+
+
+# Get the legends
+gulfLegend = as_grob(get_legend(ggGulf))
+marLegend = as_grob(get_legend(ggMaritimes))
+nlLegend = as_grob(get_legend(ggNewfoundland))
+
 ggAtlanticOnly = ggplot()+
-  geom_point(data = ordCoordsAtl, aes(x = NMDS1, y = NMDS2, col = region, pch = facetFactor), size = 5)+
-  scale_shape_manual(values=c(1:8), name = "Bay")+
-  scale_color_manual(values = c("#F8766D", "#7CAE00", "#00BFC4"), name = "Region")+
+  geom_point(data = ordCoordsAtl, aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
+  scale_shape_manual(values=c(21:23), name = "Bay")+
+  scale_fill_manual(values = c("darkgreen", "red4", "green3", "red2", "#00BFC4", "darkolivegreen2", "lightpink", "mediumspringgreen"), name = "Region")+
   annotate("text", x = max(ordCoordsAtl$NMDS1), y=max(ordCoordsAtl$NMDS2), label = ordStressAtl, size=4, hjust=1)+
   theme_bw()+
   theme(axis.text = element_blank(),
         #axis.title = element_blank(),
         axis.ticks = element_blank(),
-        #legend.position = "none",
+        legend.position = "none",
         panel.border=element_rect(color="black", size=1), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
 
-
+grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
+             layout_matrix = rbind(c(1,1,1,NA), 
+                                   c(1,1,1,2),
+                                   c(1,1,1,3),
+                                   c(1,1,1,4),
+                                   c(1,1,1,NA)))
 
 
 
