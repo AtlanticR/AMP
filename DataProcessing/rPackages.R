@@ -13,7 +13,7 @@ ipak = function(pkg){
 
 # Choose necessary packages
 packages = c("cowplot", "devtools", "dplyr", "ggplot2", "ggrepel", "ggthemes", "ggh4x", "gridExtra", "jcolors", "leaflet", "mapr", "mapview",
-             "pkgcond", "purrr", "readxl", "stringr", "tidyr", "tools", "useful", "vegan", "wbstats", "wpa")
+             "pkgcond", "purrr", "readxl", "scales", "stringr", "tidyr", "tools", "useful", "vegan", "wbstats", "wpa")
 ipak(packages)
 
 
