@@ -64,6 +64,7 @@ stackedBarChart = function(bayData){
         axis.text.x = element_blank(),
         axis.text.y = element_text(size = 11),
         axis.ticks.x = element_blank(),
+        axis.title.x = element_blank(),
         legend.title = element_text(size=13),
         panel.grid.major.y = element_blank(),
         panel.spacing = unit(0.2, "cm"), # changes spacing between facets
