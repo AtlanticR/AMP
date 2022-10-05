@@ -174,11 +174,7 @@ ggAtlanticOnly = ggplot()+
 #################################################################################
 
 
-
-
-
-
-# Create function to make NMDS ordinations
+# Create function to make NMDS ordinations for each region separately
 
 nmdsPrep = function(mergeData) {
   # alter the dataframe so it is in appropriate format for NMDS
@@ -222,7 +218,7 @@ nmdsPrep = function(mergeData) {
     annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
     theme_bw()+
     theme(axis.text = element_blank(),
-          #axis.title = element_blank(),
+          axis.title.x = element_blank(), # don't want 
           axis.ticks = element_blank(),
           #legend.position = "none",
           panel.border=element_rect(color="black", size=1), 
@@ -240,7 +236,8 @@ nmdsPrep = function(mergeData) {
     # Note, for legends to be combined (instead of 1 legend for points, one for fill, the name must be the same!)
     scale_fill_discrete(name = "Bay")+
     scale_shape_manual(values=numPchLoc, name = "Location")+ 
-    annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+    # Don't want stress on second plot
+    # annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
     theme_bw()+
     theme(axis.text = element_blank(),
           #axis.title = element_blank(),
@@ -265,10 +262,6 @@ pacNMDS = nmdsPrep(pacMerge)
 gulfNMDS = nmdsPrep(gulfMerge)
 
 
-marNMDS[1]
-marNMDS[2]
-
-pacNMDS[[2]]
 
 
 
