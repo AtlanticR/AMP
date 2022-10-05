@@ -10,46 +10,57 @@
 source("DataProcessing/zooplanktonCounts.R")
 
 ################################################################################
+## Define the colour palettes for each bay/region
 
+# Set the colours for data from each ocean
+# Note, these are just the default ggplot colours when there are 4 items to be displayed
+# Can get the colours from this function. Put the # of classes in brackets
+hue_pal()(4)
 
-#################################################################################
-# Do an NMDS for everything
-# Come back to this at a later date: difficulty with aligning legends
-# / need 2 legend items
-
-# Define the colours for everything
-
+#### Based on ocean
+# Atlantic Ocean
 atlColour = c("Gulf" = "#F8766D", 
               "Maritimes" = "#7CAE00", 
               "Newfoundland" = "#00BFC4")
+# Pacific Ocean 
+# Note this is the colour when only Pacific OCEAN data is displayed
+# When Pacific (region) data is broken down by field season (below), 4 colours will be set
 pacColourOne = c("Pacific" = "#C77CFF")
 
 
+#### Based on bay
+# I just looked here and tried to find different shades of each colour set above:
+# http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+# These are not final colours. Also I do not need to specify the bay name, but it helps to 
+# have them written down somewhere 
 marColours = c("Argyle" = "darkgreen", 
                "Country Harbour" = "green3", 
                "Sober Island Oyster" = "darkolivegreen2", 
                "WhiteHead" = "mediumspringgreen")
+
 nlColours = c("Newfoundland 2020" = "#00BFC4")
+
 gulfColours = c("Cocagne" = "red4", 
                 "Malpeque" = "red2", 
                 "StPeters" = "lightpink")
+
 pacColours = c("Pacific August 2020" = "plum1", 
                "Pacific June 2021" = "magenta4", 
                "Pacific March 2021" = "maroon", 
                "Pacific September 2021" = "maroon1")
 
-# Add new columns for DFO regions and which ocean they are located in
-marMerge = marMerge %>%
-  mutate(region = "Maritimes", ocean = "Atlantic")
-gulfMerge = gulfMerge %>%
-  mutate(region= "Gulf", ocean = "Atlantic")
-nlMerge = nlMerge %>%
-  mutate(region = "Newfoundland", ocean = "Atlantic")
-pacMerge = pacMerge %>% 
-  mutate(region = "Pacific", ocean = "Pacific")
+#################################################################################
+#################################################################################
+## Create NMDS for all data
+# Including Pacific and Atlantic data
 
+# This will display each DFO region (Gulf, Maritimes, Newfoundland, Pacific) with a different colour
+# Possibly different symbols for each ocean (Pacific, Atlantic). TBD how I handle this.
+
+# Combine all the data together
 allRegions = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
 
+# Convert it to wide format
 allRegionsWide = allRegions %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
@@ -59,7 +70,6 @@ allRegionsWide = allRegions %>%
 # Instead define as the index where there's Acartia species (first species colum in dataframe) to the end (final column)
 beginNMDSAll = which(colnames(allRegionsWide)== "Acartia spp. ")
 endNMDSAll = ncol(allRegionsWide)
-
 
 # Do NMDS ordination but only include species data
 ordAll = metaMDS(sqrt(allRegionsWide[,c(beginNMDSAll:endNMDSAll)]), distance = "bray", autotransform=FALSE)
@@ -75,22 +85,14 @@ ordStressAll = paste("2D Stress: ", format(round(ordAll$stress, digits=2), nsmal
 oceanArray = c(21:(20+length(unique(allRegions$ocean)))) 
 regionArray = c(21:(20+length(unique(allRegions$region)))) 
 
-
-nmdsNames = ordCoordsAll %>%
+# Add region and ocean onto this data frame (it's easier for plotting in aes for ggplot)
+ordCoordsAll = ordCoordsAll %>%
   mutate(region = allRegionsWide$region, ocean = allRegionsWide$ocean)
 
-pacificData = nmdsNames %>%
-  filter(ocean == "Pacific")
-atlanticData = nmdsNames %>%
-  filter(ocean == "Atlantic")
 
-# This is how you get the GGPLOT colours. Put the # of classes in brackets
-hue_pal()(4)
-
-# OK BUT UGH i actually have to split this
 # Atlantic
 ggAtlantic = ggplot()+
-  geom_point(data = atlanticData, aes(x = NMDS1, y = NMDS2, fill = region), pch = 21, size = 5)+
+  geom_point(data = ordCoordsAll %>% filter(ocean == "Atlantic"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 21, size = 5)+
   scale_fill_manual(values = atlColour, name = "Atlantic Ocean")+
   theme_bw()+
   theme(legend.key.size = unit(0.2, "cm"),
@@ -98,7 +100,7 @@ ggAtlantic = ggplot()+
         legend.title = element_text(size = 14))
 
 ggPacific = ggplot()+
-  geom_point(data = pacificData, aes(x = NMDS1, y = NMDS2, fill = region), pch = 22, size = 5)+
+  geom_point(data = ordCoordsAll %>% filter(ocean == "Pacific"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 22, size = 5)+
   scale_fill_manual(values = pacColourOne, name = "Pacific Ocean")+
   theme_bw()+
   theme(legend.key.size = unit(0.2, "cm"),
