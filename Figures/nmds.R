@@ -54,6 +54,15 @@ pacColours = c("Pacific August 2020" = "plum1",
 ## Create NMDS for all data
 # Including Pacific and Atlantic data
 
+# Plot is a bit more complicated because I need 2 legend items: Atlantic Ocean (and DFO regions listed underneath)
+# and Pacific Ocean (with DFO region listed underneath)
+# This has to be done by making 3 ggplots to:
+# 1. Get the legend (only, not the actual plot) from Atlantic data
+# 2. Get the Legend (only) from Pacific data
+# 3. Plot (with no legend) of both Pacific and Atlantic data
+# All three will then be combined with grid.arrange()
+
+
 # This will display each DFO region (Gulf, Maritimes, Newfoundland, Pacific) with a different colour
 # Possibly different symbols for each ocean (Pacific, Atlantic). TBD how I handle this.
 
@@ -89,8 +98,7 @@ regionArray = c(21:(20+length(unique(allRegions$region))))
 ordCoordsAll = ordCoordsAll %>%
   mutate(region = allRegionsWide$region, ocean = allRegionsWide$ocean)
 
-
-# Atlantic
+# Create plot for Atlantic
 ggAtlantic = ggplot()+
   geom_point(data = ordCoordsAll %>% filter(ocean == "Atlantic"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 21, size = 5)+
   scale_fill_manual(values = atlColour, name = "Atlantic Ocean")+
@@ -99,6 +107,7 @@ ggAtlantic = ggplot()+
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14))
 
+# Create plot for Pacific
 ggPacific = ggplot()+
   geom_point(data = ordCoordsAll %>% filter(ocean == "Pacific"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 22, size = 5)+
   scale_fill_manual(values = pacColourOne, name = "Pacific Ocean")+
@@ -108,12 +117,11 @@ ggPacific = ggplot()+
         legend.title = element_text(size = 14))
 
 
-# Get the legend and then turn it into a grob so patchwork can be used
+# Get the legend and then turn it into a grob
 pacLegend = as_grob(get_legend(ggPacific))
 atlLegend = as_grob(get_legend(ggAtlantic))
 
-# TEST
-
+# Create plot with both data and no legend
 ggBoth = 
   ggplot() + 
   geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$ocean, fill = allRegionsWide$region), size = 5)+
@@ -130,6 +138,7 @@ ggBoth =
         plot.background = element_blank(),
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
 
+# Put everything together
 # This gets me PRETTY CLOSE to the Figure that I want, except that the legend items aren't totally lined up
 # Will just fix this in PowerPoint (for now...)
 grid.arrange(ggBoth, pacLegend, atlLegend, nrow=2, ncol = 2,
@@ -140,33 +149,35 @@ grid.arrange(ggBoth, pacLegend, atlLegend, nrow=2, ncol = 2,
 
 #################################################################################
 #################################################################################
-# Now just the Atlantic bays
+## Now do the same thing for Atlantic ocean
 
-beginNMDSAtl = which(colnames(allRegionsWide)== "Acartia spp. ")
-endNMDSAtl = ncol(allRegionsWide)
+# I need to create 3 legend items for:
+# 1. Gulf as title (subpoints are Cocagne, Malpeque, StPeters)
+# 2. Maritimes (Argyle, Country Harbour, Malpeque, Sober Island Oyster)
+# 3. Newfoundland (rename as Southeast Arm)
 
+
+# Get only the Atlantic Ocean data
 atlOnly = allRegionsWide %>%
   filter(ocean == "Atlantic")
-  
-# Do NMDS ordination but only include species data
+
+# Set the start/stop column indices for NMDS to run on
+beginNMDSAtl = which(colnames(atlOnly)== "Acartia spp. ")
+endNMDSAtl = ncol(atlOnly)
+
+# Do NMDS ordination
 ordAtl = metaMDS(sqrt(atlOnly[,c(beginNMDSAtl:endNMDSAtl)]), distance = "bray", autotransform=FALSE)
 
-# Get NMDS coordinates from plot
+# Get NMDS coordinates from plot and add back in certain columns (easier for aes commands)
 ordCoordsAtl = as.data.frame(scores(ordAtl, display="sites")) %>%
   mutate(tidePhase = atlOnly$tidePhase) %>%
   mutate(facetFactor = atlOnly$facetFactor) %>%
   mutate(myLabel = atlOnly$myLabel) %>%
   mutate(region = atlOnly$region)
 
-# Add NMDS stress
+# GET NMDS stress
 # Note that round() includes UP TO 2 decimal places. Does not include 0s 
 ordStressAtl = paste("2D Stress: ", format(round(ordAtl$stress, digits=2), nsmall=2))
-
-
-# I need to create 3 legend items for:
-# 1. Gulf as title (subpoints are Cocagne, Malpeque, StPeters)
-# 2. Maritimes (Argyle, Country Harbour, Malpeque, Sober Island Oyster)
-# 3. Newfoundland (rename as Southeast Arm)
 
 # Gulf
 ggGulf = ggplot()+
@@ -176,7 +187,6 @@ ggGulf = ggplot()+
   theme(legend.key.size = unit(0.2, "cm"),
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14))
-
 
 # Maritimes
 ggMaritimes = ggplot()+
@@ -196,12 +206,12 @@ ggNewfoundland = ggplot()+
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14))
 
-
-# Get the legends
+# Get (just) the legends
 gulfLegend = as_grob(get_legend(ggGulf))
 marLegend = as_grob(get_legend(ggMaritimes))
 nlLegend = as_grob(get_legend(ggNewfoundland))
 
+# Now make a plot of everything (without the legend)
 ggAtlanticOnly = ggplot()+
   geom_point(data = ordCoordsAtl, aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
   scale_shape_manual(values=c(21:23), name = "Bay")+
@@ -218,6 +228,7 @@ ggAtlanticOnly = ggplot()+
         plot.background = element_blank(),
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
 
+# Plot it all together
 grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
              layout_matrix = rbind(c(1,1,1,NA), 
                                    c(1,1,1,2),
@@ -226,11 +237,10 @@ grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
                                    c(1,1,1,NA)))
 #################################################################################
 
-
+#### MAYBE DO PACIFIC THINGS HERE???? TBD
 
 #################################################################################
-#################################################################################
-
+## Now 
 
 
 nmdsPrep = function(mergeData, bayColours) {
@@ -291,8 +301,6 @@ nmdsPrep = function(mergeData, bayColours) {
   return(ggBay)
   
 }
-
-
 
 marNMDS = nmdsPrep(marMerge, marColours)
 nlNMDS = nmdsPrep(nlMerge, nlColours)
