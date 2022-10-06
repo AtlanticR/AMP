@@ -112,6 +112,8 @@ ggPacific = ggplot()+
 pacLegend = as_grob(get_legend(ggPacific))
 atlLegend = as_grob(get_legend(ggAtlantic))
 
+# TEST
+
 ggBoth = 
   ggplot() + 
   geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$ocean, fill = allRegionsWide$region), size = 5)+
