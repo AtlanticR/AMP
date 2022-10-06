@@ -240,7 +240,9 @@ grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
 #### MAYBE DO PACIFIC THINGS HERE???? TBD
 
 #################################################################################
-## Now 
+## Now Plot each bay separately
+# This is easier because there is only one legend item
+# Run as a function and pass in the various  
 
 
 nmdsPrep = function(mergeData, bayColours) {
@@ -307,19 +309,15 @@ nlNMDS = nmdsPrep(nlMerge, nlColours)
 pacNMDS = nmdsPrep(pacMerge, pacColours)
 gulfNMDS = nmdsPrep(gulfMerge, gulfColours)
 
+grid.arrange(marNMDS, nlNMDS, pacNMDS, gulfNMDS)
+
+# This works better! It aligns all the plots with unequal legends
+plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 
 
-
-
-
-
-
-
-marColours = c("darkgreen", "green3", "darkolivegreen2", "mediumspringgreen")
-
-
-
-
+#################################################################################
+#################################################################################
+### Each bay separately so I can plot tides & location
 
 
 
