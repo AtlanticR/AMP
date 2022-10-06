@@ -255,7 +255,7 @@ nmdsPrep = function(mergeData, bayColours) {
   
   # For NMDS calculations, must only include species data from dataframe
   # I will constantly be removing columns, adding columns etc. 
-  # Instead define as the index where there's Acartia species (first species colum in dataframe) to the end (final column)
+  # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
   beginNMDS = which(colnames(mergeData)== "Acartia spp. ")
   endNMDS = ncol(mergeData)
   
@@ -311,7 +311,7 @@ gulfNMDS = nmdsPrep(gulfMerge, gulfColours)
 
 grid.arrange(marNMDS, nlNMDS, pacNMDS, gulfNMDS)
 
-# This works better! It aligns all the plots with unequal legends
+# This works better than grid.arrange! It aligns all the plots with unequal legends
 plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 
 
@@ -320,20 +320,117 @@ plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 ### Each bay separately so I can plot tides & location
 
 
+# TESTING THINGS
+
+bayData = marMerge %>% 
+  pivot_wider(names_from = class, values_from = abund) %>%
+  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
+
+bayData = bayData %>%
+  filter(facetFactor == sort(unique(bayData$facetFactor))[3])
+
+
+
+nmdsBay = function(regionData, bayColour) {
+  # alter the dataframe so it is in appropriate format for NMDS
+  # names_from: The column whose values will be used as column names
+  # values_from: The column whose values will be used as cell values
+  regionData = regionData %>% 
+    pivot_wider(names_from = class, values_from = abund) %>%
+    mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
+  
+
+  ggList = list()
+  
+  for(i in 1:length(unique(regionData$facetFactor))){
+    
+    bayData = regionData %>%
+      filter(facetFactor == sort(unique(regionData$facetFactor))[i])
+    bayColour = "red"
+    
+  
+  
+  # For NMDS calculations, must only include species data from dataframe
+  # I will constantly be removing columns, adding columns etc. 
+  # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
+  beginNMDS = which(colnames(bayData)== "Acartia spp. ")
+  endNMDS = ncol(bayData)
+  
+  # Do NMDS ordination but only include species data
+  ord = metaMDS(sqrt(bayData[,c(beginNMDS:endNMDS)]), distance = "bray", autotransform=FALSE)
+  
+  # Get NMDS coordinates from plot
+  ordCoords = as.data.frame(scores(ord, display="sites")) %>%
+    mutate(tidePhase = bayData$tidePhase) %>%
+    mutate(facetFactor = bayData$facetFactor) %>%
+    mutate(myLabel = bayData$myLabel)
+  
+  # Add NMDS stress
+  # Note that round() includes UP TO 2 decimal places. Does not include 0s 
+  ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
+  
+  # Get the number of facets there should be (either # of bays, or # of sampling months (Pacific))
+  numTide = length(unique(bayData$tidePhase))
+  # create array for pch symbols. e.g., if 4 factors will give: 21, 22, 23, 24
+  numPchTide = c(21:(20+numTide))
+
+  numLoc = length(unique(bayData$myLabel))
+  numPchLoc = c(21:(20+numLoc))
+  
+  ggBay =
+    ggplot() + 
+    geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = tidePhase), fill = bayColour, size = 5)+ # Use pch=21 to get black outline circles
+    #scale_fill_manual(name = "Bay", values = bayColours)+
+    ggtitle(bayData$facetFactor)+
+    scale_shape_manual(values=numPchLoc, name = "Location")+ 
+    annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+    theme_bw()+
+    theme(axis.text = element_blank(),
+          axis.title.x = element_blank(), # don't want 
+          axis.ticks = element_blank(),
+          #legend.position = "none",
+          panel.border=element_rect(color="black", size=1), 
+          panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          plot.background = element_blank(),
+          plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
+    # Set the shape as 21 otherwise they will not show up as coloured circles
+    # Set the order to 1 so the "Bay" legend item will always be above "Tide Phase"
+    guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
+
+  ggList[[i]] = ggBay
+  
+  }
+  
+  
+  arrangePlot = plot_grid(ggList[[1]], ggList[[2]], ggList[[3]], ggList[[4]], align = "v")
+  
+  return(arrangePlot)
+  
+}
 
 
 
 
+nmdsBay(marMerge, marColours)
 
 
 
+x = nmdsBay(marMerge %>% filter(facetFactor == "Argyle"), "darkgreen")
+y = nmdsBay(marMerge %>% filter(facetFactor == "Country Harbour"), "green3")
+z = nmdsBay(marMerge %>% filter(facetFactor == "Sober Island Oyster"), "darkolivegreen2")
+hi = nmdsBay(marMerge %>% filter(facetFactor == "WhiteHead"), "mediumspringgreen")
 
 
+plot_grid(x, y, z, hi, align = "v")
 
 
+marColours[1]
 
-
-
+marColours = c("Argyle" = "darkgreen", 
+               "Country Harbour" = "green3", 
+               "Sober Island Oyster" = "darkolivegreen2", 
+               "WhiteHead" = "mediumspringgreen")
 
 
 
