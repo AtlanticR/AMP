@@ -203,7 +203,7 @@ ggMaritimes = ggplot()+
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14))
 
-# Maritimes
+# Newfoundland
 ggNewfoundland = ggplot()+
   geom_point(data = ordCoordsAtl %>% filter(region == "Newfoundland"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
   scale_fill_manual(values = c("#00BFC4"), name = "Newfoundland", labels = "Southeast Arm")+
