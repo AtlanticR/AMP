@@ -398,9 +398,12 @@ nmdsBay = function(regionData, regionColour) {
   }
   
   # Arrange the plots. COME BACK TO THIS!!!!! How do I just this to just be i number of gglLists
-  arrangePlot = plot_grid(ggList[[1]], ggList[[2]], ggList[[3]], gglist[[4]], align = "v")
+  #arrangePlot = plot_grid(ggList[[1]], ggList[[2]], ggList[[3]], ggList[[4]], align = "v")
+  # ^ This can be replaced with do.call()!!!
+  # I think this can replace a lot of my garbage code!!
+  gridOfPlots = do.call("plot_grid", c(ggList))
   
-  return(arrangePlot)
+  return(gridOfPlots)
   
 }
 
