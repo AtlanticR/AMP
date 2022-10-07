@@ -366,17 +366,19 @@ nmdsBay = function(regionData, regionColour) {
     
     # Add NMDS stress
     # Note that round() includes UP TO 2 decimal places. Does not include 0s 
-    ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
+    ordStress = paste("Stress: ", format(round(ord$stress, digits=2), nsmall=2))
     
     # Create the ggplot
     ggBay =
       ggplot() + 
       geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = tidePhase), fill = bayColour, size = 5)+ # Use pch=21 to get black outline circles
+      geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= myLabel), colour = "gray30")+ # Use pch=21 to get black outline circles
       #scale_fill_manual(name = "Bay", values = bayColours)+
-      scale_shape_manual(values = pchTide)+
+      scale_shape_manual(values = pchTide, name = "Tide Phase")+
       ggtitle(bayData$facetFactor)+
       #scale_shape_manual(values=numPchLoc, name = "Location")+ 
-      annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+      #annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+      annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust = -0.02)+
       theme_bw()+
       theme(axis.text = element_blank(),
             axis.ticks = element_blank(),
@@ -411,12 +413,6 @@ nmdsBay = function(regionData, regionColour) {
 nmdsBay(marMerge, marColours)
 nmdsBay(gulfMerge, gulfColours)
 nmdsBay(nlMerge, nlColours)
-
-
-
-
-
-
 
 
 
