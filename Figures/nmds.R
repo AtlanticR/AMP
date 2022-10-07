@@ -115,7 +115,7 @@ ggAtlantic = ggplot()+
 
 # Create plot for Pacific
 ggPacific = ggplot()+
-  geom_point(data = ordCoordsAll %>% filter(ocean == "Pacific"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 22, size = 5)+
+  geom_point(data = ordCoordsAll %>% filter(ocean == "Pacific"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 21, size = 5)+
   scale_fill_manual(values = pacColourOne, name = "Pacific Ocean")+
   theme_bw()+
   theme(legend.key.size = unit(0.2, "cm"),
@@ -130,9 +130,9 @@ atlLegend = as_grob(get_legend(ggAtlantic))
 # Create plot with both data and no legend
 ggBoth = 
   ggplot() + 
-  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$ocean, fill = allRegionsWide$region), size = 5)+
+  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region), pch=21, size = 5)+
   # Don't need to define colours. These just show up as default ggplot colours for 4 elements
-  scale_shape_manual(values = regionArray, name = "Region")+ 
+  #scale_shape_manual(values = regionArray, name = "Region")+ 
   annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=4, hjust=1)+
   theme_bw()+
   theme(axis.text = element_blank(),
@@ -425,6 +425,17 @@ nmdsBay(pacMerge %>% filter(facetFactor != "Pacific March 2021") %>%
           filter(sampleCode != c("AMMP_PA_S04W01_20210611HT_250um")), pacColours)
 
 
+
+
+
+
+
+
+
+
+
+
+
 #################################################################################
 #################################################################################
 # CHANGING MY MIND ABOUT HOW TO DO THINGS
@@ -491,8 +502,7 @@ nmdsPrep = function(mergeData) {
     # Set the order to 1 so the "Bay" legend item will always be above "Tide Phase"
     guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
   
-  
-  
+
 }
 
 
