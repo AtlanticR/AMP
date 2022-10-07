@@ -49,6 +49,12 @@ pacColours = c("Pacific August 2020" = "plum1",
                "Pacific March 2021" = "maroon", 
                "Pacific September 2021" = "maroon1")
 
+### Also set the symbols for the tides
+pchTide = c("High" = 21,
+            "Low" = 22,
+            "Mid-Falling" = 23,
+            "Mid-Rising" = 24)
+
 #################################################################################
 #################################################################################
 ## Create NMDS for all data
@@ -320,13 +326,6 @@ plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 ### Each bay separately so I can plot tides & location
 
 
-# TESTING THINGS
-
-pchTide = c("High" = 21,
-            "Low" = 22,
-            "Mid-Falling" = 23,
-            "Mid-Rising" = 24)
-
 
 nmdsBay = function(regionData, regionColour) {
   
@@ -362,7 +361,8 @@ nmdsBay = function(regionData, regionColour) {
     ordCoords = as.data.frame(scores(ord, display="sites")) %>%
       mutate(tidePhase = bayData$tidePhase) %>%
       mutate(facetFactor = bayData$facetFactor) %>%
-      mutate(myLabel = bayData$myLabel)
+      mutate(myLabel = bayData$myLabel) %>%
+      mutate(sampleCode = bayData$sampleCode)
     
     # Add NMDS stress
     # Note that round() includes UP TO 2 decimal places. Does not include 0s 
@@ -373,7 +373,7 @@ nmdsBay = function(regionData, regionColour) {
       ggplot() + 
       geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = tidePhase), fill = bayColour, size = 5)+ # Use pch=21 to get black outline circles
       geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= myLabel), colour = "gray30")+ # Use pch=21 to get black outline circles
-      #scale_fill_manual(name = "Bay", values = bayColours)+
+      #geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= sampleCode), colour = "gray30")+ # Use pch=21 to get black outline circles
       # adding "breaks" will make sure only the tidePhases actually present in each plot will show up
       # sorting them will make sure they display alphabetically/consistently between each plot
       scale_shape_manual(values = pchTide, name = "Tide Phase", breaks = sort(unique(ordCoords$tidePhase)))+
@@ -406,7 +406,8 @@ nmdsBay = function(regionData, regionColour) {
   # ^ This can be replaced with do.call()!!!
   # I think this can replace a lot of my garbage code!!
   # Align them vertically so each PLOT lines up even if legend sizes differ slightly
-  gridOfPlots = do.call("plot_grid", c(ggList, align = "v"))
+  # Setting ncol/nrow will mean all plots have same size (NL2020 only has one bay. otherwise plot is huge)
+  gridOfPlots = do.call("plot_grid", c(ggList, align = "v", ncol = 2, nrow = 2))
   
   return(gridOfPlots)
   
@@ -417,7 +418,11 @@ nmdsBay(marMerge, marColours)
 nmdsBay(gulfMerge, gulfColours)
 nmdsBay(nlMerge, nlColours)
 
-
+# PACIFIC: need to remove March data because it only has 2 data points and can't do NMDS on that
+# Also remove the two "outliers" (from Pacific June 2021) because otherwise distorts individual NMDS
+nmdsBay(pacMerge %>% filter(facetFactor != "Pacific March 2021") %>%
+          filter(sampleCode != c("AMMP_PA_S04W15_20210610HT_250um"))%>%
+          filter(sampleCode != c("AMMP_PA_S04W01_20210611HT_250um")), pacColours)
 
 
 #################################################################################
