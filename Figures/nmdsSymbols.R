@@ -200,16 +200,16 @@ ggGulf = ggplot()+
 
 # Maritimes
 ggMaritimes = ggplot()+
-  geom_point(data = ordCoordsAtl %>% filter(region == "Maritimes"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
+  geom_point(data = ordCoordsAtl %>% filter(region == "Maritimes"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 22, size = 7)+
   scale_fill_manual(values = c("darkgreen", "green3", "darkolivegreen2", "mediumspringgreen"), name = "Maritimes Region")+
   theme_bw()+
   theme(legend.key.size = unit(0.2, "cm"),
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14))
 
-# Maritimes
+# Newfoundland
 ggNewfoundland = ggplot()+
-  geom_point(data = ordCoordsAtl %>% filter(region == "Newfoundland"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
+  geom_point(data = ordCoordsAtl %>% filter(region == "Newfoundland"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 24, size = 7)+
   scale_fill_manual(values = c("#00BFC4"), name = "Newfoundland", labels = "Southeast Arm")+
   theme_bw()+
   theme(legend.key.size = unit(0.2, "cm"),
@@ -223,8 +223,8 @@ nlLegend = as_grob(get_legend(ggNewfoundland))
 
 # Now make a plot of everything (without the legend)
 ggAtlanticOnly = ggplot()+
-  geom_point(data = ordCoordsAtl, aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 7)+
-  scale_shape_manual(values=c(21:23), name = "Bay")+
+  geom_point(data = ordCoordsAtl, aes(x = NMDS1, y = NMDS2, fill = facetFactor, pch = region), size = 7)+
+  scale_shape_manual(values=c(21, 22, 24), name = "Bay")+
   scale_fill_manual(values = c("darkgreen", "red4", "green3", "red2", "#00BFC4", "darkolivegreen2", "lightpink", "mediumspringgreen"), name = "Region")+
   annotate("text", x = max(ordCoordsAtl$NMDS1), y=max(ordCoordsAtl$NMDS2), label = ordStressAtl, size=4, hjust=1)+
   theme_bw()+
@@ -281,20 +281,14 @@ nmdsPrep = function(mergeData, bayColours) {
   # Note that round() includes UP TO 2 decimal places. Does not include 0s 
   ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
   
-  # # Get the number of facets there should be (either # of bays, or # of sampling months (Pacific))
-  # numTide = length(unique(mergeData$tidePhase))
-  # # create array for pch symbols. e.g., if 4 factors will give: 21, 22, 23, 24
-  # numPchTide = c(21:(20+numTide))
-  
-  # numLoc = length(unique(mergeData$myLabel))
-  # numPchLoc = c(21:(20+numLoc))
   
   ggBay =
     ggplot() + 
-    geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, fill = facetFactor), pch =21, size = 5)+ # Use pch=21 to get black outline circles
+    geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, fill = facetFactor, pch = facetFactor), size = 5)+ # Use pch=21 to get black outline circles
     scale_fill_manual(name = "Bay", values = bayColours)+
-    #scale_shape_manual(values=numPchTide, name = "Tide Phase")+ 
-    annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+    scale_shape_manual(values = c(21:24),  name ="Bay")+ 
+    ggtitle(mergeData$region)+
+    #annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
     theme_bw()+
     theme(axis.text = element_blank(),
           axis.title.x = element_blank(), # don't want 
@@ -304,12 +298,8 @@ nmdsPrep = function(mergeData, bayColours) {
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           plot.background = element_blank(),
-          plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))+
-    # Set the shape as 21 otherwise they will not show up as coloured circles
-    # Set the order to 1 so the "Bay" legend item will always be above "Tide Phase"
-    guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
-  
-  
+          plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"))
+
   return(ggBay)
   
 }
@@ -319,10 +309,9 @@ nlNMDS = nmdsPrep(nlMerge, nlColours)
 pacNMDS = nmdsPrep(pacMerge, pacColours)
 gulfNMDS = nmdsPrep(gulfMerge, gulfColours)
 
-grid.arrange(marNMDS, nlNMDS, pacNMDS, gulfNMDS)
-
 # This works better than grid.arrange! It aligns all the plots with unequal legends
 plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
+
 
 
 #################################################################################
