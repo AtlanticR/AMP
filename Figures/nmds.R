@@ -374,11 +374,13 @@ nmdsBay = function(regionData, regionColour) {
       geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = tidePhase), fill = bayColour, size = 5)+ # Use pch=21 to get black outline circles
       geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= myLabel), colour = "gray30")+ # Use pch=21 to get black outline circles
       #scale_fill_manual(name = "Bay", values = bayColours)+
-      scale_shape_manual(values = pchTide, name = "Tide Phase")+
+      # adding "breaks" will make sure only the tidePhases actually present in each plot will show up
+      # sorting them will make sure they display alphabetically/consistently between each plot
+      scale_shape_manual(values = pchTide, name = "Tide Phase", breaks = sort(unique(ordCoords$tidePhase)))+
       ggtitle(bayData$facetFactor)+
       #scale_shape_manual(values=numPchLoc, name = "Location")+ 
       #annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
-      annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust = -0.02)+
+      #annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust = -0.02)+
       theme_bw()+
       theme(axis.text = element_blank(),
             axis.ticks = element_blank(),
@@ -403,7 +405,8 @@ nmdsBay = function(regionData, regionColour) {
   #arrangePlot = plot_grid(ggList[[1]], ggList[[2]], ggList[[3]], ggList[[4]], align = "v")
   # ^ This can be replaced with do.call()!!!
   # I think this can replace a lot of my garbage code!!
-  gridOfPlots = do.call("plot_grid", c(ggList))
+  # Align them vertically so each PLOT lines up even if legend sizes differ slightly
+  gridOfPlots = do.call("plot_grid", c(ggList, align = "v"))
   
   return(gridOfPlots)
   
