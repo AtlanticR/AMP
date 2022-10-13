@@ -147,7 +147,8 @@ ggBoth =
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
-        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
+        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        plot.title = element_text(size=18))
 
 # Put everything together
 # This gets me PRETTY CLOSE to the Figure that I want, except that the legend items aren't totally lined up
@@ -238,7 +239,8 @@ ggAtlanticOnly = ggplot()+
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
-        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"))
+        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        plot.title = element_text(size=18))
 
 # Plot it all together
 grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
@@ -308,7 +310,8 @@ nmdsPrep = function(mergeData, bayColours) {
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           plot.background = element_blank(),
-          plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"))
+          plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"),
+          plot.title = element_text(size=16))
 
   return(ggBay)
   
@@ -393,7 +396,8 @@ nmdsBay = function(regionData, regionColour) {
             plot.background = element_blank(),
             # This affects the amount of space around each plot
             # If there is not enough space, plot_grid will make them too close together
-            plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"))+
+            plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"),
+            plot.title = element_text(size=16))+
       # Set the shape as 21 otherwise they will not show up as coloured circles
       # Set the order to 1 so the "Bay" legend item will always be above "Tide Phase"
       guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
