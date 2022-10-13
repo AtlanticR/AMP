@@ -423,6 +423,7 @@ nmdsBay = function(regionData, regionColour) {
 nmdsBay(marMerge, marColours)
 nmdsBay(gulfMerge, gulfColours)
 nmdsBay(nlMerge, nlColours)
+nmdsBay(pacMerge  %>% filter(facetFactor != "Pacific March 2021"), pacColours) # without removing outliers
 
 # PACIFIC: need to remove March data because it only has 2 data points and can't do NMDS on that
 # Also remove the two "outliers" (from Pacific June 2021) because otherwise distorts individual NMDS
