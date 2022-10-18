@@ -102,7 +102,7 @@ processMeta = function(xlData) {
   # Therefore divide by 100^2 (cm --> meters conversion, then squared)
   # Note: there will still be some NAs left over. I think these are from tows with no data. Will need to double check
   # Suppress warnings to get rid of "NAs introduced..." message
-  dfProc$waterVolume = suppress_warnings(ifelse((dfProc$region == "Pacific" | dfProc$region == "Pac") & dfProc$equipmentType == "50 x 150 cm Net", # check for NAs in Gulf region metadata
+  dfProc$waterVolume = suppress_warnings(ifelse((dfProc$region == "Pacific" | dfProc$region == "Pac") & dfProc$equipmentType == "50 x 150 cm Net", # check for NAs in Pacific region metadata
                               as.numeric(dfProc$waterVolume) / 100^2, # if true, fill in with volume calculation
                               dfProc$waterVolume)) # if false, just leave the original value as is
   
