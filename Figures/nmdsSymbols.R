@@ -300,7 +300,7 @@ nmdsPrep = function(mergeData, bayColours) {
     scale_fill_manual(name = legendTitle, values = bayColours)+
     scale_shape_manual(values = c(21:24),  name = legendTitle)+ 
     ggtitle(mergeData$region)+
-    #annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+    annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
     theme_bw()+
     theme(axis.text = element_blank(),
           #axis.title.x = element_blank(), # don't want 
