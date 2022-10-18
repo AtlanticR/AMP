@@ -38,6 +38,12 @@ stackedBarChart = function(bayData){
     # if you set the outline colour to black in geom_bar
     summarise(sumCount = sum(abund))
  
+  
+  
+  # day 
+  bayData$sampleCode[7:8]
+  
+  
   # Rename a mid-rising/mid-falling so it shows up better
   bayPlotDf = bayPlotDf %>%
     #subset(tidePhase != "Mid-Rising" & tidePhase != "Mid-Falling") %>%
@@ -145,3 +151,18 @@ lemmensJun21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific Ju
 lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific September 2021"))
 
   
+
+# High Risk Sites!!!
+soberHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster") %>%
+                                                      subset(myLabel == "Outer"))
+
+
+whHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "WhiteHead") %>%
+                                            subset(myLabel == "Mid"))
+
+
+spHighRisk = stackedBarChart(gulfMerge %>% subset(facilityName == "StPeters") %>%
+                               subset(myLabel == "Mid"))
+
+
+bayData$sampleCode[7:8]
