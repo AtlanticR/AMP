@@ -163,7 +163,9 @@ speciesDF = function(xlDataFull, xlDataShort) {
     mutate(class = str_to_sentence(class)) %>%
     # Remove instances of multiple spaces between words
     mutate(class = str_squish(class)) %>%
-    mutate(class = str_replace(class, "spp", "spp."))
+    mutate(class = str_replace(class, "spp", "spp.")) %>%
+    # Remove whitespace from end of word
+    mutate(class = str_trim(class, side = c("right")))
     
   # Remove unwanted classes
   # These do not contain relevant zooplankton data
@@ -227,9 +229,12 @@ speciesDF = function(xlDataFull, xlDataShort) {
     mutate(class = str_replace(class, "ci-.*", "")) %>%
     mutate(class = str_replace(class, "civ-.*", "")) %>%
     mutate(class = str_replace(class, "cv-.*", "")) %>%
+    mutate(class = str_replace(class, "cvi-.*", "")) %>%
     
     # idk why this one wouldn't fix itself above??? Something to do with the space before the word
     mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
+    mutate(class = replace(class, class == "Calanoida", "Calanoida (unid)")) %>%
+    mutate(class = replace(class, class == "Calanoida ", "Calanoida (unid)")) %>%
     
     # Because stage information was removed, there now are duplicates (e.g., Calanus ci-iii and ci-iv are both just "Calanus")
     # Need to sum the values to remove the duplicates
