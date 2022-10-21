@@ -27,6 +27,23 @@ simOcean = simper(sqrt(permData[,12:ncol(allRegionsWide)]), group=permData$ocean
 summary(simOcean)
 
 
+marPN = marMerge %>%
+  pivot_wider(names_from = class, values_from = abund) %>%
+  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
+
+adonis2(marPN[,12:ncol(marPN)]~as.factor(marPN$facilityName), method="bray", sqrt.dist = T)
+
+source("Figures/corstarsl.R")
+pairwise.adonis((marPN[,12:ncol(marPN)]), as.factor(marPN$facilityName), sim.method = "bray", p.adjust.m = "none")
+
+
+simBay = simper(sqrt(marPN[,12:ncol(marPN)]), group=marPN$facilityName)
+summary(simBay)
+
+acartia = sqrt(permData[,12:ncol(allRegionsWide)]$`Acartia spp. `)
+
+
+
 acartia = sqrt(permData[,12:ncol(allRegionsWide)]$`Acartia spp. `)
 calanoida = sqrt(permData[,12:ncol(allRegionsWide)]$`Calanoida (unid)`)
 cirripedia = sqrt(permData[,12:ncol(allRegionsWide)]$`Cirripedia nauplii`)
