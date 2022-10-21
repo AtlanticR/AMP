@@ -156,6 +156,9 @@ lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific S
 soberHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster") %>%
                                                       subset(myLabel == "Outer"))
 
+soberHighRiskInner = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster") %>%
+                                  subset(myLabel == "Inner"))
+
 
 whHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "WhiteHead") %>%
                                             subset(myLabel == "Mid"))
