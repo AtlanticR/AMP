@@ -1,12 +1,27 @@
-## Draft permanova
+################################################################################
+################################################################################
+#### PERMANOVAs
+# For testing for significant differences between groups
+# We are testing for differences at multiple spatial scales:
+# Between oceans (Pacific vs Atlantic)
+# Between DFO regions (Pacific, Maritimes, Gulf, Newfoundland)
+# Between bays
+# Between locations within bay (mid, inner, outer)
+# Different days
 
-# I don't really know what I'm doing lol
+## Approach:
+# 1. At each spatial scale, conduct a PERMANOVA to determine if significant differences exist
+# 2. Conduct pairwise comparisons to find out which groups are significantly different 
+# 3. Conduct SIMPER analysis to determine which species contribute most to the dissimilarities
+# between groups
 
-# Possible package for nested permanova: may not work for >2 levels of nestedness
-install.packages("BiodiversityR")
-library("BiodiversityR")
+# Created by Stephen Finnis 2022
 
-# Need this because it puts data in the correct format
+################################################################################
+# Get things set up
+
+# Add nmds script since this is where I have done basic dataframe manipulation
+# for each spatial scale 
 source("Figures/nmdsSymbols.R")
 
 
@@ -21,6 +36,7 @@ adonis2(permData[,12:ncol(allRegionsWide)]~as.factor(permData$ocean)/as.factor(p
 
 ### Test Atlantic vs Pacific data
 
+# Do the PERMANOVA
 adonis2(permData[,12:ncol(allRegionsWide)]~as.factor(permData$ocean), method="bray", sqrt.dist = T, perm = 9999)
 
 simOcean = simper(sqrt(permData[,12:ncol(allRegionsWide)]), group=permData$ocean)
