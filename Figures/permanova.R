@@ -18,29 +18,71 @@
 # Created by Stephen Finnis 2022
 
 ################################################################################
-# Get things set up
+## Get things set up
 
 # Add nmds script since this is where I have done basic dataframe manipulation
 # for each spatial scale 
 source("Figures/nmdsSymbols.R")
 
+################################################################################
+## A very bad first attempt at a nested PERMANOVA
+# There are too many issues to comment on right now. I'll come back to this, maybe
 
 # Need to remove these 2 with no label
-permData = allRegionsWide %>%
+nestedPerm = allRegionsWide %>%
   filter(sampleCode != c("AMMP_PA_S04Pooled_202103HT_250UM"))%>%
   filter(sampleCode != c("AMMP_PA_S04Pooled_202103LT_250UM"))
 
+adonis2(nestedPerm[,12:ncol(allRegionsWide)]~as.factor(nestedPerm$ocean)/as.factor(nestedPerm$region)/as.factor(nestedPerm$facetFactor)/as.factor(nestedPerm$myLabel), method="bray", sqrt.dist = T)
 
-adonis2(permData[,12:ncol(allRegionsWide)]~as.factor(permData$ocean)/as.factor(permData$region)/as.factor(permData$facetFactor)/as.factor(permData$myLabel), method="bray", sqrt.dist = T)
+################################################################################
+## Atlantic vs Pacific data
 
+# Run the PERMANOVA
+# First selects only the species data (i.e., starting at Acartia until the end)
+adonis2(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]~
+          as.factor(allRegionsWide$ocean), method="bray", sqrt.dist = T, perm = 9999)
 
-### Test Atlantic vs Pacific data
+# No need for pairwise tests since only 2 groups at this scale
 
-# Do the PERMANOVA
-adonis2(permData[,12:ncol(allRegionsWide)]~as.factor(permData$ocean), method="bray", sqrt.dist = T, perm = 9999)
+# Follow up with SIMPER to find out which species contribute most to the differences 
+simOcean = simper(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]), 
+                                      group=allRegionsWide$ocean)
 
-simOcean = simper(sqrt(permData[,12:ncol(allRegionsWide)]), group=permData$ocean)
+# view the SIMPER results                  
 summary(simOcean)
+
+################################################################################
+
+adonis2(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]~
+          as.factor(allRegionsWide$region), method="bray", sqrt.dist = T, perm = 9999)
+
+install.packages("remotes")
+remotes::install_github("Jtrachsel/funfuns")
+library("funfuns")
+
+# With the function from funfuns lol
+pairwise.adonis(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]), as.factor(allRegionsWide$region), sim.method="bray")
+
+pairwise.adonis(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)], as.factor(allRegionsWide$region), sim.method="bray")
+
+
+
+# Compare against
+
+install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+library(pairwiseAdonis)
+install.packages("amap")
+library("")
+
+?pairwise.adonis2
+
+
+justSpecies = allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]
+brayTest = amap::as.matrix.dist(vegdist(sqrt(justSpecies), method="bray"))
+
+
+pairwise.adonis2(allRegionsWide[12:ncol(allRegionsWide)]~region, data = allRegions)
 
 
 marPN = marMerge %>%
@@ -49,7 +91,7 @@ marPN = marMerge %>%
 
 adonis2(marPN[,12:ncol(marPN)]~as.factor(marPN$facilityName), method="bray", sqrt.dist = T)
 
-source("Figures/corstarsl.R")
+
 pairwise.adonis((marPN[,12:ncol(marPN)]), as.factor(marPN$facilityName), sim.method = "bray", p.adjust.m = "none")
 
 
