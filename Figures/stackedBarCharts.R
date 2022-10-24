@@ -1,7 +1,6 @@
 ################################################################################
 # Stacked bar charts
 # Created by Stephen Finnis 2022
-# 
 ################################################################################
 
 ## Get things set up
@@ -26,8 +25,6 @@ stackedBarChart = function(bayData){
            # Keep 5 most abundant classes, make the rest "Other"
            classNew = ifelse(rank <=5, class, "Other"))
 
-
-    
   # Add this these new classes as a column in the original dataframe
   bayPlotDf = bayData %>%
     left_join(bayOther %>%
@@ -37,12 +34,9 @@ stackedBarChart = function(bayData){
     # If you don't recompute counts, the "Other" class will have a bunch of black lines
     # if you set the outline colour to black in geom_bar
     summarise(sumCount = sum(abund))
- 
-  
-  
+
   # day 
   bayData$sampleCode[7:8]
-  
   
   # Rename a mid-rising/mid-falling so it shows up better
   bayPlotDf = bayPlotDf %>%
@@ -79,7 +73,6 @@ stackedBarChart = function(bayData){
         strip.placement = "outside",
       )
   
-  
   # For the relative abundance plots I DON'T want "Mid" tide data
   # I just want to compare High/Low. So remove the mid-rising and mid-falling tides
   # CHECK THIS: but I think "Mid" and "Inner" can be combined when looking at tide effect
@@ -90,9 +83,6 @@ stackedBarChart = function(bayData){
   #   mutate(myLabel = replace(myLabel, myLabel == "Mid", "Mid/Inner")) %>%
   #   mutate(myLabel = replace(myLabel, myLabel == "Inner", "Mid/Inner"))
 
-
-  
-  
   # Make ggplot for a relative abundance chart
   relGGPlot = 
     ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
@@ -129,7 +119,6 @@ stackedBarChart = function(bayData){
 # Break up the data by region. And also by bay.
 # Need to type variable name to get plot to show up
 
-
 # Maritimes
 argyleProcess = stackedBarChart(marMerge %>% subset(facilityName == "Argyle"))
 soberProcess = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster"))
@@ -150,8 +139,6 @@ lemmensMar21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific Ma
 lemmensJun21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific June 2021"))
 lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific September 2021"))
 
-  
-
 # High Risk Sites!!!
 soberHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster") %>%
                                                       subset(myLabel == "Outer"))
@@ -159,13 +146,8 @@ soberHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "Sober Islan
 soberHighRiskInner = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster") %>%
                                   subset(myLabel == "Inner"))
 
-
 whHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "WhiteHead") %>%
                                             subset(myLabel == "Mid"))
 
-
 spHighRisk = stackedBarChart(gulfMerge %>% subset(facilityName == "StPeters") %>%
                                subset(myLabel == "Mid"))
-
-
-bayData$sampleCode[7:8]
