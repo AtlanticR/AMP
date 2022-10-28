@@ -53,20 +53,41 @@ simOcean = simper(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia
 summary(simOcean)
 
 ################################################################################
+## Test for differences between DFO Regions
+
+
+# Must first check for dispersion
+# This is a prerequisite (assumption) for PERMANVOA but also gives interesting results on its own
+regionDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)])), as.factor(allRegionsWide$region))
+anova(regionDisp)
+permutest(regionDisp, pairwise = T, permutations = 999)
+
+
+mod.HSD = TukeyHSD(regionDisp)
+mod.HSD
+
+?permutest.betadisper
+
+
 
 adonis2(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]~
           as.factor(allRegionsWide$region), method="bray", sqrt.dist = T, perm = 9999)
+
+# Make sure I get same results using vegdist. I do! Yay!
+adonis2(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]))~
+          as.factor(allRegionsWide$region), sqrt.dist = F, perm = 9999)
+
+# Last check- adjust the square root distances. Also the same! Yay!!
+adonis2(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)])~
+          as.factor(allRegionsWide$region), sqrt.dist = T, perm = 9999)
+
 
 install.packages("remotes")
 remotes::install_github("Jtrachsel/funfuns")
 library("funfuns")
 
 # With the function from funfuns lol
-pairwise.adonis(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]), as.factor(allRegionsWide$region), sim.method="bray")
-
-pairwise.adonis(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)], as.factor(allRegionsWide$region), sim.method="bray")
-
-
+pairwise.adonis(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), sim.method="bray")
 
 # Compare against this other pairwise adonis method
 # Note that this one uses ADONIS 2 which is updated and maybe better?
@@ -74,12 +95,11 @@ pairwise.adonis(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "
 install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis)
 
-justSpecies = allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]
-brayTest = amap::as.matrix.dist(vegdist(sqrt(justSpecies), method="bray"))
+# Trying here with vegdist (default is bray). Make sure to do this or I'll get wrong answers!!
+pairwise.adonis2(sqrt(vegdist(allRegionsWide[12:ncol(allRegionsWide)]))~region, data = allRegionsWide)
 
-# It's a bit unclear, but I think the default is "bray" (it gives the same answer if not included)
-# Possible that data entered should already be a dissimilarity matrix, but it still seems to give the same answer as functino from funfuns
-pairwise.adonis2(sqrt(allRegionsWide[12:ncol(allRegionsWide)])~region, data = allRegionsWide, sim.method = "bray")
+
+
 
 
 ## Test out permdisp for multivariate dispersion
