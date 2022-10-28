@@ -68,21 +68,40 @@ pairwise.adonis(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "
 
 
 
-# Compare against
+# Compare against this other pairwise adonis method
+# Note that this one uses ADONIS 2 which is updated and maybe better?
 
 install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis)
-install.packages("amap")
-library("")
-
-?pairwise.adonis2
-
 
 justSpecies = allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)]
 brayTest = amap::as.matrix.dist(vegdist(sqrt(justSpecies), method="bray"))
 
+# It's a bit unclear, but I think the default is "bray" (it gives the same answer if not included)
+# Possible that data entered should already be a dissimilarity matrix, but it still seems to give the same answer as functino from funfuns
+pairwise.adonis2(sqrt(allRegionsWide[12:ncol(allRegionsWide)])~region, data = allRegionsWide, sim.method = "bray")
 
-pairwise.adonis2(allRegionsWide[12:ncol(allRegionsWide)]~region, data = allRegions)
+
+## Test out permdisp for multivariate dispersion
+
+data(varespec)
+dis = vegdist(varespec)
+groups = factor(c(rep(1,16), rep(2,8)), labels = c("grazed", "ungrazed"))
+mod = betadisper(dis, groups)
+anova(mod)
+## Permutation test for F
+permutest(mod, pairwise = TRUE, permutations = 9999)
+## Tukey's Honest Significant Differences
+mod.HSD <- TukeyHSD(mod)
+
+
+mod.HSD
+
+
+
+
+
+
 
 
 marPN = marMerge %>%
@@ -90,9 +109,13 @@ marPN = marMerge %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
 adonis2(marPN[,12:ncol(marPN)]~as.factor(marPN$facilityName), method="bray", sqrt.dist = T)
-
-
 pairwise.adonis((marPN[,12:ncol(marPN)]), as.factor(marPN$facilityName), sim.method = "bray", p.adjust.m = "none")
+
+test = betadisper(vegdist(marPN[,12:ncol(marPN)]), as.factor(marPN$facilityName))
+anova(test)
+permutest(test, pairwise = T, permutations = 999)
+mod.HSD = TukeyHSD(test)
+mod.HSD
 
 
 simBay = simper(sqrt(marPN[,12:ncol(marPN)]), group=marPN$facilityName)
