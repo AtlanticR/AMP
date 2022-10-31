@@ -57,16 +57,19 @@ summary(simOcean)
 
 
 # Must first check for dispersion
-# This is a prerequisite (assumption) for PERMANVOA but also gives interesting results on its own
-regionDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)])), as.factor(allRegionsWide$region))
-anova(regionDisp)
-permutest(regionDisp, pairwise = T, permutations = 999)
+# This is a prerequisite (assumption) for PERMANOVA but also gives interesting results on its own
+regDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)])), as.factor(allRegionsWide$region))
+anova(regDisp)
+pairRegDisp = permutest(regDisp, pairwise = T, permutations = 999)
 
+# Look at pairRegDisp for permuted p-values. Also can get t-values
+pairRegDisp
+pairRegDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
 
-mod.HSD = TukeyHSD(regionDisp)
-mod.HSD
-
-?permutest.betadisper
+# This is another way to do the pairwise comparisons, although they do not come with t-values
+reg.HSD = TukeyHSD(regionDisp)
+reg.HSD
+plot(reg.HSD)
 
 
 
@@ -100,29 +103,8 @@ pairwise.adonis2(sqrt(vegdist(allRegionsWide[12:ncol(allRegionsWide)]))~region, 
 
 
 
-
-
-## Test out permdisp for multivariate dispersion
-
-data(varespec)
-dis = vegdist(varespec)
-groups = factor(c(rep(1,16), rep(2,8)), labels = c("grazed", "ungrazed"))
-mod = betadisper(dis, groups)
-anova(mod)
-## Permutation test for F
-permutest(mod, pairwise = TRUE, permutations = 9999)
-## Tukey's Honest Significant Differences
-mod.HSD <- TukeyHSD(mod)
-
-
-mod.HSD
-
-
-
-
-
-
-
+################################################################################
+## Tests within the Maritimes Region
 
 marPN = marMerge %>%
   pivot_wider(names_from = class, values_from = abund) %>%
