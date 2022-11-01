@@ -68,19 +68,40 @@ ggiNEXT(out, type=1, facet.var="Order.q")
 
 data(bird)
 str(bird) # 41 obs. of 2 variables
-x = iNEXT(bird, q=0, datatype="abundance")
+x = iNEXT(bird, q=c(0,1,2), datatype="abundance")
 ggiNEXT(x, type = 1, facet.var = "Assemblage")
 
-
+## Just Argyle
 argyleSpecies = argyleTest[,12:ncol(argyleTest)]
 tArgyle = as.data.frame(t(argyleSpecies))
-tArgyleSum = as.data.frame(rowSums(tArgyle))
+tArgyleSum = as.data.frame(sort(round(rowSums(tArgyle))))
 
-test = iNEXT(tArgyleSum, q =c(0,1,2), datatype = "abundance")
-ggiNEXT(test, type = 1)
+test = iNEXT(tArgyleSum, q = c(0), datatype = "abundance")
+test
+
+ggiNEXT(test, type = 3, facet.var = "Assemblage")
+
+## All Maritimes
+mar = testIn[,12:ncol(argyleTest)]
+tMar = as.data.frame(t(mar))
+tMarSum = as.data.frame(sort(round(rowSums(tMar))))
+
+test = iNEXT(tMarSum, q = c(0,1,2), datatype = "abundance")
+test
+
+ggiNEXT(test, type = 1, facet.var = "Assemblage")+
+  scale_x_continuous(limits = c(0, 1000))
 
 
 
+
+
+## Test Argyle within Maritimes
+argMar = cbind(tMarSum, tArgyleSum)
+
+
+test = iNEXT(argMar, q = c(0), datatype = "abundance")
+ggiNEXT(test, type = 1, facet.var = "Assemblage")
 
 
 
