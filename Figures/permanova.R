@@ -1,7 +1,11 @@
 ################################################################################
 ################################################################################
-#### PERMANOVAs
-# For testing for significant differences between groups
+#### BETADISPER, PERMANOVA and SIMPER analysis
+
+# Created by Stephen Finnis 2022
+
+### Background
+# This script is for testing for significant differences in zooplankton community structure between groups
 # We are testing for differences at multiple spatial scales:
 # Between oceans (Pacific vs Atlantic)
 # Between DFO regions (Pacific, Maritimes, Gulf, Newfoundland)
@@ -9,18 +13,18 @@
 # Between locations within bay (mid, inner, outer)
 # Different days
 
-## Approach:
+### Approach:
+## 1a. At each spatial scale, conduct BETADISPER test to determine if there are significant
+# differences in dispersion between groups
+# Dispersion gives interesting information on its own. No differences in dispersion is also
+# an assumption for PERMANOVAs
+## 1b. Conduct pairwise tests in dispersion at each spatial scale (get t-statistic and permuted significances)
 
-### CHANGE THIS. FIRST DO DISPERSION. THEN PERMANOVA. THEN SIMPER
-# Pairwise comparisons are sub-steps of each test
+## 2a. At each spatial scale, conduct a PERMANOVA to determine if significant differences exist between groups
+## 2b. Conduct pairwise comparisons to find out which groups are significantly different 
 
-
-# 1. At each spatial scale, conduct a PERMANOVA to determine if significant differences exist
-# 2. Conduct pairwise comparisons to find out which groups are significantly different 
-# 3. Conduct SIMPER analysis to determine which species contribute most to the dissimilarities
-# between groups
-
-# Created by Stephen Finnis 2022
+## 3. Conduct SIMPER analysis to determine which species contribute most to the dissimilarities
+# between groups. Only report differences between groups that are significantly different (from 2b)
 
 ################################################################################
 ################################################################################
