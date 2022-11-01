@@ -144,7 +144,7 @@ pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairMarDisp
-pairMarDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
+pairMarDisp$statistic
 
 
 ### PERMANOVA
@@ -162,7 +162,7 @@ summary(simMar)
 
 
 ################################################################################
-## Gulf
+## GULF
 
 ### DISPERSION
 gulfDisp = betadisper(sqrt(vegdist(gulfPN[,which(colnames(gulfPN)== "Acartia spp. "):ncol(gulfPN)])), as.factor(gulfPN$facetFactor))
@@ -170,24 +170,61 @@ pairGulfDisp = permutest(gulfDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairGulfDisp
-pairMarDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
+pairGulfDisp$statistic
 
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
-adonis2(marPN[,which(colnames(marPN)== "Acartia spp. "):ncol(marPN)]~
-          as.factor(marPN$facetFactor), method="bray", sqrt.dist = T, perm = 9999)
+adonis2(gulfPN[,which(colnames(gulfPN)== "Acartia spp. "):ncol(gulfPN)]~
+          as.factor(gulfPN$facetFactor), method="bray", sqrt.dist = T, perm = 9999)
 
 # Pairwise comparisons between bays
-pairwise.adonis2(sqrt(vegdist(marPN[,which(colnames(marPN)== "Acartia spp. "):ncol(marPN)]))~as.factor(facetFactor), data = marPN)
+pairwise.adonis2(sqrt(vegdist(gulfPN[,which(colnames(gulfPN)== "Acartia spp. "):ncol(gulfPN)]))~as.factor(facetFactor), data = gulfPN)
 
 ### SIMPER
-simMar = simper(sqrt(marPN[,which(colnames(marPN)== "Acartia spp. "):ncol(marPN)]), 
-                group=marPN$facetFactor)
-summary(simMar)
+simGulf = simper(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp. "):ncol(gulfPN)]), 
+                group=gulfPN$facetFactor)
+summary(simGulf)
 
+################################################################################
+## Pacific
 
+# Remember, the tests here are between field seasons, not bays!! Since there is only one bay
+# I am removing data from 
 
+# Remove data from March ("reduced" aka "red") since there are only 2 samples and I need to create variance for statistical tests
+# However, I will keep them in the SIMPER tests, since I am not looking at significance
+pacPNred = pacPN %>%
+  filter(sampleCode != c("AMMP_PA_S04Pooled_202103HT_250UM"))%>%
+  filter(sampleCode != c("AMMP_PA_S04Pooled_202103LT_250UM"))
+
+### DISPERSION
+pacDisp = betadisper(sqrt(vegdist(pacPNred[,which(colnames(pacPNred)== "Acartia spp. "):ncol(pacPNred)])), as.factor(pacPNred$facetFactor))
+pairPacDisp = permutest(pacDisp, pairwise = T, permutations = 9999)
+
+# Look at pairRegDisp for F-values, permuted p-values
+pairPacDisp
+pairPacDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
+
+### PERMANOVA
+# Are there differences between bays (facetFactor)
+adonis2(pacPNred[,which(colnames(pacPNred)== "Acartia spp. "):ncol(pacPNred)]~
+          as.factor(pacPNred$facetFactor), method="bray", sqrt.dist = T, perm = 9999)
+
+# Pairwise comparisons between bays
+pairwise.adonis2(sqrt(vegdist(pacPNred[,which(colnames(pacPNred)== "Acartia spp. "):ncol(pacPNred)]))~as.factor(facetFactor), data = pacPNred)
+
+### SIMPER
+# Here I am using pacPN not pacPNred because I want to know which species make the March 2021 data different
+# I can see visually they are different
+simPac = simper(sqrt(pacPN[,which(colnames(pacPN)== "Acartia spp. "):ncol(pacPN)]), 
+                 group=pacPN$facetFactor)
+summary(simPac)
+
+################################################################################
+## Newfoundland
+
+# No significance tests since only one bay and one field season (so far)
 
 
 ################################################################################
