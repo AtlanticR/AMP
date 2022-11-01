@@ -4,7 +4,7 @@
 
 # Created by Stephen Finnis 2022
 
-### Background
+### Background:
 # This script is for testing for significant differences in zooplankton community structure between groups
 # We are testing for differences at multiple spatial scales:
 # Between oceans (Pacific vs Atlantic)
@@ -26,6 +26,11 @@
 ## 3. Conduct SIMPER analysis to determine which species contribute most to the dissimilarities
 # between groups. Only report differences between groups that are significantly different (from 2b)
 
+
+### Notes:
+# PERMDISP is the same as BETADISPER, but PERMDISP is the function name in PRIMER software
+
+
 ################################################################################
 ################################################################################
 ## Get things set up
@@ -44,21 +49,21 @@ library(pairwiseAdonis)
 # There are two factors: Atlantic and Pacific 
 
 ### DISPERSION
-# betadisper is the R function. PERMDISP is what it's called in PRIMER
-# This is a prerequisite (assumption) for PERMANOVA but also gives interesting results on its own
+# vegdist turns the data into dissimilarities. Bray-Curtis is the default
+# Need to also square root transform
+# It's  a bit clunky, but data in the species matrix always starts with 'Acartia spp. " until the last column (ncol)
 oceanDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean))
-# This will get you ANOVA results but with non-permuted significance
+# This will get you ANOVA results (i.e., are there differences in dispersion) but with non-permuted significance
 anova(oceanDisp) 
-# Get significance (overall) and also conduct pairwise tests
+# Get significance (overall) and also conduct pairwise tests. Report these results instead.
 pairOceanDisp = permutest(oceanDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for permuted p-values. Also can get t-values for pairwise comparisons 
 pairOceanDisp
 pairOceanDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
 
-# I am removing Tukey HSD test and just going to use t-statistics and permuted p-values
-# But could use Tukey HSD to determine pairwise significance if I change my mind
-
+# Can also use Tukey HSD to get significance between pairwise groups. Example is at the end of the script. 
+# I am sticking with t-values since that is what PRIMER uses and how most people report results. 
 
 ### PERMANOVA
 # First selects only the species data (i.e., starting at Acartia until the end)
@@ -234,10 +239,10 @@ summary(simPac)
 ################################################################################
 ### ALTERNATIVE METHODS 
 
-
-## A very bad first attempt at a nested PERMANOVA
+### Nested PERMANOVA
 # There are too many issues to comment on right now. I'll come back to this, maybe
 
+# Here is attempt #1
 # Need to remove these 2 with no label
 nestedPerm = allRegionsWide %>%
   filter(sampleCode != c("AMMP_PA_S04Pooled_202103HT_250UM"))%>%
@@ -246,9 +251,8 @@ nestedPerm = allRegionsWide %>%
 adonis2(nestedPerm[,12:ncol(allRegionsWide)]~as.factor(nestedPerm$ocean)/as.factor(nestedPerm$region)/as.factor(nestedPerm$facetFactor)/as.factor(nestedPerm$myLabel), method="bray", sqrt.dist = T)
 
 
-#########
-### Get pairwise adonis function from old package
-# Don't use this one because it uses adonis not adonis 2 (even though it gives the same results lol)
+### Pairwise comparisons (PERMANOVA) from a different package
+# Don't use this one because it uses adonis not adonis 2 (even though it gives the same results??)
 # Need to install from GitHub to get pairwise.adonis
 remotes::install_github("Jtrachsel/funfuns")
 library("funfuns")
@@ -256,11 +260,8 @@ library("funfuns")
 # With the function from funfuns package
 pairwise.adonis(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. "):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), sim.method="bray")
 
-# Compare against this other pairwise adonis method
-# Note that this one uses ADONIS 2 which is updated and maybe better?
-
-
-# This is another way to do the pairwise comparisons, although they do not come with t-values
+# This is another way to do the pairwise comparisons for BETADISPER, although they do not come with t-values
+# See here for more info: https://rdrr.io/rforge/vegan/man/permutest.betadisper.html
 reg.HSD = TukeyHSD(regionDisp)
 reg.HSD
 plot(reg.HSD)
