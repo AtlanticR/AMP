@@ -165,7 +165,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
     mutate(class = str_squish(class)) %>%
     mutate(class = str_replace(class, "spp", "spp.")) %>%
     # Remove whitespace from end of word
-    mutate(class = str_trim(class, side = c("right")))
+    mutate(class = str_trim(class, side = c("right"))) 
     
   # Remove unwanted classes
   # These do not contain relevant zooplankton data
@@ -177,9 +177,9 @@ speciesDF = function(xlDataFull, xlDataShort) {
                   "Leftover", "Leftovers")
 
   typoFixes = list("Calananoida (unid)" = "Calanoida (unid)",
-                   "Calanoid civ-vi" = "Calanoida civ-vi",
-                   "Calanoid cv-vi" = "Calanoida cv-vi",
-                   "Centropages spp. civ-vi" = "Centropages civ-vi",
+                   "Calanoid civ-vi" = "Calanoida (unid)",
+                   "Calanoid cv-vi" = "Calanoida (unid)",
+                   "Centropages spp. civ-vi" = "Centropages",
                    "Cirripedia nauplius" = "Cirripedia nauplii",
                    "Ctenophora larva" = "Ctenophora larvae",
                    "Cyclopoida spp." = "Cyclopoida",
@@ -209,6 +209,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
                    "Platyhelminthes nemertea larvae" = "Platyhelmenthes nemertea larvae",
                    "Podon/pleopis spp." = "Podon pleopis spp.",
                    "Unid zooplankton" = "Zooplankton (unid)",
+                   "Unidentified calanoida" = "Calanoida (unid)",
                    "Unidentified zooplankton" = "Zooplankton (unid)",
                    "Zooplankton" = "Zooplankton (unid)",
                    "Zooplankton (unid))" = "Zooplankton (unid)")
@@ -230,6 +231,9 @@ speciesDF = function(xlDataFull, xlDataShort) {
     mutate(class = str_replace(class, "civ-.*", "")) %>%
     mutate(class = str_replace(class, "cv-.*", "")) %>%
     mutate(class = str_replace(class, "cvi-.*", "")) %>%
+    
+    # Removing these classes will mean there is trailing whitespace again. Remove this
+    mutate(class = str_trim(class, side = c("right"))) %>%
     
     # idk why this one wouldn't fix itself above??? Something to do with the space before the word
     mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
