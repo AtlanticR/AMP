@@ -87,7 +87,7 @@ allRegionsWide = allRegions %>%
 # For NMDS calculations, must only include species data from dataframe
 # I will constantly be removing columns, adding columns etc. 
 # Instead define as the index where there's Acartia species (first species colum in dataframe) to the end (final column)
-beginNMDSAll = which(colnames(allRegionsWide)== "Acartia spp. ")
+beginNMDSAll = which(colnames(allRegionsWide)== "Acartia spp.")
 endNMDSAll = ncol(allRegionsWide)
 
 # Do NMDS ordination but only include species data
@@ -174,7 +174,7 @@ atlOnly = allRegionsWide %>%
   filter(ocean == "Atlantic")
 
 # Set the start/stop column indices for NMDS to run on
-beginNMDSAtl = which(colnames(atlOnly)== "Acartia spp. ")
+beginNMDSAtl = which(colnames(atlOnly)== "Acartia spp.")
 endNMDSAtl = ncol(atlOnly)
 
 # Do NMDS ordination
@@ -270,7 +270,7 @@ nmdsPrep = function(mergeData, bayColours) {
   # For NMDS calculations, must only include species data from dataframe
   # I will constantly be removing columns, adding columns etc. 
   # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
-  beginNMDS = which(colnames(mergeData)== "Acartia spp. ")
+  beginNMDS = which(colnames(mergeData)== "Acartia spp.")
   endNMDS = ncol(mergeData)
   
   # Do NMDS ordination but only include species data
@@ -356,7 +356,7 @@ nmdsBay = function(regionData, regionColour) {
     # For NMDS calculations, must only include species data from dataframe
     # I will constantly be removing columns, adding columns etc. 
     # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
-    beginNMDS = which(colnames(bayData)== "Acartia spp. ")
+    beginNMDS = which(colnames(bayData)== "Acartia spp.")
     endNMDS = ncol(bayData)
     
     # Do NMDS ordination but only include species data
