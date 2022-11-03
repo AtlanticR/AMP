@@ -70,6 +70,23 @@ pairOceanDisp$statistic # I might need to take the absolute value. Negative valu
 # Can also use Tukey HSD to get significance between pairwise groups. Example is at the end of the script. 
 # I am sticking with t-values since that is what PRIMER uses and how most people report results. 
 
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disOcean = data.frame(group = oceanDisp$group, distances = oceanDisp$distances)
+
+# ggplot boxplot of distance to centroid for each group
+ggplot(disOcean, aes(x = group, y = distances, fill=group))+
+  geom_boxplot()+
+  # Don't need to add significance because groups aren't significant
+  xlab("Ocean")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        # setting the margin adds space between tick labels and titles
+        axis.title.x = element_text(size = 12.5, margin = unit(c(3, 0, 0, 0), "mm")), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        #plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        legend.position = "none")
+
 ### PERMANOVA
 # First selects only the species data (i.e., starting at Acartia until the end)
 adonis2(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]~
@@ -102,13 +119,14 @@ pairRegDisp$statistic # I might need to take the absolute value. Negative values
 boxplot(regDisp, xlab = NULL)
 plot(regDisp)
 
-disRegion <- data.frame(group = regDisp$group, distances = regDisp$distances)
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disRegion = data.frame(group = regDisp$group, distances = regDisp$distances)
 
-install.packages("ggsignif")
-library("ggsignif")
-
+# ggplot boxplot of distance to centroid for each group
 ggplot(disRegion, aes(x = group, y = distances, fill=group))+
   geom_boxplot()+
+  # Add significance for each group separately. Need to offset some comparisons so they show up better
+  # May need to check significance since p-values were obtained from permutation (not sure how geom_signif calculates them)
   geom_signif(comparisons = list(c("Gulf", "Maritimes")),
               map_signif_level = T)+
   geom_signif(comparisons = list(c("Gulf", "Newfoundland")),
@@ -128,7 +146,6 @@ ggplot(disRegion, aes(x = group, y = distances, fill=group))+
         axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
         #plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
         legend.position = "none")
-
 
 
 ### PERMANOVA
@@ -191,7 +208,27 @@ pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999)
 pairMarDisp
 pairMarDisp$statistic
 
+# boxplot in base R to show differences in dispersion between bays
 boxplot(marDisp, xlab = NULL)
+
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disMar = data.frame(group = marDisp$group, distances = marDisp$distances)
+
+# ggplot boxplot of distance to centroid for each group
+ggplot(disMar, aes(x = group, y = distances, fill=group))+
+  geom_boxplot()+
+  scale_fill_manual(values = marColours)+
+  # No groups are significantly different
+  xlab("Bay")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        # setting the margin adds space between tick labels and titles
+        axis.title.x = element_text(size = 12.5, margin = unit(c(3, 0, 0, 0), "mm")), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        #plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        legend.position = "none")
+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
@@ -219,6 +256,26 @@ pairGulfDisp
 pairGulfDisp$statistic
 
 boxplot(gulfDisp, xlab = NULL)
+
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disGulf = data.frame(group = gulfDisp$group, distances = gulfDisp$distances)
+
+# ggplot boxplot of distance to centroid for each group
+ggplot(disGulf, aes(x = group, y = distances, fill=group))+
+  geom_boxplot()+
+  scale_fill_manual(values = gulfColours)+
+  ### WATCH OUT FOR THIS SIGNIFICANCE LEVEL
+  geom_signif(comparisons = list(c("Malpeque", "StPeters")),
+              map_signif_level = T, annotation = "**")+
+  xlab("Bay")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        # setting the margin adds space between tick labels and titles
+        axis.title.x = element_text(size = 12.5, margin = unit(c(3, 0, 0, 0), "mm")), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        #plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        legend.position = "none")
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
@@ -254,6 +311,25 @@ pairPacDisp
 pairPacDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
 
 boxplot(pacDisp, xlab = NULL)
+
+
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disPac = data.frame(group = pacDisp$group, distances = pacDisp$distances)
+
+# ggplot boxplot of distance to centroid for each group
+ggplot(disPac, aes(x = group, y = distances, fill=group))+
+  geom_boxplot()+
+  scale_fill_manual(values = pacColours)+
+  xlab("Field Season")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        # setting the margin adds space between tick labels and titles
+        axis.title.x = element_text(size = 12.5, margin = unit(c(3, 0, 0, 0), "mm")), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        #plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        legend.position = "none")
+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
