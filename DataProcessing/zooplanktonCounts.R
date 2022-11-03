@@ -490,16 +490,28 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
 gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
   mutate(facetFactor = facilityName,
          region = "Gulf",
-         ocean = "Atlantic")
+         ocean = "Atlantic") %>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters"))
+
 nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj) %>%
   mutate(facetFactor = dataset,
          region = "Newfoundland",
-         ocean = "Atlantic")
+         ocean = "Atlantic") %>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Newfoundland 2020", "Southeast Arm 2020"))
+
 marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
   mutate(facetFactor = facilityName,
          region = "Maritimes",
-         ocean = "Atlantic")
+         ocean = "Atlantic") %>%
+  # I think I want to change the name of Sober Island
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Sober Island Oyster", "Sober Island")) %>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "WhiteHead", "Whitehead"))
+
 pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   mutate(facetFactor = dataset,
          region = "Pacific",
-         ocean = "Pacific") 
+         ocean = "Pacific") %>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific August 2020", "August 2020"))%>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific June 2021", "June 2021"))%>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific March 2021", "March 2021"))%>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "September 2021"))
