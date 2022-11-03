@@ -30,6 +30,10 @@
 ### Notes:
 # PERMDISP is the same as BETADISPER, but PERMDISP is the function name in PRIMER software
 
+### THURSDAY: REMEMBER TO LOOK AT CENTROID VS MEDIAN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 
 ################################################################################
 ################################################################################
@@ -52,11 +56,16 @@ library(pairwiseAdonis)
 # vegdist turns the data into dissimilarities. Bray-Curtis is the default
 # Need to also square root transform
 # It's  a bit clunky, but data in the species matrix always starts with 'Acartia spp." until the last column (ncol)
-oceanDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean))
+# I am using type = "centroid" instead of "spatial" (spatial median) to be consistent with PRIMER. In R, "spatial" is default
+# See PRIMER manual for brief explanation of the differences. Manual recommends "centroid" in most cases
+oceanDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean), type = "centroid")
 # This will get you ANOVA results (i.e., are there differences in dispersion) but with non-permuted significance
 anova(oceanDisp) 
 # Get significance (overall) and also conduct pairwise tests. Report these results instead.
 pairOceanDisp = permutest(oceanDisp, pairwise = T, permutations = 9999)
+
+# Construct boxplot to show differences in dispersion
+boxplot(oceanDisp, xlab = NULL)
 
 # Look at pairRegDisp for permuted p-values. Also can get t-values for pairwise comparisons 
 pairOceanDisp
@@ -87,13 +96,14 @@ summary(simOcean)
 # There are 4 factors (in this study): Maritimes, Gulf, Newfoundland, Pacific
 
 ### DISPERSION
-regDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region))
+regDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), type = "centroid")
 pairRegDisp = permutest(regDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairRegDisp
 pairRegDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
 
+boxplot(regDisp, xlab = NULL)
 
 ### PERMANOVA
 
@@ -148,13 +158,14 @@ pacPN = pacMerge %>%
 ## MARITIMES
 
 ### DISPERSION
-marDisp = betadisper(sqrt(vegdist(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])), as.factor(marPN$facetFactor))
+marDisp = betadisper(sqrt(vegdist(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])), as.factor(marPN$facetFactor), type = "centroid")
 pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairMarDisp
 pairMarDisp$statistic
 
+boxplot(marDisp, xlab = NULL)
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
@@ -174,13 +185,14 @@ summary(simMar)
 ## GULF
 
 ### DISPERSION
-gulfDisp = betadisper(sqrt(vegdist(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])), as.factor(gulfPN$facetFactor))
+gulfDisp = betadisper(sqrt(vegdist(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])), as.factor(gulfPN$facetFactor), type = "centroid")
 pairGulfDisp = permutest(gulfDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairGulfDisp
 pairGulfDisp$statistic
 
+boxplot(gulfDisp, xlab = NULL)
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
@@ -208,12 +220,14 @@ pacPNred = pacPN %>%
   filter(sampleCode != c("AMMP_PA_S04Pooled_202103LT_250UM"))
 
 ### DISPERSION
-pacDisp = betadisper(sqrt(vegdist(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])), as.factor(pacPNred$facetFactor))
+pacDisp = betadisper(sqrt(vegdist(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])), as.factor(pacPNred$facetFactor), type = "centroid")
 pairPacDisp = permutest(pacDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairPacDisp
 pairPacDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
+
+boxplot(pacDisp, xlab = NULL)
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
