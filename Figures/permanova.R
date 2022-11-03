@@ -30,11 +30,6 @@
 ### Notes:
 # PERMDISP is the same as BETADISPER, but PERMDISP is the function name in PRIMER software
 
-### THURSDAY: REMEMBER TO LOOK AT CENTROID VS MEDIAN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
 ################################################################################
 ################################################################################
 ## Get things set up
@@ -66,6 +61,7 @@ pairOceanDisp = permutest(oceanDisp, pairwise = T, permutations = 9999)
 
 # Construct boxplot to show differences in dispersion
 boxplot(oceanDisp, xlab = NULL)
+plot(oceanDisp)
 
 # Look at pairRegDisp for permuted p-values. Also can get t-values for pairwise comparisons 
 pairOceanDisp
@@ -104,6 +100,36 @@ pairRegDisp
 pairRegDisp$statistic # I might need to take the absolute value. Negative values don't mean much in multivariate bray-curtis space????
 
 boxplot(regDisp, xlab = NULL)
+plot(regDisp)
+
+disRegion <- data.frame(group = regDisp$group, distances = regDisp$distances)
+
+install.packages("ggsignif")
+library("ggsignif")
+
+ggplot(disRegion, aes(x = group, y = distances, fill=group))+
+  geom_boxplot()+
+  geom_signif(comparisons = list(c("Gulf", "Maritimes")),
+              map_signif_level = T)+
+  geom_signif(comparisons = list(c("Gulf", "Newfoundland")),
+              map_signif_level = T, y_position = 0.9)+
+  geom_signif(comparisons = list(c("Maritimes", "Newfoundland")),
+              map_signif_level = T, y_position = 1.0)+
+  geom_signif(comparisons = list(c("Maritimes", "Pacific")),
+              map_signif_level = T, y_position = 1.1)+
+  geom_signif(comparisons = list(c("Newfoundland", "Pacific")),
+              map_signif_level = T, y_position = 1.2)+
+  xlab("Region")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        # setting the margin adds space between tick labels and titles
+        axis.title.x = element_text(size = 12.5, margin = unit(c(3, 0, 0, 0), "mm")), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        #plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        legend.position = "none")
+
+
 
 ### PERMANOVA
 
