@@ -194,7 +194,16 @@ speciesDF = function(xlDataFull, xlDataShort) {
                    "Decapoda non-brachyura zoea larvae" = "Decapoda non-brachyura zoea",
                    
                    "Euphausiacea furcillia" = "Euphausiacea furcilia",
-                   "Gastropoda limacina spp. larvaeadult" = "Gastropoda limacina spp. larvae adult",
+                          
+                   # They were not consistent with these. Combine into Gastropoda/Limacina
+                   "Gastropoda larvae/lamacina spp." = "Gastropoda/Limacina",
+                   "Gastropoda limacina spp. larvaeadult" = "Gastropoda/Limacina",
+                   "Gastropoda larvae" = "Gastropoda/Limacina",
+                   "Gastropoda limacina spp." = "Gastropoda/Limacina",
+                   "Gastropoda limacina spp. larvae adult" = "Gastropoda/Limacina",
+                   
+                   "Invertebrate trochophore larvae" = "Invertebrate trochophore",
+                   "Invertebrate trochophore/larvae" = "Invertebrate trochophore",
                    "Monstrilloida" = "Monstrilloida spp.",
                    "Mysidacea juvenileadult" = "Mysidacea juvenile adult",
                    " Osteichthyes egg" = "Osteichthyes egg",
@@ -215,6 +224,16 @@ speciesDF = function(xlDataFull, xlDataShort) {
                    "Zooplankton (unid))" = "Zooplankton (unid)")
   
   siteDf = siteDf %>%
+    
+    # Remove stage information: Might have to adjust this based on the type of analysis!!!
+    # For most biodiversity stuff (not size fraction things) I do not want the "spp." stuff
+    # Stages are either written as ci-something or civ-something. .* implies "every character after that"
+    mutate(class = str_replace(class, "ci-.*", "")) %>%
+    mutate(class = str_replace(class, "civ-.*", "")) %>%
+    mutate(class = str_replace(class, "cv-.*", "")) %>%
+    mutate(class = str_replace(class, "cvi-.*", "")) %>%   
+    
+    
     subset(!grepl("[0-9]", class)) %>% # remove the "Class 1-9" data
     subset(!(class %in% excludeList)) %>%
     
@@ -224,21 +243,17 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
     mutate(class = recode(class, !!!typoFixes)) %>%
     
-    # Remove stage information: Might have to adjust this based on the type of analysis!!!
-    # For most biodiversity stuff (not size fraction things) I do not want the "spp." stuff
-    # Stages are either written as ci-something or civ-something. .* implies "every character after that"
-    mutate(class = str_replace(class, "ci-.*", "")) %>%
-    mutate(class = str_replace(class, "civ-.*", "")) %>%
-    mutate(class = str_replace(class, "cv-.*", "")) %>%
-    mutate(class = str_replace(class, "cvi-.*", "")) %>%
-    
     # Removing these classes will mean there is trailing whitespace again. Remove this
     mutate(class = str_trim(class, side = c("right"))) %>%
     
-    # idk why this one wouldn't fix itself above??? Something to do with the space before the word
+    # I'm not sure why these ones aren't "caught". But manually change a few extras.
     mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Calanoida", "Calanoida (unid)")) %>%
     mutate(class = replace(class, class == "Calanoida ", "Calanoida (unid)")) %>%
+    mutate(class = replace(class, class == "Metridia spp. ciii-vi", "Metridia spp.")) %>%
+    mutate(class = replace(class, class == "Monstrilloida", "Monstrilloida spp.")) %>%
+    # Change to Montrillidae since the order (Monstrilloida) constains a single family (Monstrillidae)
+    mutate(class = replace(class, class == "Monstrilloida", "Monstrillidae spp.")) %>%
     
     # Because stage information was removed, there now are duplicates (e.g., Calanus ci-iii and ci-iv are both just "Calanus")
     # Need to sum the values to remove the duplicates
