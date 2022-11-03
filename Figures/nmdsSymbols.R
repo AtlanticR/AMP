@@ -39,19 +39,19 @@ pacColourOne = c("Pacific" = "#C77CFF")
 # have them written down somewhere 
 marColours = c("Argyle" = "darkgreen", 
                "Country Harbour" = "green3", 
-               "Sober Island Oyster" = "darkolivegreen2", 
-               "WhiteHead" = "mediumspringgreen")
+               "Sober Island" = "darkolivegreen2", 
+               "Whitehead" = "mediumspringgreen")
 
-nlColours = c("Newfoundland 2020" = "#00BFC4")
+nlColours = c("Southeast Arm 2020" = "#00BFC4")
 
 gulfColours = c("Cocagne" = "red4", 
                 "Malpeque" = "red2", 
-                "StPeters" = "lightpink")
+                "St. Peters" = "lightpink")
 
-pacColours = c("Pacific August 2020" = "plum1", 
-               "Pacific June 2021" = "magenta4", 
-               "Pacific March 2021" = "maroon", 
-               "Pacific September 2021" = "maroon1")
+pacColours = c("August 2020" = "plum1", 
+               "June 2021" = "magenta4", 
+               "March 2021" = "maroon", 
+               "September 2021" = "maroon1")
 
 ### Also set the symbols for the tides
 pchTide = c("High" = 21,
@@ -242,7 +242,8 @@ nlLegend = as_grob(get_legend(ggNewfoundland))
 ggAtlanticOnly = ggplot()+
   geom_point(data = ordCoordsAtl, aes(x = NMDS1, y = NMDS2, fill = facetFactor, pch = region), size = 6)+
   scale_shape_manual(values=c(21, 22, 24), name = "Bay")+
-  scale_fill_manual(values = c("darkgreen", "red4", "green3", "red2", "#00BFC4", "darkolivegreen2", "lightpink", "mediumspringgreen"), name = "Region")+
+  # Note that fill is alphabetical by facetFactor. Use sort(unique(ordCoordsAtl$facetFactor)) to determine order
+  scale_fill_manual(values = c("darkgreen", "red4", "green3", "red2", "darkolivegreen2", "#00BFC4", "lightpink", "mediumspringgreen"), name = "Region")+
   annotate("text", x = max(ordCoordsAtl$NMDS1), y=max(ordCoordsAtl$NMDS2), label = ordStressAtl, size=4, hjust=1)+
   ggtitle("Atlantic")+
   theme_bw()+
