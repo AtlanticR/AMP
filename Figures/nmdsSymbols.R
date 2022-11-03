@@ -108,6 +108,19 @@ regionArray = c(21:(20+length(unique(allRegions$region))))
 ordCoordsAll = ordCoordsAll %>%
   mutate(region = allRegionsWide$region, ocean = allRegionsWide$ocean)
 
+
+# Compute the group centroids
+centOcean = aggregate(cbind(NMDS1, NMDS2)~ocean, data = ordCoordsAll, FUN = mean) # centroid of the oceans
+centRegion = aggregate(cbind(NMDS1, NMDS2)~region, data =ordCoordsAll, FUN = mean) # centroid of the regions
+
+# Add these centroids by merging with ordCoordsAll. Rename the centroids to 'oNMDS1' and 'oNMDS2' to represent NMDS coordinate centroids
+segs = merge(ordCoordsAll, setNames(centOcean, c('ocean','oNMDS1','oNMDS2')),
+              by = 'ocean', sort = FALSE)
+
+# Now merge the region coordinates
+segs2 = merge(segs, setNames(centRegion, c('region', 'rNMDS1', 'rNMDS2')),
+              by = "region", sort = FALSE)
+
 # Create plot for Atlantic
 ggAtlantic = ggplot()+
   geom_point(data = ordCoordsAll %>% filter(ocean == "Atlantic"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 21, size = 5)+
@@ -134,6 +147,8 @@ atlLegend = as_grob(get_legend(ggAtlantic))
 # Create plot with both data and no legend
 ggBoth = 
   ggplot() + 
+  #geom_segment(data = segs, mapping = aes(x = NMDS1, xend = oNMDS1, y = NMDS2, yend = oNMDS2), col = "grey49")+ # map segments for ocean
+  geom_segment(data = segs2, mapping = aes(x = NMDS1, xend = rNMDS1, y = NMDS2, yend = rNMDS2), col = "grey49")+ # map segments for regions
   geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$ocean, fill = allRegionsWide$region), alpha= 0.9, size = 6)+
   # Don't need to define colours. These just show up as default ggplot colours for 4 elements
   scale_shape_manual(values = regionArray, name = "Region")+ 
