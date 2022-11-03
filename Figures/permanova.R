@@ -128,7 +128,7 @@ ggplot(disRegion, aes(x = group, y = distances, fill=group))+
   # Add significance for each group separately. Need to offset some comparisons so they show up better
   # May need to check significance since p-values were obtained from permutation (not sure how geom_signif calculates them)
   geom_signif(comparisons = list(c("Gulf", "Maritimes")),
-              map_signif_level = T)+
+              map_signif_level = T, y_position = 0.8)+
   geom_signif(comparisons = list(c("Gulf", "Newfoundland")),
               map_signif_level = T, y_position = 0.9)+
   geom_signif(comparisons = list(c("Maritimes", "Newfoundland")),
