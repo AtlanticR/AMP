@@ -265,8 +265,8 @@ ggplot(disGulf, aes(x = group, y = distances, fill=group))+
   geom_boxplot()+
   scale_fill_manual(values = gulfColours)+
   ### WATCH OUT FOR THIS SIGNIFICANCE LEVEL
-  geom_signif(comparisons = list(c("Malpeque", "StPeters")),
-              map_signif_level = T, annotation = "**")+
+  geom_signif(comparisons = list(c("Malpeque", "St. Peters")),
+              map_signif_level = T)+
   xlab("Bay")+
   ylab("Distance to centroid")+
   theme_bw()+
@@ -358,26 +358,27 @@ summary(simPac)
 ### Nested PERMANOVA
 # There are too many issues to comment on right now. I'll come back to this, maybe
 
-# Here is attempt #1
-# Need to remove these 2 with no label
-nestedPerm = allRegionsWide %>%
-  filter(sampleCode != c("AMMP_PA_S04Pooled_202103HT_250UM"))%>%
-  filter(sampleCode != c("AMMP_PA_S04Pooled_202103LT_250UM"))
+# # Here is attempt #1
+# # Need to remove these 2 with no label
+# nestedPerm = allRegionsWide %>%
+#   filter(sampleCode != c("AMMP_PA_S04Pooled_202103HT_250UM"))%>%
+#   filter(sampleCode != c("AMMP_PA_S04Pooled_202103LT_250UM"))
+# 
+# adonis2(nestedPerm[,12:ncol(allRegionsWide)]~as.factor(nestedPerm$ocean)/as.factor(nestedPerm$region)/as.factor(nestedPerm$facetFactor)/as.factor(nestedPerm$myLabel), method="bray", sqrt.dist = T)
+# 
+# 
+# ### Pairwise comparisons (PERMANOVA) from a different package
+# # Don't use this one because it uses adonis not adonis 2 (even though it gives the same results??)
+# # Need to install from GitHub to get pairwise.adonis
+# remotes::install_github("Jtrachsel/funfuns")
+# library("funfuns")
+# 
+# # With the function from funfuns package
+# pairwise.adonis(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), sim.method="bray")
+# 
+# # This is another way to do the pairwise comparisons for BETADISPER, although they do not come with t-values
+# # See here for more info: https://rdrr.io/rforge/vegan/man/permutest.betadisper.html
+# reg.HSD = TukeyHSD(regionDisp)
+# reg.HSD
+# plot(reg.HSD)
 
-adonis2(nestedPerm[,12:ncol(allRegionsWide)]~as.factor(nestedPerm$ocean)/as.factor(nestedPerm$region)/as.factor(nestedPerm$facetFactor)/as.factor(nestedPerm$myLabel), method="bray", sqrt.dist = T)
-
-
-### Pairwise comparisons (PERMANOVA) from a different package
-# Don't use this one because it uses adonis not adonis 2 (even though it gives the same results??)
-# Need to install from GitHub to get pairwise.adonis
-remotes::install_github("Jtrachsel/funfuns")
-library("funfuns")
-
-# With the function from funfuns package
-pairwise.adonis(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), sim.method="bray")
-
-# This is another way to do the pairwise comparisons for BETADISPER, although they do not come with t-values
-# See here for more info: https://rdrr.io/rforge/vegan/man/permutest.betadisper.html
-reg.HSD = TukeyHSD(regionDisp)
-reg.HSD
-plot(reg.HSD)
