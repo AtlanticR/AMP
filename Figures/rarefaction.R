@@ -55,11 +55,9 @@ plot(specaccum(roundedDf,
 
 #######
 # Testing inext package
-install.packages("iNEXT")
-library("iNEXT")
 
 data(spider)
-out <- iNEXT(spider, q=c(0, 1, 2), datatype="abundance", endpoint=500)
+out = iNEXT(spider, q=c(0, 1, 2), datatype="abundance", endpoint=500)
 # Sample-size-based R/E curves, separating plots by "Assemblage"
 ggiNEXT(out, type=1, facet.var="Assemblage")
 
@@ -81,16 +79,30 @@ test
 
 ggiNEXT(test, type = 3, facet.var = "Assemblage")
 
+## SOBER ISLAND
+
+soberTest = testIn %>%
+  filter(facilityName == "Sober Island Oyster")
+
+roundedDfS = round(soberTest[,12:ncol(soberTest)])
+
+
+
+
+
+
+
 ## All Maritimes
 mar = testIn[,12:ncol(argyleTest)]
 tMar = as.data.frame(t(mar))
 tMarSum = as.data.frame(sort(round(rowSums(tMar))))
 
-test = iNEXT(tMarSum, q = c(0,1,2), datatype = "abundance")
+test = iNEXT(tMarSum, q = c(0), datatype = "abundance")
 test
 
 ggiNEXT(test, type = 1, facet.var = "Assemblage")+
-  scale_x_continuous(limits = c(0, 1000))
+  # this function sets x-axis scale without clipping data outside of range
+  coord_cartesian(xlim = c(0, 10000))
 
 
 
