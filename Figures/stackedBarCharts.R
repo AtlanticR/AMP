@@ -120,34 +120,34 @@ stackedBarChart = function(bayData){
 # Need to type variable name to get plot to show up
 
 # Maritimes
-argyleProcess = stackedBarChart(marMerge %>% subset(facilityName == "Argyle"))
-soberProcess = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster"))
-whiteheadProcess = stackedBarChart(marMerge %>% subset(facilityName == "WhiteHead"))
-cHarbourProcess = stackedBarChart(marMerge %>% subset(facilityName == "Country Harbour"))
+argyleProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Argyle"))
+soberProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island"))
+whiteheadProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Whitehead"))
+cHarbourProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Country Harbour"))
 
 # Gulf
-malpequeProcess = stackedBarChart(gulfMerge %>% subset(facilityName=="Malpeque"))
-cocagneProcess = stackedBarChart(gulfMerge %>% subset(facilityName=="Cocagne"))
-stPetersProcess = stackedBarChart(gulfMerge %>% subset(facilityName=="StPeters"))
+malpequeProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Malpeque"))
+cocagneProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Cocagne"))
+stPetersProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="St. Peters"))
 
 # Newfoundland (only one bay)
 seArmProcess = stackedBarChart(nlMerge)
 
-# Pacific (only one bay, but separate by dataset instead)
-lemmens20Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific August 2020"))
-lemmensMar21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific March 2021"))
-lemmensJun21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific June 2021"))
-lemmensSept21Process = stackedBarChart(pacMerge %>% subset(dataset == "Pacific September 2021"))
+# Pacific (only one bay, but separate by facetFactor instead)
+lemmens20Process = stackedBarChart(pacMerge %>% subset(facetFactor == "August 2020"))
+lemmensMar21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "March 2021"))
+lemmensJun21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "June 2021"))
+lemmensSept21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "September 2021"))
 
 # High Risk Sites!!!
-soberHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster") %>%
+soberHighRisk = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island") %>%
                                                       subset(myLabel == "Outer"))
 
-soberHighRiskInner = stackedBarChart(marMerge %>% subset(facilityName == "Sober Island Oyster") %>%
+soberHighRiskInner = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island") %>%
                                   subset(myLabel == "Inner"))
 
-whHighRisk = stackedBarChart(marMerge %>% subset(facilityName == "WhiteHead") %>%
+whHighRisk = stackedBarChart(marMerge %>% subset(facetFactor == "Whitehead") %>%
                                             subset(myLabel == "Mid"))
 
-spHighRisk = stackedBarChart(gulfMerge %>% subset(facilityName == "StPeters") %>%
+spHighRisk = stackedBarChart(gulfMerge %>% subset(facetFactor == "St. Peters") %>%
                                subset(myLabel == "Mid"))
