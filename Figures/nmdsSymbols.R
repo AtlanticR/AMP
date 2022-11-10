@@ -175,6 +175,29 @@ grid.arrange(ggBoth, pacLegend, atlLegend, nrow=2, ncol = 2,
                                    c(1,1,1,NA)))
 
 #################################################################################
+# NMDS of regions but "Ocean" is not specified as a heading for legend items
+
+ggplot() + 
+  #geom_segment(data = segs, mapping = aes(x = NMDS1, xend = oNMDS1, y = NMDS2, yend = oNMDS2), col = "grey49")+ # map segments for ocean
+  geom_segment(data = segs2, mapping = aes(x = NMDS1, xend = rNMDS1, y = NMDS2, yend = rNMDS2), col = "grey49")+ # map segments for regions
+  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region), pch = 21, alpha= 0.9, size = 6)+
+  # Don't need to define colours. These just show up as default ggplot colours for 4 elements
+  scale_fill_discrete(name = "Region")+
+  annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=4.5, hjust=1)+
+  theme_bw()+
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_text(size = 12),
+        legend.text=element_text(size = 13),
+        legend.title = element_text(size = 14),
+        panel.border=element_rect(color="black", size=1), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        plot.title = element_text(size=18))
+
+#################################################################################
 #################################################################################
 ## Now do the same thing for Atlantic ocean
 
@@ -307,21 +330,30 @@ nmdsPrep = function(mergeData, bayColours) {
   # For Pacific, they only sampled one bay (Lemmens) but had multiple field seasons that will be displayed instead
   legendTitle = ifelse(mergeData$region[1] == "Pacific", # only need to check first entry
                               "Field Season", 
-                              "Bay") #
+                              "Bay")
+  
+  # Get centroid of each bay (facetFactor) to be plotted on NMDS as lines
+  centFacet = aggregate(cbind(NMDS1, NMDS2)~facetFactor, data =ordCoords, FUN = mean) # centroid of the regions
+  # Now merge the region coordinates. These now form "segments" from centroid to actual coordinates
+  segs = merge(ordCoords, setNames(centFacet, c('facetFactor', 'fNMDS1', 'fNMDS2')),
+               by = "facetFactor", sort = FALSE)
   
   # Make the ggplot item for each DFO region
   ggBay =
     ggplot() + 
+    geom_segment(data = segs, mapping = aes(x = NMDS1, xend = fNMDS1, y = NMDS2, yend = fNMDS2), col = "grey49")+ # map segments for distance to centroid
     geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, fill = facetFactor, pch = facetFactor), alpha = 0.9, size = 5)+ # Use pch=21 to get black outline circles
     scale_fill_manual(name = legendTitle, values = bayColours)+
     scale_shape_manual(values = c(21:24),  name = legendTitle)+ 
     ggtitle(mergeData$region)+
-    annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
+    #annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust=1)+ # for all others
+    annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust = -0.01)+ # for Maritimes (otherwise 2D stress gets blocked)
     theme_bw()+
     theme(axis.text = element_blank(),
-          #axis.title.x = element_blank(), # don't want 
+          axis.title = element_text(size = 12), # don't want 
           axis.ticks = element_blank(),
-          #legend.position = "none",
+          legend.text=element_text(size = 13),
+          legend.title = element_text(size = 14),
           panel.border=element_rect(color="black", size=1), 
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
@@ -398,6 +430,7 @@ nmdsBay = function(regionData, regionColour) {
       # adding "breaks" will make sure only the tidePhases actually present in each plot will show up
       # sorting them will make sure they display alphabetically/consistently between each plot
       scale_shape_manual(values = pchTide, name = "Tide Phase", breaks = sort(unique(ordCoords$tidePhase)))+
+
       ggtitle(bayData$facetFactor)+
       #scale_shape_manual(values=numPchLoc, name = "Location")+ 
       #annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
