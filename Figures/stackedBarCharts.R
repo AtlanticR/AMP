@@ -151,3 +151,15 @@ whHighRisk = stackedBarChart(marMerge %>% subset(facetFactor == "Whitehead") %>%
 
 spHighRisk = stackedBarChart(gulfMerge %>% subset(facetFactor == "St. Peters") %>%
                                subset(myLabel == "Mid"))
+
+
+
+
+
+
+
+
+
+
+
+
