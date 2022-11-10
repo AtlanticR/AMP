@@ -4,6 +4,7 @@
 
 # This has all the plankton data with counts for each file
 source("Figures/nmdsSymbols.R")
+source("Figures/permanova.R")
 
 data(BCI)
 S <- specnumber(BCI) # observed number of species
