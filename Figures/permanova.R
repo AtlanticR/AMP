@@ -236,10 +236,10 @@ ggplot(disMar, aes(x = group, y = distances, fill=group))+
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
 adonis2(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]~
-          as.factor(marPN$facetFactor), method="bray", sqrt.dist = T, perm = 9999)
+          as.factor(marPN$facetFactor), method="bray", sqrt.dist = T, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-pairwise.adonis2(sqrt(vegdist(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]))~as.factor(facetFactor), data = marPN)
+pairwise.adonis2(sqrt(vegdist(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]))~as.factor(facetFactor), data = marPN, perm =9999, set.seed(13))
 
 ### SIMPER
 simMar = simper(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]), 
@@ -252,7 +252,7 @@ summary(simMar)
 
 ### DISPERSION
 gulfDisp = betadisper(sqrt(vegdist(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])), as.factor(gulfPN$facetFactor), type = "centroid")
-pairGulfDisp = permutest(gulfDisp, pairwise = T, permutations = 9999)
+pairGulfDisp = permutest(gulfDisp, pairwise = T, permutations = 9999, perm = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairGulfDisp
@@ -283,10 +283,10 @@ ggplot(disGulf, aes(x = group, y = distances, fill=group))+
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
 adonis2(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]~
-          as.factor(gulfPN$facetFactor), method="bray", sqrt.dist = T, perm = 9999)
+          as.factor(gulfPN$facetFactor), method="bray", sqrt.dist = T, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-pairwise.adonis2(sqrt(vegdist(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]))~as.factor(facetFactor), data = gulfPN, perm =9999)
+pairwise.adonis2(sqrt(vegdist(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]))~as.factor(facetFactor), data = gulfPN, perm =9999, set.seed(13))
 
 ### SIMPER
 simGulf = simper(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]), 
@@ -307,7 +307,7 @@ pacPNred = pacPN %>%
 
 ### DISPERSION
 pacDisp = betadisper(sqrt(vegdist(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])), as.factor(pacPNred$facetFactor), type = "centroid")
-pairPacDisp = permutest(pacDisp, pairwise = T, permutations = 9999)
+pairPacDisp = permutest(pacDisp, pairwise = T, permutations = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairPacDisp
@@ -337,10 +337,10 @@ ggplot(disPac, aes(x = group, y = distances, fill=group))+
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
 adonis2(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)]~
-          as.factor(pacPNred$facetFactor), method="bray", sqrt.dist = T, perm = 9999)
+          as.factor(pacPNred$facetFactor), method="bray", sqrt.dist = T, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-pairwise.adonis2(sqrt(vegdist(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)]))~as.factor(facetFactor), data = pacPNred)
+pairwise.adonis2(sqrt(vegdist(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)]))~as.factor(facetFactor), data = pacPNred, perm = 9999, set.seed(13))
 
 ### SIMPER
 # Here I am using pacPN not pacPNred because I want to know which species make the March 2021 data different
