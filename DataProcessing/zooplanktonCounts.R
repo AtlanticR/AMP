@@ -176,52 +176,94 @@ speciesDF = function(xlDataFull, xlDataShort) {
                    "Cut images", "Debris", "Debris of zooplankton", "Debris or zooplankton", "Diatom", "Duplicate images", "Extra taxa", "Fragments of zooplankton",
                   "Leftover", "Leftovers")
 
-  typoFixes = list("Calananoida (unid)" = "Calanoida (unid)",
-                   "Calanoid civ-vi" = "Calanoida (unid)",
-                   "Calanoid cv-vi" = "Calanoida (unid)",
-                   "Centropages spp. civ-vi" = "Centropages",
-                   "Cirripedia nauplius" = "Cirripedia nauplii",
-                   "Ctenophora larva" = "Ctenophora larvae",
-                   "Cyclopoida spp." = "Cyclopoida",
-                   "Cumacea juvenileadult" = "Cumacea juvenile adult",
-                   "Decapoda brachyura zoea larvae larvae" = "Decapoda brachyura zoea",
-                   "Decapoda nonbrachyura zoea" = "Decapoda non-brachyura zoea",
-                   "Decapoda nonbrachyura zoea larvae" = "Decapoda non-brachyura zoea",
-                   "Decpoda brachyura zoea" = "Decapoda brachyura zoea",
-                   
-                   # But actually I want to get reid of the 'larvae' part!!
-                   "Decapoda brachyura zoea larvae" = "Decapoda brachyura zoea",
-                   "Decapoda non-brachyura zoea larvae" = "Decapoda non-brachyura zoea",
-                   
-                   "Euphausiacea furcillia" = "Euphausiacea furcilia",
-                          
-                   # They were not consistent with these. Combine into Gastropoda/Limacina
-                   "Gastropoda larvae/lamacina spp." = "Gastropoda/Limacina",
-                   "Gastropoda limacina spp. larvaeadult" = "Gastropoda/Limacina",
-                   "Gastropoda larvae" = "Gastropoda/Limacina",
-                   "Gastropoda limacina spp." = "Gastropoda/Limacina",
-                   "Gastropoda limacina spp. larvae adult" = "Gastropoda/Limacina",
-                   
-                   "Invertebrate trochophore larvae" = "Invertebrate trochophore",
-                   "Invertebrate trochophore/larvae" = "Invertebrate trochophore",
-                   "Monstrilloida" = "Monstrilloida spp.",
-                   "Mysidacea juvenileadult" = "Mysidacea juvenile adult",
-                   " Osteichthyes egg" = "Osteichthyes egg",
-                   "Osteichthys egg" = "Osteichthyes egg",
-                   "Osteichthys eggs" = "Osteichthyes egg",
-                   "Osteichthys larvae" = "Osteichthyes larvae",
-                   "Osteichthyes eggs" = " Osteichthyes egg",
-                   "Ostheichthys eggs" = "Osteichthyes egg",
-                   "Ostracoda spp." = "Ostracoda",
-                   "Platyhelmenthes nemertea larva" = "Platyhelmenthes nemertea larvae",
-                   "Platyhelmenthes nemertrea larvae" = "Platyhelmenthes nemertea larvae",
-                   "Platyhelminthes nemertea larvae" = "Platyhelmenthes nemertea larvae",
-                   "Podon/pleopis spp." = "Podon pleopis spp.",
-                   "Unid zooplankton" = "Zooplankton (unid)",
-                   "Unidentified calanoida" = "Calanoida (unid)",
-                   "Unidentified zooplankton" = "Zooplankton (unid)",
-                   "Zooplankton" = "Zooplankton (unid)",
-                   "Zooplankton (unid))" = "Zooplankton (unid)")
+  typoFixes = list(
+    # cypris, actinula, nauplii/nauplius, metanauplius, calyptopsis, furcilia are all larval stages
+    
+    "Aglantha digitale medusa" = "Aglantha spp. medusa", # some to higher level than others
+    "Calanoid" = "Calanoida (unid)", 
+    "Calananoida (unid)" = "Calanoida (unid)",
+    "Calanoid civ-vi" = "Calanoida (unid)",
+    "Calanoid cv-vi" = "Calanoida (unid)",
+    "Centropages spp. civ-vi" = "Centropages spp.",
+    "Chaetognatha" = "Chaetognatha (juvenile or not specified)", # stage not always specified
+    "Chaetognatha juvenile" = "Chaetognatha (juvenile or not specified)",
+    
+    "Cirripedia cypris" = "Cirripedia cypris/nauplii", 
+    "Cirripedia cypris nauplii" = "Cirripedia cypris/nauplii",
+    "Cirripedia nauplii" = "Cirripedia cypris/nauplii",
+    "Cirripedia nauplius" = "Cirripedia cypris/nauplii",
+    
+    "Cnidaria actinula" = "Cnidaria actinula/larvae",
+    "Cnidaria actinula larvae" = "Cnidaria actinula/larvae",
+    "Cnidaria larvae" = "Cnidaria actinula/larvae",
+    
+    "Ctenophora larva" = "Ctenophora larvae",
+    "Cyclopoida spp." = "Cyclopoida",
+    "Cyclopoida epibenthic" = "Cyclopoida", # epibenthic not a stage
+    
+    "Cumacea juvenileadult" = "Cumacea juvenile adult",
+    "Decapoda brachyura zoea larvae larvae" = "Decapoda brachyura zoea",
+    "Decapoda nonbrachyura zoea" = "Decapoda non-brachyura zoea",
+    "Decapoda nonbrachyura zoea larvae" = "Decapoda non-brachyura zoea",
+    "Decpoda brachyura zoea" = "Decapoda brachyura zoea",
+    
+    # But actually I want to get reid of the 'larvae' part!!
+    "Decapoda brachyura zoea larvae" = "Decapoda brachyura zoea",
+    "Decapoda non-brachyura zoea larvae" = "Decapoda non-brachyura zoea",
+    
+    # Larval stages of euphausiacea are nauplius, metanauplius, calyptopis, furcilia
+    "Euphausiacea calyptopis" = "Euphausiacea larvae (calyptosis/furcilia/nauplii)",
+    "Euphausiacea furcillia" = "Euphausiacea larvae (calyptosis/furcilia/nauplii)",
+    "Euphausiacea furcilia" = "Euphausiacea larvae (calyptosis/furcilia/nauplii)",
+    "Euphausiacea nauplii" = "Euphausiacea larvae (calyptosis/furcilia/nauplii)",
+    
+    # They were not consistent with these. Combine into Gastropoda/Limacina
+    "Gastropoda larvae/lamacina spp." = "Gastropoda/Limacina",
+    "Gastropoda limacina spp. larvaeadult" = "Gastropoda/Limacina",
+    "Gastropoda larvae" = "Gastropoda/Limacina",
+    "Gastropoda limacina spp." = "Gastropoda/Limacina",
+    "Gastropoda limacina spp. larvae adult" = "Gastropoda/Limacina",
+    
+    "Hydrozoa juvenile medusa" = "Hydrozoa juvenile/medusa",
+    "Hydrozoa medusa" = "Hydrozoa juvenile/medusa",
+    
+    # Could not differentiate between trochophore and egg in some cases
+    "Invertebrate trochophore larvae" = "Invertebrate egg/trochophore", 
+    "Invertebrate trochophore/larvae" = "Invertebrate egg/trochophore",
+    "Invertebrate egg" = "Invertebrate egg/trochophore",
+    "Invertebrate trochophore" = "Invertebrate egg/trochophore",
+    "Invertebrate egg trochophore" = "Invertebrate egg/trochophore",
+    
+    "Isopoda" = "Isopoda larvae or not specified",
+    "Isopoda larvae" = "Isopoda larvae or not specified",
+    
+    "Monstrilloida" = "Monstrillidae", # Monstrilloida is an order with single family Monstrillidae
+    "Monstrillidae spp." = "Monstrillidae",
+    
+    "Mysidacea juvenileadult" = "Mysidacea",
+    "Mysidacea juvenile adult" = "Mysidacea",
+    
+    " Osteichthyes egg" = "Osteichthyes egg",
+    "Osteichthys egg" = "Osteichthyes egg",
+    "Osteichthys eggs" = "Osteichthyes egg",
+    "Osteichthys larvae" = "Osteichthyes larvae",
+    "Osteichthyes eggs" = " Osteichthyes egg",
+    "Ostheichthys eggs" = "Osteichthyes egg",
+    "Ostracoda spp." = "Ostracoda",
+    "Platyhelmenthes nemertea larva" = "Platyhelmenthes nemertea larvae",
+    "Platyhelmenthes nemertrea larvae" = "Platyhelmenthes nemertea larvae",
+    "Platyhelminthes nemertea larvae" = "Platyhelmenthes nemertea larvae",
+    
+    "Podon pleopis spp." = "Podon spp./Pleopsis spp.",
+    "Podon/pleopis spp." = "Podon spp./Pleopsis spp.",
+    "Temopteris spp. juvenile" = "Temopteris spp.",
+    
+    "Unid zooplankton" = "Zooplankton (unid)",
+    "Unidentified calanoida" = "Calanoida (unid)",
+    "Unidentified copepoda" = "Copepoda (unid)",
+    "Unidentified zooplankton" = "Zooplankton (unid)",
+    # "Zooplankton" = "Zooplankton (unid)", # CAREFUL WITH THIS ONE. DOUBLE CHECK.
+    "Zooplankton (unid))" = "Zooplankton (unid)")
   
   siteDf = siteDf %>%
     
@@ -250,10 +292,12 @@ speciesDF = function(xlDataFull, xlDataShort) {
     mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
     mutate(class = replace(class, class == "Calanoida", "Calanoida (unid)")) %>%
     mutate(class = replace(class, class == "Calanoida ", "Calanoida (unid)")) %>%
+    mutate(class = replace(class, class == "Calanoid ", "Calanoida (unid)")) %>%
+    mutate(class = replace(class, class == "Calanoid", "Calanoida (unid)")) %>%
+    mutate(class = replace(class, class == "Centropages", "Centropages spp.")) %>%
+    mutate(class = replace(class, class == "Cyclopoida epibenthic", "Cyclopoida")) %>%
     mutate(class = replace(class, class == "Metridia spp. ciii-vi", "Metridia spp.")) %>%
-    mutate(class = replace(class, class == "Monstrilloida", "Monstrilloida spp.")) %>%
-    # Change to Montrillidae since the order (Monstrilloida) constains a single family (Monstrillidae)
-    mutate(class = replace(class, class == "Monstrilloida", "Monstrillidae spp.")) %>%
+    mutate(class = replace(class, class == "Monstrilloida", "Monstrillidae")) %>%
     
     # Because stage information was removed, there now are duplicates (e.g., Calanus ci-iii and ci-iv are both just "Calanus")
     # Need to sum the values to remove the duplicates
