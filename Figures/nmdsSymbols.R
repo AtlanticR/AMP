@@ -176,11 +176,13 @@ grid.arrange(ggBoth, pacLegend, atlLegend, nrow=2, ncol = 2,
 
 #################################################################################
 # NMDS of regions but "Ocean" is not specified as a heading for legend items
+# Instead, each region is a different colour AND symbol
 
 ggplot() + 
   #geom_segment(data = segs, mapping = aes(x = NMDS1, xend = oNMDS1, y = NMDS2, yend = oNMDS2), col = "grey49")+ # map segments for ocean
   geom_segment(data = segs2, mapping = aes(x = NMDS1, xend = rNMDS1, y = NMDS2, yend = rNMDS2), col = "grey49")+ # map segments for regions
-  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region), pch = 21, alpha= 0.9, size = 6)+
+  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region, pch = allRegionsWide$region), alpha= 0.9, size = 6)+
+  scale_shape_manual(values=c(21:24), name = "Region")+
   # Don't need to define colours. These just show up as default ggplot colours for 4 elements
   scale_fill_discrete(name = "Region")+
   annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=4.5, hjust=1)+
