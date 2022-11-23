@@ -9,7 +9,7 @@
 # SETUP
 
 # Read in data with counts per bay
-source("bayBreakdown.R")
+source("DataProcessing/bayBreakdown.R")
 
 # Install necessary packages
 # iNEXT.4steps is not in CRAN yet!!
@@ -54,35 +54,55 @@ plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argy
 # I then sum all the presence/absence values for each species
 # I will then sum incidences across ALL TOWS. e.g., if Acartia was present in 14 of the 15 tows, its incidence frequency is 14
 
+
+inextPrep = function(bayData){
+
 # First, just extract only the taxa info:
 # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
-argyleTaxa = argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]
+bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp."): ncol(bayData)]
 
 # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
-argyleTaxa[argyleTaxa>0] = 1
+bayTaxa[bayTaxa>0] = 1
 
 # I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
 # It never works!!! Instead, convert to incidence_freq lol
 # Need to get incidence freqncies by summing the columns
-argSums = as.vector(colSums(argyleTaxa))
+baySums = as.vector(colSums(bayTaxa))
 
 # It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
-argSumsList = list(append(argSums, 15, after = 0))
+baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
 
 # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
-argyle.inext = iNEXT(argSumsList, q = c(0,1,2), datatype = "incidence_freq")
+bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
 # Plot the graph of diversity vs sampling units
 
-ggiNEXT(argyle.inext, facet.var = "Order.q")
+ggiNEXT(bay.inext, facet.var = "Order.q")
 
-ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q")+
-  theme_bw()
+# ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
+#   theme_bw()
 
 # For species diversity vs coverage
-ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
+# ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
+
+}
+
+hi = inextPrep(pacSept2021)
+
 
 ###########################################################################################################################
-######## Using the iNEXT4steps methods
+
+
+
+
+
+
+
+
+
+
+
+###########################################################################################################################
+### Using the iNEXT4steps methods
 
 
 # I need to play around with this, but I think my data needs to be in data frame format
