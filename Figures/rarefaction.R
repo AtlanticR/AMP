@@ -9,61 +9,49 @@ source("Figures/permanova.R")
 
 # LOOK UP THIS FOR TOMORROW: https://www.rdocumentation.org/packages/rareNMtests/versions/1.2/topics/rarefaction.individual
 
-
-
+# Install necessary packages
+# iNEXT.4steps is not in CRAN yet!!
+install_github('AnneChao/iNEXT.4steps')
+library("iNEXT.4steps")
 
 
 
 ###########################################################################################################################v
-# Practice with BCI data
+# Practice with BCI data in the vegan package
 
 # I think I finally get it
-# "exact" is "sample-based rarefaction". Some say that sample-based is not true rarefaction, it is averaged SACs
-# others say this distinction is dumb.
-# "rarefaction" is "individual-based rarefaction"
+# "exact" is "sample-based rarefaction". Some say that sample-based is not true rarefaction, it is averaged species accumulation curves
+# They also state that "rarefaction" is "individual-based rarefaction". This is the distinction the vegan package makes and it's why it's so confusing
+# Others say this distinction is dumb and both count as "rarefaction". I am going to call them both "rarefaction"
 
-#  The "exact" method finds the expected SAC using sample-based rarefaction methods
-# See "Sample-based interpolation (rarefaction)" i.e., "Mao Tau" estimator  https://academic.oup.com/jpe/article/5/1/3/1296712
+# use the specaccum function for both individual-based and sample-based rarefaction
+# The "exact" method is for sample-based rarefaction. It is also called the "Mao Tau" estimator 
+# see https://academic.oup.com/jpe/article/5/1/3/1296712 and vegan help for specaccum
 
+# Remember that individual-based rarefaction curves should always be above the sample-based data
+
+# Load in sample data
 data(BCI)
 
-
-# Individual-based data should always be above the sample-based data
+# Make plots of both sample-based and individual-based
 plot(specaccum(BCI, method= "exact")) # sample-based
-lines(specaccum(BCI, method = "rarefaction"), lty = 4) # individual-based, scaled to # of sites on the x-axis
+lines(specaccum(BCI, method = "rarefaction"), lty = 4) # individual-based, but scaled to # of sites on the x-axis
 
 # I think it would make sense if individual-based rarefaction was instead plotted with xvar = "individuals" as default
 plot(specaccum(BCI, method = "rarefaction"), xvar = "individuals")
 
+###########################################################################################################################
+######## Instead I want to use the iNEXT package for this 
 
 
-# Now do some tests with iNEXT()
+# Prep my data. For now, just using data from Argyle
+# For sample-based rarefaction (what I want to do!!!) data must be converted to presence/absence
 
-### individual-based
-data(spider)
-
-# How to read the data
-str(spider)
-# e.g., for Girdled: there are 46 individuals (abundance) of spider species 1, 22 of species 2, 17 of species 3...
-# for a total of 168 individuals
-sum(spider$Girdled) # use ?spider for an explanation of dataset
-
-
-iSpider = iNEXT(spider, q = 0, datatype = "abundance")
-ggiNEXT(iSpider)
-
-####
-# Incidence data
-
-data(ant)
-str(ant)
-
-out.inc = iNEXT(ant, q = c(0,1,2), datatype = "incidence_freq")
-
-ggiNEXT(out.inc, facet.var = "Order.q")
-
-
-### TESTING WITH MY DATA
+# I am prepping my data as "incidence freqencies" which normally I would only do if I have >1 assemblage
+# This means that the data frame will be converted to presence/absence
+# I then sum all the presence/absence values for each species
+# It will then show 
+# 
 
 testIn = marMerge %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
@@ -80,6 +68,7 @@ sumArg = as.vector(colSums(roundedDf))
 
 sumArg2 = list(append(sumArg, 15, after = 0))
 
+test = as.data.frame(sumArg)
 
 
 argyle.inc = iNEXT(sumArg2, q = c(0,1,2), datatype = "incidence_freq")
@@ -88,13 +77,22 @@ ggiNEXT(argyle.inc, facet.var = "Order.q", color.var = "Order.q")
 ggiNEXT(argyle.inc, type = 1, facet.var = "Order.q", color.var = "Order.q")
 
 
+out2 = iNEXT4steps(data = sumArg2, diversity = "TD", datatype = "incidence_freq")
+
+out1 = iNEXT4steps(data = Spider, diversity = "TD", datatype = "abundance", details = T)
+
+
+data(woody_plants)
+out <- iNEXT4steps(data = woody_plants[,c(1,4)], diversity = "TD", datatype = "incidence_freq")
 
 i.next.out = ChaoRichness(sumArg2)
-z = estimateD(sumArg2, datatype = "incidence_freq", level = 26)
+
+
+q = iNEXT4steps(test, datatype = "incidence_freq", diversity = "TD")
 
 
 
-
+z = woody_plants[,c(1,4)]
 
 plot(specaccum(roundedDf, method = "exact"))
 plot(specaccum(roundedDf, method = "rarefaction"), xvar = "individuals")
@@ -183,9 +181,18 @@ test = iNEXT(argMar, q = c(0), datatype = "abundance")
 ggiNEXT(test, type = 1, facet.var = "Assemblage")
 
 
+########################################################################################################################
+# iNEXT.4steps!!!!
+# See here for an explanation of what this is all about: https://esj-journals.onlinelibrary.wiley.com/doi/10.1111/1440-1703.12102
+# Note that this paper differentiates sample completeness vs coverage (especially for q=0, i.e., richness)
+# Whereas Chao et al. (2014) does not make this distinction
+# I think it has to do with if the value gets weighted by relative abundance or not
 
+data(Spider)
+out1 = iNEXT4steps(data = Spider, diversity = "TD", datatype = "abundance", details = T)
 
-
+out = Completeness(data = Spider, datatype = "abundance")
+ggCompleteness(out)
 
 
 
