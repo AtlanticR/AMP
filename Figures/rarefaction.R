@@ -1,23 +1,24 @@
-#### Rarefaction Curves
+###########################################################################################################################
+### RAREFACTION CURVES
 
-# Just experimenting with creating rarefaction curves and all the different possible outputs
+# Create rarefaction curves for each bay using the iNEXT R package
+# Also use the iNEXT 4 steps package for additional information about sample completeness
+# Undecided: should this also be for HT/LT comparisons, etc
 
-# This has all the plankton data with counts for each file
-source("Figures/nmdsSymbols.R")
-source("Figures/permanova.R")
+###########################################################################################################################
+# SETUP
 
-
-# LOOK UP THIS FOR TOMORROW: https://www.rdocumentation.org/packages/rareNMtests/versions/1.2/topics/rarefaction.individual
+# Read in data with counts per bay
+source("bayBreakdown.R")
 
 # Install necessary packages
 # iNEXT.4steps is not in CRAN yet!!
 install_github('AnneChao/iNEXT.4steps')
 library("iNEXT.4steps")
 
-
-
-###########################################################################################################################v
-# Practice with BCI data in the vegan package
+###########################################################################################################################
+### Practice with the vegan package
+# The vegan package also creates rarefaction curves but it is only for richness. And does not do extrapolation although asymptotic estimators can be calculated
 
 # I think I finally get it
 # "exact" is "sample-based rarefaction". Some say that sample-based is not true rarefaction, it is averaged species accumulation curves
@@ -28,24 +29,24 @@ library("iNEXT.4steps")
 # The "exact" method is for sample-based rarefaction. It is also called the "Mao Tau" estimator 
 # see https://academic.oup.com/jpe/article/5/1/3/1296712 and vegan help for specaccum
 
-# Remember that individual-based rarefaction curves should always be above the sample-based data
+# Make a plot for the Argyle data just to test it
 
-# Load in sample data
-data(BCI)
+# Think about this some more: I think rounding (especially if close to zero) causes slightly different plots
+# But I will be using sample-based rarefaction where it's just presence-absence. So... it's not a huge issue?
 
 # Make plots of both sample-based and individual-based
-plot(specaccum(BCI, method= "exact")) # sample-based
-lines(specaccum(BCI, method = "rarefaction"), lty = 4) # individual-based, but scaled to # of sites on the x-axis
+plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method= "exact")) # sample-based
+
+# Plot individual-based rarefaction over top. Data need to be rounded. (individual-based should be higher)
+lines(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), lty = 4)
 
 # I think it would make sense if individual-based rarefaction was instead plotted with xvar = "individuals" as default
 # It is odd to me that is not the default (it scales the x-axis to "Sites" which is confusing)
-plot(specaccum(BCI, method = "rarefaction"), xvar = "individuals")
+plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), xvar = "individuals")
 
 ###########################################################################################################################
-######## Instead I want to use the iNEXT package for this 
+### With the iNEXT package
 
-
-# Prep my data. For now, just using data from Argyle
 # For sample-based rarefaction (what I want to do!!!) data must be converted to presence/absence
 
 # I am prepping my data as "incidence freqencies" which normally I would only do if I have >1 assemblage
@@ -53,20 +54,15 @@ plot(specaccum(BCI, method = "rarefaction"), xvar = "individuals")
 # I then sum all the presence/absence values for each species
 # I will then sum incidences across ALL TOWS. e.g., if Acartia was present in 14 of the 15 tows, its incidence frequency is 14
 
-# Rearrange data to be in correct format (species as columns, counts as cells, tows as rows)
-# Search only for Argyle data 
-argyle = marMerge %>% 
-  pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0)) %>%
-  filter(facilityName == "Argyle")
-
-# Extract only the taxa information
-argyleTaxa = argyle[,12:ncol(argyle)]
+# First, just extract only the taxa info:
+# Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
+argyleTaxa = argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]
 
 # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
 argyleTaxa[argyleTaxa>0] = 1
 
-# I'm going to do the incidence frequency approach since I may be showing >1 assemblage per graph (TBD)
+# I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
+# It never works!!! Instead, convert to incidence_freq lol
 # Need to get incidence freqncies by summing the columns
 argSums = as.vector(colSums(argyleTaxa))
 
@@ -76,6 +72,9 @@ argSumsList = list(append(argSums, 15, after = 0))
 # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
 argyle.inext = iNEXT(argSumsList, q = c(0,1,2), datatype = "incidence_freq")
 # Plot the graph of diversity vs sampling units
+
+ggiNEXT(argyle.inext, facet.var = "Order.q")
+
 ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q")+
   theme_bw()
 
@@ -87,7 +86,7 @@ ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
 
 
 # I need to play around with this, but I think my data needs to be in data frame format
-arg4StepsPrep = as.data.frame(argSums)
+arg4StepsPrep = as.data.frame(argSumsList)
 
 # Computes everything
 arg4Steps = iNEXT4steps(arg4StepsPrep, datatype = "incidence_freq", diversity = "TD")
