@@ -76,7 +76,8 @@ argSumsList = list(append(argSums, 15, after = 0))
 # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
 argyle.inext = iNEXT(argSumsList, q = c(0,1,2), datatype = "incidence_freq")
 # Plot the graph of diversity vs sampling units
-ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q")
+ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q")+
+  theme_bw()
 
 # For species diversity vs coverage
 ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
