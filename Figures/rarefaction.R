@@ -38,6 +38,7 @@ plot(specaccum(BCI, method= "exact")) # sample-based
 lines(specaccum(BCI, method = "rarefaction"), lty = 4) # individual-based, but scaled to # of sites on the x-axis
 
 # I think it would make sense if individual-based rarefaction was instead plotted with xvar = "individuals" as default
+# It is odd to me that is not the default (it scales the x-axis to "Sites" which is confusing)
 plot(specaccum(BCI, method = "rarefaction"), xvar = "individuals")
 
 ###########################################################################################################################
@@ -50,150 +51,47 @@ plot(specaccum(BCI, method = "rarefaction"), xvar = "individuals")
 # I am prepping my data as "incidence freqencies" which normally I would only do if I have >1 assemblage
 # This means that the data frame will be converted to presence/absence
 # I then sum all the presence/absence values for each species
-# It will then show 
-# 
+# I will then sum incidences across ALL TOWS. e.g., if Acartia was present in 14 of the 15 tows, its incidence frequency is 14
 
-testIn = marMerge %>% 
+# Rearrange data to be in correct format (species as columns, counts as cells, tows as rows)
+# Search only for Argyle data 
+argyle = marMerge %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0))
-
-argyleTest = testIn %>%
+  mutate_all(~replace(., is.na(.), 0)) %>%
   filter(facilityName == "Argyle")
 
-roundedDf = round(argyleTest[,12:ncol(argyleTest)])
+# Extract only the taxa information
+argyleTaxa = argyle[,12:ncol(argyle)]
 
-roundedDf[roundedDf>0] = 1
+# Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
+argyleTaxa[argyleTaxa>0] = 1
 
-sumArg = as.vector(colSums(roundedDf))
+# I'm going to do the incidence frequency approach since I may be showing >1 assemblage per graph (TBD)
+# Need to get incidence freqncies by summing the columns
+argSums = as.vector(colSums(argyleTaxa))
 
-sumArg2 = list(append(sumArg, 15, after = 0))
+# It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
+argSumsList = list(append(argSums, 15, after = 0))
 
-test = as.data.frame(sumArg)
+# Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
+argyle.inext = iNEXT(argSumsList, q = c(0,1,2), datatype = "incidence_freq")
+# Plot the graph of diversity vs sampling units
+ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q")
 
+# For species diversity vs coverage
+ggiNEXT(argyle.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
 
-argyle.inc = iNEXT(sumArg2, q = c(0,1,2), datatype = "incidence_freq")
-ggiNEXT(argyle.inc, facet.var = "Order.q", color.var = "Order.q")
-
-ggiNEXT(argyle.inc, type = 1, facet.var = "Order.q", color.var = "Order.q")
-
-
-out2 = iNEXT4steps(data = sumArg2, diversity = "TD", datatype = "incidence_freq")
-
-out1 = iNEXT4steps(data = Spider, diversity = "TD", datatype = "abundance", details = T)
-
-
-data(woody_plants)
-out <- iNEXT4steps(data = woody_plants[,c(1,4)], diversity = "TD", datatype = "incidence_freq")
-
-i.next.out = ChaoRichness(sumArg2)
+###########################################################################################################################
+######## Using the iNEXT4steps methods
 
 
-q = iNEXT4steps(test, datatype = "incidence_freq", diversity = "TD")
+# I need to play around with this, but I think my data needs to be in data frame format
+arg4StepsPrep = as.data.frame(argSums)
 
+# Computes everything
+arg4Steps = iNEXT4steps(arg4StepsPrep, datatype = "incidence_freq", diversity = "TD")
 
+arg4Steps$summary # gives summary data
+arg4Steps$figure # gives all the figures together
 
-z = woody_plants[,c(1,4)]
-
-plot(specaccum(roundedDf, method = "exact"))
-plot(specaccum(roundedDf, method = "rarefaction"), xvar = "individuals")
-
-
-#######
-# Testing inext package
-
-data(spider)
-out = iNEXT(spider, q=c(0, 1, 2), datatype="abundance", endpoint=500)
-# Sample-size-based R/E curves, separating plots by "Assemblage"
-ggiNEXT(out, type=1, facet.var="Assemblage")
-
-ggiNEXT(out, type=1, facet.var="Order.q")
-
-
-data(bird)
-str(bird) # 41 obs. of 2 variables
-x = iNEXT(bird, q=c(0,1,2), datatype="abundance")
-ggiNEXT(x, type = 1, facet.var = "Assemblage")
-
-## Just Argyle
-argyleSpecies = argyleTest[,12:ncol(argyleTest)]
-tArgyle = as.data.frame(t(argyleSpecies))
-tArgyleSum = as.data.frame(sort(round(rowSums(tArgyle))))
-
-test = iNEXT(tArgyleSum, q = c(0), datatype = "abundance", knots = 2000)
-ggiNEXT(test, type = 3, facet.var = "Assemblage")
-test
-
-test2 = iNEXT(tArgyleSum, q = c(0), datatype = "abundance")
-ggiNEXT(test2, type = 3, facet.var = "Assemblage")
-
-test3 = iNEXT(tArgyleSum, q = c(0,1,2), datatype = "abundance", knots = 2000)
-ggiNEXT(test3, type = 1, facet.var = "Assemblage")
-
-test4 = iNEXT(tArgyleSum, q = 0, datatype = "abundance", size = 15)
-ggiNEXT(test4, type = 2, facet.var = "Assemblage")
-
-## Argyle as an incidence frequency
-# Argyle is made up of 15 samples
-
-argInFreq = as.incfreq(rbind(15, tArgyleSum))
-
-z = c(15, 0, 0, 0, 3, 0, 0, 0, 1, 1, 1, 5, 7, 8, 9, 115, 160, 200, 2677, 303, 298, 303, 426, 708, 3000, 14426)
-
-argFreqInext = iNEXT(z, q = 0, datatype = "incidence_freq")
-
-
-## SOBER ISLAND
-
-soberTest = testIn %>%
-  filter(facilityName == "Sober Island Oyster")
-
-roundedDfS = round(soberTest[,12:ncol(soberTest)])
-
-
-p <- 1/1:sample(1:50, 1)
-p <- p/sum(p)
-dat <- as.data.frame(rmultinom(9, 200, p))
-
-
-
-
-## All Maritimes
-mar = testIn[,12:ncol(argyleTest)]
-tMar = as.data.frame(t(mar))
-tMarSum = as.data.frame(sort(round(rowSums(tMar))))
-
-test = iNEXT(tMarSum, q = c(0), datatype = "abundance")
-test
-
-ggiNEXT(test, type = 1, facet.var = "Assemblage")+
-  # this function sets x-axis scale without clipping data outside of range
-  coord_cartesian(xlim = c(0, 10000))
-
-
-
-
-
-## Test Argyle within Maritimes
-argMar = cbind(tMarSum, tArgyleSum)
-
-
-test = iNEXT(argMar, q = c(0), datatype = "abundance")
-ggiNEXT(test, type = 1, facet.var = "Assemblage")
-
-
-########################################################################################################################
-# iNEXT.4steps!!!!
-# See here for an explanation of what this is all about: https://esj-journals.onlinelibrary.wiley.com/doi/10.1111/1440-1703.12102
-# Note that this paper differentiates sample completeness vs coverage (especially for q=0, i.e., richness)
-# Whereas Chao et al. (2014) does not make this distinction
-# I think it has to do with if the value gets weighted by relative abundance or not
-
-data(Spider)
-out1 = iNEXT4steps(data = Spider, diversity = "TD", datatype = "abundance", details = T)
-
-out = Completeness(data = Spider, datatype = "abundance")
-ggCompleteness(out)
-
-
-
-
+# Note: There are ways to get the figures separate. But that is for another day!!
