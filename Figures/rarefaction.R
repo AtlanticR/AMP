@@ -91,13 +91,36 @@ hi = inextPrep(pacSept2021)
 
 ###########################################################################################################################
 
+# Test breaking up HT/LT data
+
+argHT = argyle %>%
+  subset(tidePhase == "High")
+
+argLT = argyle %>%
+  subset(tidePhase == "Low")
+
+
+argHTtaxa = argHT[,which(colnames(argHT)== "Acartia spp."): ncol(argHT)]
+argLTtaxa = argLT[,which(colnames(argLT)== "Acartia spp."): ncol(argLT)]
+
+argHTtaxa[argHTtaxa>0] = 1
+argLTtaxa[argLTtaxa>0] = 1
+
+argHTsums = as.vector(colSums(argHTtaxa))
+argLTsums = as.vector(colSums(argLTtaxa))
+
+argTides = list("High Tide" = append(argHTsums, nrow(argHTtaxa), after = 0),
+                   "Low Tide" = append(argLTsums, nrow(argLTtaxa), after = 0))
+
+hi = iNEXT(argTides, q = c(0,1,2), datatype = "incidence_freq")
+
+ggiNEXT(hi, facet.var = "Order.q", type = 1)
 
 
 
 
 
-
-
+# https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118445112.stat07841
 
 
 
