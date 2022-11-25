@@ -421,7 +421,13 @@ nmdsBay = function(regionData, regionColour) {
     
     # Add NMDS stress
     # Note that round() includes UP TO 2 decimal places. Does not include 0s 
-    ordStress = paste("Stress: ", format(round(ord$stress, digits=2), nsmall=2))
+    ordStress = paste("Stress:", format(round(ord$stress, digits=2), nsmall=2))
+    
+    # For Newfoundland, there is only one plot. So I do not want want a letter in brackets, e.g., (A) Southeast Arm, 2020
+    # For all others, create label so it's e.g., (A) Argyle. Default includes a space between each element, so set sep = "" to remove that
+    facetLabel = ifelse(bayData$facetFactor[1] == "Southeast Arm 2020", # only need to check first entry
+                         bayData$facetFactor, 
+                        paste("(", LETTERS[i], ") ", bayData$facetFactor, sep =""))
     
     # Create the ggplot
     ggBay =
@@ -432,15 +438,19 @@ nmdsBay = function(regionData, regionColour) {
       # adding "breaks" will make sure only the tidePhases actually present in each plot will show up
       # sorting them will make sure they display alphabetically/consistently between each plot
       scale_shape_manual(values = pchTide, name = "Tide Phase", breaks = sort(unique(ordCoords$tidePhase)))+
+      
+      # Add a bit of extra space on y-axis so stress can be added
+      coord_cartesian(ylim = c(min(ordCoords$NMDS2* 1.05), max(ordCoords$NMDS2)*1.3))+
 
-      ggtitle(bayData$facetFactor)+
-      #scale_shape_manual(values=numPchLoc, name = "Location")+ 
-      #annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust=1)+
-      #annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=3.5, hjust = -0.02)+
+      ggtitle(facetLabel)+
+      # Add 2D stress to the top right. I don't understand the units of hjust? Or the direction.
+      annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2 * 1.28), label = ordStress, size= 4.2, hjust = 0.9)+
       theme_bw()+
       theme(axis.text = element_blank(),
             axis.ticks = element_blank(),
-            #legend.position = "none",
+            axis.title = element_text(size = 12),
+            legend.text = element_text(size = 13),
+            legend.title = element_text(size = 14),
             panel.border=element_rect(color="black", size=1), 
             panel.grid.major = element_blank(), 
             panel.grid.minor = element_blank(),
@@ -452,7 +462,7 @@ nmdsBay = function(regionData, regionColour) {
       # Set the shape as 21 otherwise they will not show up as coloured circles
       # Set the order to 1 so the "Bay" legend item will always be above "Tide Phase"
       guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
-    
+ 
     # Add each ggplot to a list
     ggList[[i]] = ggBay
     
@@ -476,8 +486,9 @@ nmdsBay(gulfMerge, gulfColours)
 nmdsBay(nlMerge, nlColours)
 nmdsBay(pacMerge  %>% filter(facetFactor != "March 2021"), pacColours) # without removing outliers
 
-# PACIFIC: need to remove March data because it only has 2 data points and can't do NMDS on that
+# PACIFIC: may need to remove March data because it only has 2 data points and can't do NMDS on that
 # Also remove the two "outliers" (from Pacific June 2021) because otherwise distorts individual NMDS
+# However, after fixing typos in November, this may not be needed anymore
 nmdsBay(pacMerge %>% filter(facetFactor != "March 2021") %>%
           filter(sampleCode != c("AMMP_PA_S04W15_20210610HT_250um"))%>%
           filter(sampleCode != c("AMMP_PA_S04W01_20210611HT_250um")), pacColours)
