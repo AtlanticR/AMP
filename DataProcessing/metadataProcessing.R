@@ -44,8 +44,8 @@ gulfMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_
 # Tide info in metadata does not always follow what it is supposed to (i.e., tideRange = high, mid, low. tideRiseFall = rising, falling)
 # I have therefore added a TidePhase column
 # Maritimes: comes from a combination of tideRange (high, mid, low) and tideRiseFall (rising, falling)
-# Gulf: not available yet. Thomas Guyondet is putting together
-# Newfoundland: in 2020, N/A. Samples were not taken from specific high/mid/low periods
+# Gulf: provided by Thomas Guyondet. However, some were included in the FlowCam names. Tides used were prioritized by using the designations from the Flowcam labels first, then using Thomas' classes.
+# Newfoundland: in 2020, samples were not taken from specific high/mid/low periods. However, Thomas Gyundet has also provided.
 # Pacific: tides were either Low or High. Get this from the FlowcamSample name OR from nearby Tofino tide station (https://www.isdm-gdsi.gc.ca/isdm-gdsi/twl-mne/maps-cartes/inventory-inventaire-eng.asp?user=isdm-gdsi&region=ATL&tst=1&perm=0)
 # For some Pacific sites, when comparing sampling times to Tofino tide data, some could be classified as 'mid-falling' or 'mid-rising'
 # However, to reduce the # of classes, keep as just high/low. But tidePhaseOld has mid-rising/falling if it's ever needed
