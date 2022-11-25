@@ -10,6 +10,8 @@
 
 # Read in data with counts per bay
 source("DataProcessing/bayBreakdown.R")
+# This sets the colours schemes and symbology for bays, regions, etc
+source("Figures/colourPchSchemes.R")
 
 # Install necessary packages
 # iNEXT.4steps is not in CRAN yet!!
@@ -55,7 +57,7 @@ plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argy
 # I will then sum incidences across ALL TOWS. e.g., if Acartia was present in 14 of the 15 tows, its incidence frequency is 14
 
 
-inextPrep = function(bayData){
+inextPrep = function(bayData, colourScheme){
 
 # First, just extract only the taxa info:
 # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
@@ -76,7 +78,14 @@ baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
 bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
 # Plot the graph of diversity vs sampling units
 
-ggiNEXT(bay.inext, facet.var = "Order.q")
+ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
+  
+  scale_colour_manual(values=colourScheme) +
+  scale_fill_manual(values=colourScheme)+
+  
+  theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
+  theme(legend.position = "none")
+
 
 # ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
 #   theme_bw()
@@ -86,9 +95,23 @@ ggiNEXT(bay.inext, facet.var = "Order.q")
 
 }
 
-hi = inextPrep(pacSept2021)
+argInext = inextPrep(argyle, marColours[[1]])
+argInext
+countryInext = inextPrep(country, marColours[[2]])
+countryInext
+soberInext = inextPrep(sober, marColours[[3]])
+soberInext
+whiteheadInext = inextPrep(whitehead, marColours[[4]])
+whiteheadInext
+
+marColours = c("Argyle" = "darkgreen", 
+               "Country Harbour" = "green3", 
+               "Sober Island" = "darkolivegreen2", 
+               "Whitehead" = "mediumspringgreen")
 
 
+
+hi
 ###########################################################################################################################
 
 # Test breaking up HT/LT data
