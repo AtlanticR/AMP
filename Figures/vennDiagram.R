@@ -90,100 +90,51 @@ sept21Vec = as.vector(sept21Ven$class)
 pacVen = list("August 2020" = aug20Vec, "March 2021" = mar21Vec, "June 2021" = jun21Vec, "September 2021" = sept21Vec)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Option 1 (ugly, but more customizable)
-ggVennDiagram(marBayVen)
-
-# See here for more info on getting fill colours for the overlap regions:
-# https://stackoverflow.com/questions/68875752/how-to-edit-ggvenndiagram-intersection-fill-region
-
-venn = Venn(marBayVen)
-data = process_data(venn)
-data2 = process_data(venn)
-data2@region = st_polygonize(data@setEdge)
-
-
-colfunc = colorRampPalette(marColours)
-col = colfunc(15)
-
-getCount = round(data@region$count/sum(data@region$count)*100, 2)
-
-getCount3 = paste("(", getCount, "%)", sep = "")
-
-ggplot()+
-  geom_sf(aes(fill = name), data = venn_region(data), show.legend = F)+
-  geom_sf(color = "black", data = venn_setedge(data2), show.legend = F)+
-  geom_sf_text(aes(label = name), data = venn_setlabel(data), size = 6.5)+
-  geom_sf_text(aes(label = count), data = venn_region(data), vjust = -0.5, size = 6)+
-  geom_sf_text(aes(label = getCount3), data = venn_region(data), vjust = 1.1, size = 4.5)+
-  scale_fill_manual(values = alpha(col, 0.5))+
-  scale_colour_manual(values = marColours)+
-  #geom_sf(aes(color = id), data = venn_setedge(data)) +
-  theme_void()+
-  scale_x_continuous(expand = expansion(mult = .2)) # trick to prevent the bay label names from getting cut off
-
-
-
 ####################################################################################
-# Gulf
+#### MAKE THE VENN DIAGRAMS
 
+# Original method for constructing using the ggVennDiagram function:
 
-# Option 1 (ugly, but more customizable)
-ggVennDiagram(gulfBayVen)
+makeVennDiagram = function(vennDataList, bayColours){
 
-# Option 2 (prettier, but maybe less customizable?)
-ggvenn(gulfBayVen, set_name_size = 4.5)
+  # However, this is HIDEOUS and I want to use my own colour scheme
+  # See here for more info on getting fill colours for the overlap regions:
+  # https://stackoverflow.com/questions/68875752/how-to-edit-ggvenndiagram-intersection-fill-region
+  
+  # There is another weird roundabout way where you do this all in ggplot by creating a "Venn" object
+  venn = Venn(vennDataList) # create the Venn object
+  # gVenn2 is used for fill stuff
+  # gVenn1 contains the regular data
+  gVenn1 = process_data(venn) # get the plot data (I think this makes it useable for ggplot)
+  gVenn2 = process_data(venn) # make another that will be turned into polygons
+  gVenn2@region = st_polygonize(gVenn2@setEdge) # create polygons to form the output shapes. These get coloured
+  
+  # The percentages don't get saved automatically when you use the Venn() method
+  # Calculate these yourself I guess
+  gPercents = round(gVenn1@region$count/sum(gVenn1@region$count)*100, 2)
+  
+  # Put brackets around the values
+  gPercentsBrackets = paste("(", gPercents, "%)", sep = "")
+  
+  ggplot()+
+    geom_sf(aes(fill = name), data = venn_region(gVenn2), show.legend = F)+  
+    geom_sf(color = "black", data = venn_setedge(gVenn1), show.legend = F)+
+    # Use this if I want to set the actual colours as the outlines. I think it's a bit ugly
+    #geom_sf(aes(color = name), data = venn_setedge(gVenn1), show.legend = F, linewidth = 1.1)+
+    geom_sf_text(aes(label = name), data = venn_setlabel(gVenn1), size = 6.5)+
+    geom_sf_text(aes(label = count), data = venn_region(gVenn1), vjust = -0.5, size = 6)+ # add richness amounts
+    geom_sf_text(aes(label = gPercentsBrackets), data = venn_region(gVenn1), vjust = 1.1, size = 4.5)+ # add percents
+    scale_fill_manual(values = alpha(bayColours, 0.4))+
+    theme_void()+
+    scale_x_continuous(expand = expansion(mult = .2)) # trick to prevent the bay label names from getting cut off
 
+}
 
+# Note that the outlines may look jagged in the plotting window, but if you use ggsave that goes away
 
-####################################################################################
-
-# Option 1 (ugly, but more customizable)
-ggVennDiagram(pacVen)
-
-# Option 2 (prettier, but maybe less customizable?)
-ggvenn(pacVen, set_name_size = 4.5)
-
-
-
-
-
-################## 
-# Rel abundance by region
-
-marTest = marMerge %>%
-  # Want counts per taxa (class) for the whole bay, not by tow
-  group_by(class, facetFactor) %>%
-  summarize(countPerClass = sum(abund)) 
-
-
-marTest2 = marMerge %>%
-  group_by(facetFactor) %>%
-  summarize(bayTotal = sum(abund))
-
-marTest3 = left_join(marTest, marTest2, by = "facetFactor") %>%
-  mutate(relAbund = countPerClass/bayTotal*100)
-
-
-ggplot(marTest3, aes(x = facetFactor, y = class))+
-  geom_point(aes(size = relAbund, fill=class), alpha = 0.75, shape = 21)+
-  scale_size_continuous(limits = c(0.000001, 100), range = c(1,20), breaks = c(1,10,50,75))+
-  theme_bw()
-
+# Make them!
+makeVennDiagram(marBayVen, marColours)
+makeVennDiagram(gulfBayVen, gulfColours)
+makeVennDiagram(pacVen, pacColours)
 
 
