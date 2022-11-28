@@ -95,7 +95,7 @@ pacVen = list("August 2020" = aug20Vec, "March 2021" = mar21Vec, "June 2021" = j
 
 # Original method for constructing using the ggVennDiagram function:
 
-makeVennDiagram = function(vennDataList, bayColours){
+makeVennDiagram = function(vennDataList, bayColours, plotLetter){
 
   # However, this is HIDEOUS and I want to use my own colour scheme
   # See here for more info on getting fill colours for the overlap regions:
@@ -116,25 +116,31 @@ makeVennDiagram = function(vennDataList, bayColours){
   # Put brackets around the values
   gPercentsBrackets = paste("(", gPercents, "%)", sep = "")
   
+  p1 = 
   ggplot()+
     geom_sf(aes(fill = name), data = venn_region(gVenn2), show.legend = F)+  
     geom_sf(color = "black", data = venn_setedge(gVenn1), show.legend = F)+
     # Use this if I want to set the actual colours as the outlines. I think it's a bit ugly
     #geom_sf(aes(color = name), data = venn_setedge(gVenn1), show.legend = F, linewidth = 1.1)+
-    geom_sf_text(aes(label = name), data = venn_setlabel(gVenn1), size = 6.5)+
-    geom_sf_text(aes(label = count), data = venn_region(gVenn1), vjust = -0.5, size = 6)+ # add richness amounts
+    geom_sf_text(aes(label = name), data = venn_setlabel(gVenn1), size = 6)+
+    geom_sf_text(aes(label = count), data = venn_region(gVenn1), vjust = -0.5, size = 5)+ # add richness amounts
     geom_sf_text(aes(label = gPercentsBrackets), data = venn_region(gVenn1), vjust = 1.1, size = 4.5)+ # add percents
     scale_fill_manual(values = alpha(bayColours, 0.4))+
+    ggtitle(plotLetter)+
     theme_void()+
+    theme(
+      plot.title = element_text(size=20))+
     scale_x_continuous(expand = expansion(mult = .2)) # trick to prevent the bay label names from getting cut off
 
+  return(p1)
 }
 
 # Note that the outlines may look jagged in the plotting window, but if you use ggsave that goes away
 
 # Make them!
-makeVennDiagram(marBayVen, marColours)
-makeVennDiagram(gulfBayVen, gulfColours)
-makeVennDiagram(pacVen, pacColours)
+marVennPlot = makeVennDiagram(marBayVen, marColours, "(A)")
+gulfVennPlot = makeVennDiagram(gulfBayVen, gulfColours, "(B)")
+pacVennPlot = makeVennDiagram(pacVen, pacColours, ("(C)"))
 
-
+# Note that the (B) will not be aligned with the rest of the plots- I'll have to fix this at some point
+plot_grid(marVennPlot, gulfVennPlot, pacVennPlot, align = "v", ncol = 1)
