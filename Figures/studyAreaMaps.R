@@ -72,7 +72,11 @@ mapMaker = function(mapData) {
                      radius = 9, 
                      fillOpacity = 0.7, 
                      stroke = T) %>%
-  
+    
+    # Quick way to add text to map if you want to identify something (here: station labels)
+    # Needs a bit of customization to get font size bigger, etc
+    # addPopups(data = transect, ~longitude, ~latitude, ~as.character(stationProgram)) %>%
+    
     # Add a scalebar
     addScaleBar(position = 'topright')
 
