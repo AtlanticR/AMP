@@ -57,7 +57,7 @@ plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argy
 # I will then sum incidences across ALL TOWS. e.g., if Acartia was present in 14 of the 15 tows, its incidence frequency is 14
 
 
-inextPrep = function(bayData, colourScheme){
+inextPrep = function(bayData, colourScheme, plotLetter){
 
 # First, just extract only the taxa info:
 # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
@@ -79,12 +79,18 @@ bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
 # Plot the graph of diversity vs sampling units
 
 ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
-  
   scale_colour_manual(values=colourScheme) +
   scale_fill_manual(values=colourScheme)+
-  
+  xlab("Number of zooplankton tows")+
+  ylab("Taxa diversity")+
+  ggtitle(plotLetter)+
   theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
-  theme(legend.position = "none")
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    plot.margin=unit(c(0.1, 1, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
+    plot.title = element_text(size = 15),
+    plot.title.position = "plot")
 
 
 # ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
@@ -95,23 +101,36 @@ ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
 
 }
 
-argInext = inextPrep(argyle, marColours[[1]])
-argInext
-countryInext = inextPrep(country, marColours[[2]])
-countryInext
-soberInext = inextPrep(sober, marColours[[3]])
-soberInext
-whiteheadInext = inextPrep(whitehead, marColours[[4]])
-whiteheadInext
+# Maritimes
+argInext = inextPrep(argyle, marColours[[1]], "(A) Argyle")
+countryInext = inextPrep(country, marColours[[2]], "(B) Country Harbour")
+soberInext = inextPrep(sober, marColours[[3]], "(C) Sober Island")
+whiteheadInext = inextPrep(whitehead, marColours[[4]], "(D) Whitehead")
 
-marColours = c("Argyle" = "darkgreen", 
-               "Country Harbour" = "green3", 
-               "Sober Island" = "darkolivegreen2", 
-               "Whitehead" = "mediumspringgreen")
+plot_grid(argInext, countryInext, soberInext, whiteheadInext, align = "v", ncol = 1)
+
+# Gulf
+cocagneInext = inextPrep(cocagne, gulfColours[[1]], "(A) Cocagne")
+malpequeInext = inextPrep(malpeque, gulfColours[[2]], "(B) Malpeque")
+stPetersInext = inextPrep(stPeters, gulfColours[[3]], "(C) St. Peters")
+
+plot_grid(cocagneInext, malpequeInext, stPetersInext, stPetersInext, align = "v", ncol = 1)
+
+# Pacific
+pacAug2020Inext = inextPrep(pacAug2020, pacColours[[1]], "(A) August 2020")
+#pacMar2021Inext = inextPrep(pacMar2021, pacColours[[2]], "(B) March 2021") # not enough data
+pacJun2021Inext = inextPrep(pacJun2021, pacColours[[3]], "(C) June 2021")
+pacSept2021Inext = inextPrep(pacSept2021, pacColours[[4]], "(D) September 2021")
+
+# For now, add one extra plot so all the graphs look the same for each region
+plot_grid(pacAug2020Inext, pacJun2021Inext, pacSept2021Inext, pacSept2021Inext, align = "v", ncol = 1)
+
+
+# Newfoundland
+seArm2020Inext = inextPrep(seArm2020, nlColours[[1]], "(A) Southeast Arm")
 
 
 
-hi
 ###########################################################################################################################
 
 # Test breaking up HT/LT data
