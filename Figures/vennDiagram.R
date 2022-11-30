@@ -94,10 +94,11 @@ pacVen = list("August 2020" = aug20Vec, "March 2021" = mar21Vec, "June 2021" = j
 #### MAKE THE VENN DIAGRAMS
 
 # Original method for constructing using the ggVennDiagram function:
+ggVennDiagram(pacVen)
 
 makeVennDiagram = function(vennDataList, bayColours, plotLetter){
 
-  # However, this is HIDEOUS and I want to use my own colour scheme
+  # The default venn diagram is HIDEOUS and I want to use my own colour scheme
   # See here for more info on getting fill colours for the overlap regions:
   # https://stackoverflow.com/questions/68875752/how-to-edit-ggvenndiagram-intersection-fill-region
   
@@ -138,9 +139,10 @@ makeVennDiagram = function(vennDataList, bayColours, plotLetter){
 # Note that the outlines may look jagged in the plotting window, but if you use ggsave that goes away
 
 # Make them!
-marVennPlot = makeVennDiagram(marBayVen, marColours, "(A)")
-gulfVennPlot = makeVennDiagram(gulfBayVen, gulfColours, "(B)")
-pacVennPlot = makeVennDiagram(pacVen, pacColours, ("(C)"))
+marVennPlot = makeVennDiagram(marBayVen, marColours, "(A) Maritimes")
+gulfVennPlot = makeVennDiagram(gulfBayVen, gulfColours, "(B) Gulf")
+pacVennPlot = makeVennDiagram(pacVen, pacColours, ("(C) Pacific"))
 
 # Note that the (B) will not be aligned with the rest of the plots- I'll have to fix this at some point
 plot_grid(marVennPlot, gulfVennPlot, pacVennPlot, align = "v", ncol = 1)
+
