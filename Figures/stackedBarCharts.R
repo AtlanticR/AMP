@@ -6,6 +6,11 @@
 ## Get things set up
 source("DataProcessing/zooplanktonCounts.R")
 
+# facet_nested is breaking for people? See here:
+# https://github.com/teunbrand/ggh4x/issues/81
+devtools::install_github("teunbrand/ggh4x")
+library("ggh4x")
+
 ################################################################################
 ## Function to create stacked bar charts and relative abundance charts
 # Takes the count data for each bay and returns:
@@ -36,7 +41,7 @@ stackedBarChart = function(bayData){
     summarise(sumCount = sum(abund))
 
   # day 
-  bayData$sampleCode[7:8]
+  #bayData$sampleCode[7:8]
   
   # Rename a mid-rising/mid-falling so it shows up better
   bayPlotDf = bayPlotDf %>%
@@ -97,19 +102,21 @@ stackedBarChart = function(bayData){
       theme(
         #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
         axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 11),
+        axis.text.y = element_text(size = 14),
         axis.ticks.x = element_blank(),
-        legend.title = element_text(size=13),
+        axis.title = element_text(size = 14),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size=14),
         panel.grid.major.y = element_blank(),
         panel.spacing = unit(0.2, "cm"), # changes spacing between facets
         #plot.title = element_text(size = 15, face = "bold"),
-        strip.text.x = element_text(size = 13),
+        strip.text.x = element_text(size = 14),
         strip.placement = "outside",
       )
   
   bothPlots = plot_grid(stackedGGPlot, relGGPlot, ncol = 1, align = "v", axis = "l")
   
-  return(bothPlots)
+  return(relGGPlot)
   
 }
 
