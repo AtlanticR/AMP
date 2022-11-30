@@ -123,10 +123,10 @@ makeVennDiagram = function(vennDataList, bayColours, plotLetter){
     geom_sf(color = "black", data = venn_setedge(gVenn1), show.legend = F)+
     # Use this if I want to set the actual colours as the outlines. I think it's a bit ugly
     #geom_sf(aes(color = name), data = venn_setedge(gVenn1), show.legend = F, linewidth = 1.1)+
-    geom_sf_text(aes(label = name), data = venn_setlabel(gVenn1), size = 6)+
+    geom_sf_text(aes(label = name), data = venn_setlabel(gVenn1), size = 6, vjust = -0.1)+
     geom_sf_text(aes(label = count), data = venn_region(gVenn1), vjust = -0.5, size = 5)+ # add richness amounts
-    geom_sf_text(aes(label = gPercentsBrackets), data = venn_region(gVenn1), vjust = 1.1, size = 4.5)+ # add percents
-    scale_fill_manual(values = alpha(bayColours, 0.4))+
+    geom_sf_text(aes(label = gPercentsBrackets), data = venn_region(gVenn1), vjust = 0.75, size = 4.2)+ # add percents
+    scale_fill_manual(values = alpha(bayColours, 0.4))+ # adjust transparency of the fill
     ggtitle(plotLetter)+
     theme_void()+
     theme(
@@ -143,6 +143,17 @@ marVennPlot = makeVennDiagram(marBayVen, marColours, "(A) Maritimes")
 gulfVennPlot = makeVennDiagram(gulfBayVen, gulfColours, "(B) Gulf")
 pacVennPlot = makeVennDiagram(pacVen, pacColours, ("(C) Pacific"))
 
+
 # Note that the (B) will not be aligned with the rest of the plots- I'll have to fix this at some point
 plot_grid(marVennPlot, gulfVennPlot, pacVennPlot, align = "v", ncol = 1)
 
+# COMPARE WITH EGG PACKAGE!!! MIGHT BE BETTER: but the sizing of the middle plot gets thrown off
+ggarrange(marVennPlot, gulfVennPlot, pacVennPlot)
+
+# NOTE ABOUT USING GGSAVE!!!!!
+# do NOT use dev.size("in") to get width/height dimensions. I do NOT know why lol
+# Instead, go to Export --> Save as PDF --> and copy the dimensions in the top right instead
+# This will stop any annoying issues happening with font sizes 
+# Always save at 300 dpi for journal-quality resolution
+# Example:
+# ggsave("test.png", width = 16.25, height = 14.29, units = "in", dpi = 100)
