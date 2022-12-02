@@ -1,8 +1,10 @@
 ###### COPEPODS
 # Get the counts for copepods for Anais
+# This is for a student from UNB who might be using the data
 
 source("DataProcessing/zooplanktonCounts.R")
 
+# Get FlowCam counts of all copepod taxa
 taxaCountsBay = rbind(gulfMerge, marMerge, nlMerge, pacMerge) %>%
   group_by(class, dataset, facetFactor) %>%
   summarize(countPerClass = sum(count)) %>%
@@ -33,5 +35,5 @@ taxaCountsBay = rbind(gulfMerge, marMerge, nlMerge, pacMerge) %>%
   class == "Temoridae spp." |
   class == "Tortanus spp.")
   
-write.csv(taxaCountsBay, "copepodsByBay.csv")
+# write.csv(taxaCountsBay, "copepodsByBay.csv")
   
