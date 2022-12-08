@@ -132,6 +132,70 @@ seArm2020Inext = inextPrep(seArm2020, nlColours[[1]], "(A) Southeast Arm")
 
 
 ###########################################################################################################################
+# For CSRF meeting I only want Newfoundland and St. Peters data
+
+
+inextCSRF = function(bayData, colourScheme, plotLetter){
+  
+  # First, just extract only the taxa info:
+  # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
+  bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp."): ncol(bayData)]
+  
+  # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
+  bayTaxa[bayTaxa>0] = 1
+  
+  # I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
+  # It never works!!! Instead, convert to incidence_freq lol
+  # Need to get incidence freqncies by summing the columns
+  baySums = as.vector(colSums(bayTaxa))
+  
+  # It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
+  baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
+  
+  # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
+  bay.inext = iNEXT(baySumsList, q = c(0), datatype = "incidence_freq")
+  # Plot the graph of diversity vs sampling units
+  
+  ggiNEXT(bay.inext, color.var = "Order.q")+
+    scale_colour_manual(values=colourScheme) +
+    scale_fill_manual(values=colourScheme)+
+    xlab("Number of zooplankton tows")+
+    ylab("Taxa richness")+
+    ggtitle(plotLetter)+
+    theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
+    theme(
+      axis.title.x = element_blank(),
+      legend.position = "none",
+      plot.margin=unit(c(0.1, 1, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
+      plot.title = element_text(size = 15),
+      plot.title.position = "plot")
+  
+  
+  # ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
+  #   theme_bw()
+  
+  # For species diversity vs coverage
+  # ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
+  
+}
+
+
+stPetersCSRF = inextCSRF(stPeters, "MediumBlue", "(B) St. Peters (Gulf)")
+nlCSRF = inextCSRF(seArm2020, "red", "(A) Southeast Arm (Newfoundland)")
+
+plot_grid(nlCSRF, stPetersCSRF, ncol = 1)
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Test breaking up HT/LT data
 
