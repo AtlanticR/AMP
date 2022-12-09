@@ -44,3 +44,23 @@ pchTide = c("High" = 21,
             "Low" = 22,
             "Mid-Falling" = 23,
             "Mid-Rising" = 24)
+
+
+stationCol = c("Outer" = "#20DF92",
+             "Mid" = "#9220DF",
+             "Inner" = "#DF9220",
+             
+             "North" = "#20DF92",
+             "South" = "#DF9220",
+             
+             "East" = "#20DF92",
+             "West" = "#DF9220",
+             
+             "Missing" = "white")
+
+
+
+
+
+
+
