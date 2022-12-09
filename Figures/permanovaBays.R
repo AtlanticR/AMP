@@ -6,16 +6,35 @@
 source("DataProcessing/bayBreakdown.R")
 
 
+################################################################################
+## Argyle
 
-
+# Test this without the Mid-Rising data (n=2) for now
 argMinusMR = argyle %>%
   subset(tidePhase != "Mid-Rising")
 
 
 
-
-
 dataTest = argMinusMR[,which(colnames(argMinusMR)== "Acartia spp."):ncol(argMinusMR)]
+
+dataAll = argyle[,which(colnames(argyle)== "Acartia spp."):ncol(argyle)]
+allArg = vegdist(sqrt(dataAll))
+
+brayArg = vegdist(sqrt(dataTest))
+
+adonis2(brayArg~tidePhase+myLabel, data = argMinusMR, perm = 9999, by = "margin")
+
+adonis2(brayArg~tidePhase, data = argMinusMR, perm = 9999)
+adonis2(brayArg~myLabel, data = argMinusMR, perm = 9999)
+
+
+adonis2(brayArg~tidePhase+myLabel+tidePhase:myLabel, data = argMinusMR, perm = 9999)
+
+adonis2(brayArg~tidePhase*myLabel, data = argMinusMR, perm = 9999)
+
+
+adonis2(allArg~tidePhase*myLabel, data = argyle)
+
 
 
 adonis2(sqrt(dataTest)~ tidePhase, data = argMinusMR, method = "bray", perm = 9999)
