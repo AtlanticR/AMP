@@ -339,7 +339,7 @@ plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 ### Each bay separately so I can plot tides & location
 
 # Method 1 with station as text labels:
-nmdsBay = function(regionData, regionColour, stationCol) {
+nmdsBay = function(regionData, stationCol) {
   
   # alter the dataframe so it is in appropriate format for NMDS
   # names_from: The column whose values will be used as column names
@@ -357,8 +357,10 @@ nmdsBay = function(regionData, regionColour, stationCol) {
     # Get the data for each bay. Sort them alphabetically
     bayData = regionData %>%
       filter(facetFactor == sort(unique(regionData$facetFactor))[i])
+    
+    # Getting rid of this: no longer colouring data by bay. Instead, colour by station
     # Region colours are already alphabetized, don't need to worry about sorting (yay!)
-    bayColour = regionColour[i]
+    # bayColour = regionColour[i]
     
     # For NMDS calculations, must only include species data from dataframe
     # I will constantly be removing columns, adding columns etc. 
@@ -403,9 +405,8 @@ nmdsBay = function(regionData, regionColour, stationCol) {
       ggtitle(facetLabel)+
       # Add 2D stress to the top right. I don't understand the units of hjust? Or the direction.
       
-      
+      # Add stress to plot. Add a bit of extra space to y-axis to add stress without it overlapping with points
       annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2 * 1.28), label = ordStress, size= 4.2, hjust = 0.9)+
-      #annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size= 4.2, hjust = 0.9)+
       
       theme_bw()+
       theme(axis.text = element_blank(),
@@ -431,23 +432,21 @@ nmdsBay = function(regionData, regionColour, stationCol) {
     
   }
   
-  # Arrange the plots. COME BACK TO THIS!!!!! How do I just this to just be i number of gglLists
-  #arrangePlot = plot_grid(ggList[[1]], ggList[[2]], ggList[[3]], ggList[[4]], align = "v")
-  # ^ This can be replaced with do.call()!!!
-  # I think this can replace a lot of my garbage code!!
-  # Align them vertically so each PLOT lines up even if legend sizes differ slightly
-  # Setting ncol/nrow will mean all plots have same size (NL2020 only has one bay. otherwise plot is huge)
-  gridOfPlots = do.call("plot_grid", c(ggList, align = "v", ncol = 2, nrow = 2))
-  
+  # No longer need this. But if I want to arrange all plots, it would be like this:
+  # gridOfPlots = do.call("plot_grid", c(ggList, align = "v", ncol = 2, nrow = 2))
+
   return(ggList)
   
 }
 
 # Run the function by passing in the data and the colour scheme for the region
-x = nmdsBay(marMerge, marColours, stationCol)
-nmdsBay(gulfMerge, gulfColours,)
-nmdsBay(nlMerge, nlColours)
-nmdsBay(pacMerge  %>% filter(facetFactor != "March 2021"), pacColours) # without removing outliers
+marNMDSbays = nmdsBay(marMerge, stationCol)
+gulfNMDSbays = nmdsBay(gulfMerge, stationCol)
+nlNMDSbays = nmdsBay(nlMerge, stationCol)
+pacNMDSbays = nmdsBay(pacMerge  %>% filter(facetFactor != "March 2021"), stationCol) # without removing outliers
+
+# Note, this combines all ggplots for each bay into a list. To access, do this:
+# marNMDSbays[[1]]
 
 # PACIFIC: may need to remove March data because it only has 2 data points and can't do NMDS on that
 # Also remove the two "outliers" (from Pacific June 2021) because otherwise distorts individual NMDS
