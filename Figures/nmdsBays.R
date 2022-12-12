@@ -52,10 +52,6 @@ nmdsBay = function(regionData, stationCol) {
     bayData = regionData %>%
       filter(facetFactor == sort(unique(regionData$facetFactor))[i])
     
-    # Getting rid of this: no longer colouring data by bay. Instead, colour by station
-    # Region colours are already alphabetized, don't need to worry about sorting (yay!)
-    # bayColour = regionColour[i]
-    
     # For NMDS calculations, must only include species data from dataframe
     # I will constantly be removing columns, adding columns etc. 
     # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
@@ -107,20 +103,16 @@ nmdsBay = function(regionData, stationCol) {
             axis.ticks = element_blank(),
             axis.title = element_text(size = 12),
             legend.position = "none",
-            #legend.text = element_text(size = 13),
-            #legend.title = element_text(size = 14),
             panel.border=element_rect(color="black", linewidth= 0.8), 
             panel.grid.major = element_blank(), 
             panel.grid.minor = element_blank(),
             plot.background = element_blank(),
             # This affects the amount of space around each plot
             # If there is not enough space, plot_grid will make them too close together
+            # Written as (top, right, bottom, left). I want less empty space to the right because the legend will go there
             plot.margin=unit(c(0.3, 0.1, 0.3, 0.3),"cm"),
-            plot.title = element_text(size=16))+
-      # Set the shape as 21 otherwise they will not show up as coloured circles
-      # Set the order to 1 so the "Bay" legend item will always be above "Tide Phase"
-      guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
-    
+            plot.title = element_text(size=16))
+      
     # Add each ggplot to a list. List will be created for each region, and each list item will be ordination for each bay
     ggList[[i]] = ggBay
     
