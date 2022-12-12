@@ -1,11 +1,13 @@
 ################################################################################
 ################################################################################
-### NMDS Ordinations for FlowCam data
+### NMDS Ordinations for regional FlowCam data
 # But in this script I'm going to add symbols to distinguish each plot
 
-# It has the same plots as in nmds.R but it's easier to just create a separate script
-# and then choose my favourite one
-
+# This makes NMDS ordinations when data are displayed by REGIONS
+# Likely, not all plots will be used in Tech Report
+# There is code to make ordinations for:
+# All regions together, just the Atlantic Ocean, and each region separately
+# (with data by bays identified)
 
 ################################################################################
 ## Read in other scripts
