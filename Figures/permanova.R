@@ -31,6 +31,13 @@
 # PERMDISP is the same as BETADISPER, but PERMDISP is the function name in PRIMER software
 # For things requiring permutations, use set.seed() to get same results each time
 
+######## IMPORTANT NOTE TO SELF:
+# I SQUARE ROOT TRANSFORMED AT THE WRONG SPOT AHHHHHHHHHHHHHH
+# COME BACK AND FIX THIS!!!!!
+# I NEED TO SQUARE ROOT TRANSFORM THE ABUNDANCE MATRIX. AND THEN TAKE BRAY-CURTIS
+# RIGHT NOW IN MANY SPOTS I AM SQUARE ROOT TRANFORMING THE BRAY-CURTIS DISS MATRIX WHICH IS INCORRECT
+
+
 ################################################################################
 ################################################################################
 ## Get things set up
