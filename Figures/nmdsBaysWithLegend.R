@@ -1,6 +1,17 @@
 ###############################################################################
 
-source("Figures/nmdsSymbols.R")
+
+
+
+
+
+
+
+
+
+
+
+source("Figures/nmdsBays.R")
 
 
 
@@ -76,7 +87,6 @@ ch.ggLeg = ggplot()+
     axis.ticks = element_blank(),
     axis.text = element_text(colour = "black"),
     axis.title = element_text(colour = "grey30"),
-    #axis.title = element_blank(),
     legend.position = "none",
     panel.background=element_rect(colour="grey30"),
     panel.grid = element_blank(), 
