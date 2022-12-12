@@ -1,8 +1,38 @@
 #################################################################################
 #################################################################################
-### Each bay separately so I can plot tides & location
+### Create NMDS ordinations for each bay
 
-# Method 1 with station as text labels:
+# Created a script that will read in the data for each region, and create separate
+# NMDS ordinations for each bay within those regions
+
+# Note that the legends for these figures (showing tide phase as symbols and 
+# stations as colours) are complex. Those are added in a different script:
+# nmdsBaysWithLegend.R
+# Those could have been added here, but it would be too long
+
+# Instead, this creates the plots, stores them as a list, and the other script
+# makes custom legends for each bay.
+
+#################################################################################
+## Set-up
+
+# This has all the plankton data with counts for each file
+source("DataProcessing/zooplanktonCounts.R")
+# This sets the colours schemes and symbology for bays, regions, etc
+source("Figures/colourPchSchemes.R")
+
+#################################################################################
+#################################################################################
+### Create NMDS ordinations for each bay
+
+# Pass in the data for each region. Will create separate ordinations for each bay
+# Data will be returned as a list, with each list element containing the ordination
+# for each bay within the region
+
+# Plots will show stations (i.e., location in bay) with colours
+# Tide phases as symbols
+# Those are defined in colourPchSchemes.R and passed into function as second element
+
 nmdsBay = function(regionData, stationCol) {
   
   # alter the dataframe so it is in appropriate format for NMDS
@@ -91,14 +121,14 @@ nmdsBay = function(regionData, stationCol) {
       # Set the order to 1 so the "Bay" legend item will always be above "Tide Phase"
       guides(fill = guide_legend(override.aes = list(shape=21), order = 1))
     
-    # Add each ggplot to a list
+    # Add each ggplot to a list. List will be created for each region, and each list item will be ordination for each bay
     ggList[[i]] = ggBay
     
   }
   
   # No longer need this. But if I want to arrange all plots, it would be like this:
   # gridOfPlots = do.call("plot_grid", c(ggList, align = "v", ncol = 2, nrow = 2))
-  
+
   return(ggList)
   
 }
@@ -106,59 +136,16 @@ nmdsBay = function(regionData, stationCol) {
 # Run the function by passing in the data and the colour scheme for the region
 marNMDSbays = nmdsBay(marMerge, stationCol)
 gulfNMDSbays = nmdsBay(gulfMerge, stationCol)
-nlNMDSbays = nmdsBay(nlMerge, stationCol)
+nlNMDSbays = nmdsBay(nlMerge, stationColNL) # remember that NL has different colour scheme
+
+# Pacific: remove March data because it only has 2 data points and can't do NMDS on that
 pacNMDSbays = nmdsBay(pacMerge  %>% filter(facetFactor != "March 2021"), stationCol) # without removing outliers
 
-# Note, this combines all ggplots for each bay into a list. To access, do this:
-# marNMDSbays[[1]]
-
-# PACIFIC: may need to remove March data because it only has 2 data points and can't do NMDS on that
-# Also remove the two "outliers" (from Pacific June 2021) because otherwise distorts individual NMDS
+# May also need to remove the two "outliers" (from Pacific June 2021) because otherwise distorts individual NMDS
 # However, after fixing typos in November, this may not be needed anymore
 nmdsBay(pacMerge %>% filter(facetFactor != "March 2021") %>%
           filter(sampleCode != c("AMMP_PA_S04W15_20210610HT_250um"))%>%
           filter(sampleCode != c("AMMP_PA_S04W01_20210611HT_250um")), pacColours)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Note, this combines all ggplots for each bay into a list. To access, do this:
+# marNMDSbays[[1]] # e.g., for Argyle (the first one)
