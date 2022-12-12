@@ -12,21 +12,6 @@ argyleCoastline = spTransform(readOGR("C:/Users/FINNISS/Desktop/FWApoly/argyleCo
 countryCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/FWApoly/countryCoastline.shp"))
 whiteheadCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/FWApoly/whiteheadCoastline.shp"))
 
-# Test reading in Peter Kraska's station labels just to double check if they're correct
-testKraska = read.csv("C:/Users/FINNISS/Desktop/FinnisCoordinateTest_zoop_si.csv")
-
-# Plot his station labels
-ggplot()+
-  geom_text(testKraska, mapping = aes(x = longitude, y = latitude, label = stationProgram), pch = 21, col = "black", size = 10, alpha = 0.6)
-  
-
-
-
-
-
-
-
-
 
 
 
