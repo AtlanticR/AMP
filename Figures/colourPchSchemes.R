@@ -60,8 +60,11 @@ stationCol = c("Outer" = "#82C738",
              
              "Missing" = "white")
 
-
-
+# Newfoundland needs own colour scheme since there are 4 stations, not 3
+stationColNL = c("Outer" = "#C69739",
+                 "Mid-Outer" = "#29C651",
+                 "Mid-Inner" = "#3968C6",
+                 "Inner" = "#C639AE")
 
 
 
