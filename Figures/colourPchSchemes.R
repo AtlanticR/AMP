@@ -46,6 +46,8 @@ pchTide = c("High" = 21,
             "Mid-Rising" = 24)
 
 
+# Andrea recommended using this colour wheel website for selecting colours to maximize distinctness:
+# https://www.canva.com/colors/color-wheel/
 stationCol = c("Outer" = "#82C738",
              "Mid" = "#3882C7",
              "Inner" = "#C73882",
