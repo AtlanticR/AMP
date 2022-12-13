@@ -1,22 +1,52 @@
 # Clipping land to a bounding box!
 # I definitely deleted a bunch of packages. But here's 
 
-
 source("DataProcessing/rPackages.R")
 
 
-lemmensCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/FWApoly/FWApoly_reduced.shp"))
-cocagneCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/FWApoly/cocagneCoastline.shp"))
+lemmensCoastline = readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/FWApoly_reduced.shp")
+#cocagneCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/cocagneCoastline.shp"))
 
-argyleCoastline = spTransform(readOGR("C:/Users/FINNISS/Desktop/FWApoly/argyleCoastline.shp"), crs = 4236)
-countryCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/FWApoly/countryCoastline.shp"))
-whiteheadCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/FWApoly/whiteheadCoastline.shp"))
+# I am combining multiple steps because this is a LOT of data and I don't want to keep creating new variables at each step
+# Read in the data, reproject it (WGS84), convert to a data frame for easier plotting with ggplot() (although this maybe isn't necessary?)
+# Mapping in R seems to constantly be changing, so I hope this is still somewhat current.
+# Maritimes data have to be transformed to WGS 84. I think the code is constantly changing lol ahhh
+argyleCoastline = tidy(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/argyleCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+countryCoastline = tidy(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/countryCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+whiteheadCoastline = tidy(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/whiteheadCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
 
 
+bayMaps = function(coastlineDf, regionMeta, latLimits, lonLimits){
+  
+  ggplot()+
+    geom_polygon(coastlineDf, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+    geom_point(regionMeta, mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
+    # Use this instead of coord_map to get the scalebar thing to work. 
+    # annotation_scale needs the crs to be set here too
+    coord_sf(xlim = lonLimits, ylim = latLimits, crs = 4236)+
+    annotation_scale(location = "br", text_cex = 1)+
+    theme_bw()+
+    theme(
+      axis.text = element_text(size = 14),
+      axis.title = element_blank(),
+      panel.grid = element_blank(),
+      plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"))
+  
+}
 
 
-# Test what it looks like
-plot(argyleCoastline)
+pacBay = bayMaps(lemmensCoastline, pacMeta, c(49.15, 49.24), c(-125.9472, -125.82))
+
+argMet= marMeta %>% filter(facilityName == "Argyle")
+
+argBay = bayMaps(argyleCoastline, argMet, c(43.73, 43.82), c(-66.00, -65.89))
+
+grid.arrange(pacBay, argBay, ncol = 2)
+
+ggarrange(pacBay, argBay, ncol = 2)
+
+plot_grid(pacBay, argBay, ncol = 2)
+
 
 # Pacific
 ggplot()+
@@ -24,27 +54,47 @@ ggplot()+
   geom_point(pacMeta, mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
-  coord_sf(xlim = c(-125.9472, -125.82), ylim = c(49.15, 49.24), crs = 4236)+
+  coord_sf(xlim = , ylim = , crs = 4236)+
   annotation_scale(location = "br", text_cex = 1)+
   theme_bw()+
   theme(
         axis.text = element_text(size = 14),
         axis.title = element_blank(),
-        panel.grid = element_blank())
+        panel.grid = element_blank(),
+        plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"))
   
 # Argyle                   
 ggplot()+
-  geom_polygon(argCost, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
   geom_point(marMeta %>% filter(facilityName == "Argyle"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
-  #coord_sf(xlim = c(-125.9472, -125.82), ylim = c(49.15, 49.24), crs = 4236)+
+  coord_sf(xlim = c(-66.00, -65.89), ylim = c(43.73, 43.82), crs = 4236)+
   annotation_scale(location = "br", text_cex = 1)+
   theme_bw()+
   theme(
     axis.text = element_text(size = 14),
     axis.title = element_blank(),
     panel.grid = element_blank())
+
+# Country Harbour                   
+ggplot()+
+  geom_polygon(countryCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_point(marMeta %>% filter(facilityName == "Country Harbour"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
+  # Use this instead of coord_map to get the scalebar thing to work. 
+  # annotation_scale needs the crs to be set here too
+  coord_sf(xlim = c(-61.5, -61.8), ylim = c(45.08, 45.25), crs = 4236)+
+  annotation_scale(location = "br", text_cex = 1)+
+  theme_bw()+
+  theme(
+    axis.text = element_text(size = 14),
+    axis.title = element_blank(),
+    panel.grid = element_blank())
+
+
+
+
+
 
 
 #########################
