@@ -4,22 +4,33 @@
 source("DataProcessing/rPackages.R")
 
 
-lemmensCoastline = fortify(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/lemmensCoastline.shp"))
-
 # I am combining multiple steps because this is a LOT of data and I don't want to keep creating new variables at each step
 # Read in the data, reproject it (WGS84), convert to a data frame for easier plotting with ggplot() (although this maybe isn't necessary?)
 # Mapping in R seems to constantly be changing, so I hope this is still somewhat current.
 # Maritimes data have to be transformed to WGS 84. I think the code is constantly changing lol ahhh
 # I don't know what happened, but previously I was using tidy() instead of fortify() but then it randomly stopped working. I'm switching to fortify().
 
+## Coastline shapefiles
 
-
+# Maritimes coastline
 argyleCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/argyleCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
 countryCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/countryCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
 whiteheadCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/whiteheadCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
 soberCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/soberCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
 
+# Gulf coastline
 gulfCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/gulfCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+
+# Newfoundland coastline
+seArmCoastline = fortify(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/newfoundlandCoastline.shp"))
+
+# Pacific coastline
+lemmensCoastline = fortify(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/lemmensCoastline.shp"))
+
+## Lease shapefiles
+nsLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/NS_leases_Apr_2022.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+nbLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/MASMPS_Data.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/PEI_leases_March_2020.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
 
 
 # TBH it probably should go in a function but I'm going to make individual plots first
@@ -45,7 +56,7 @@ pacBay = bayMaps(lemmensCoastline, pacMeta, c(49.15, 49.24), c(-125.9472, -125.8
 ################################################################################
 ## PACIFIC 
 
-ggPac = ggplot()+
+ggPacMap = ggplot()+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
   geom_point(pacMeta, mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
 
@@ -69,8 +80,9 @@ ggPac = ggplot()+
 
 
 # Argyle                   
-ggArg = ggplot()+
+ggArgMap = ggplot()+
   geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
   # geom_point(marMeta %>% filter(facilityName == "Argyle"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
   geom_segment(marMeta %>% filter(facilityName == "Argyle"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "darkgreen", alpha = 0.6, linewidth = 4, lineend = "round")+
     # Use this instead of coord_map to get the scalebar thing to work. 
@@ -89,8 +101,9 @@ ggArg = ggplot()+
     panel.grid = element_blank())
 
 # Country Harbour                   
-ggCh = ggplot()+
+ggChMap = ggplot()+
   geom_polygon(countryCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
   geom_point(marMeta %>% filter(facilityName == "Country Harbour"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
@@ -104,8 +117,9 @@ ggCh = ggplot()+
     panel.grid = element_blank())
 
 # Whitehead
-ggwh = ggplot()+
+ggWhMap = ggplot()+
   geom_polygon(whiteheadCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
   geom_point(marMeta %>% filter(facilityName == "WhiteHead"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
@@ -121,6 +135,7 @@ ggwh = ggplot()+
 # Sober Island
 ggSobMap = ggplot()+
   geom_polygon(soberCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
   #geom_point(marMeta %>% filter(facilityName == "Sober Island Oyster"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "darkgreen", size = 7, alpha = 0.6)+
   geom_segment(marMeta %>% filter(facilityName == "Sober Island Oyster"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "mediumspringgreen", alpha = 0.6, linewidth = 4, lineend = "round")+
   # Use this instead of coord_map to get the scalebar thing to work. 
@@ -142,61 +157,85 @@ ggSobMap = ggplot()+
 ## GULF
 
 # Cocagne
-ggplot()+
-  geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
-  geom_segment(gulfMeta %>% filter(facilityName == "Cocagne"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "red4", alpha = 0.6, linewidth = 4, lineend = "round")+
-  # Use this instead of coord_map to get the scalebar thing to work. 
-  # annotation_scale needs the crs to be set here too
-  coord_sf(ylim = c(46.3, 46.41), xlim = c(-64.54, -64.66), expand = F, crs = 4326)+
+ggCocMap = 
+  ggplot()+
+    geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+    geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
   
-  #coord_sf(xlim = c(-62.48, -62.457), ylim = c(44.835, 44.85), expand = F, crs = 4326)+
-  #coord_map()
-  #st_crop(soberCoastline, xmin = -62.490, xmax = -62.470, ymin = 44.832, ymax = 44.85)+
-  annotation_scale(location = "br", text_cex = 1)+
-  ggtitle("Cocagne")+
-  theme_bw()+
-  theme(
-    #axis.text = element_blank(),
-    #axis.ticks = element_blank(),
-    axis.title = element_blank(),
-    panel.grid = element_blank())
+      geom_segment(gulfMeta %>% filter(facilityName == "Cocagne"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "red4", alpha = 0.6, linewidth = 4, lineend = "round")+
+    # Use this instead of coord_map to get the scalebar thing to work. 
+    # annotation_scale needs the crs to be set here too
+    coord_sf(ylim = c(46.3, 46.41), xlim = c(-64.54, -64.66), expand = F, crs = 4326)+
+  
+    #coord_sf(xlim = c(-62.48, -62.457), ylim = c(44.835, 44.85), expand = F, crs = 4326)+
+    #coord_map()
+    #st_crop(soberCoastline, xmin = -62.490, xmax = -62.470, ymin = 44.832, ymax = 44.85)+
+    annotation_scale(location = "br", text_cex = 1)+
+    ggtitle("Cocagne")+
+    theme_bw()+
+    theme(
+      #axis.text = element_blank(),
+      #axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.grid = element_blank())
 
 # Malpeque
-ggplot()+
-  geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
-  geom_segment(gulfMeta %>% filter(facilityName == "Malpeque"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "red2", alpha = 0.6, linewidth = 4, lineend = "round")+
-  # Use this instead of coord_map to get the scalebar thing to work. 
-  # annotation_scale needs the crs to be set here too
-  #coord_sf(ylim = c(46.2, 46.6), xlim = c(-64.3, -64.4), crs = 4326)+
-  annotation_scale(location = "br", text_cex = 1)+
-  ggtitle("Malpeque")+
-  theme_bw()+
-  theme(
-    #axis.text = element_blank(),
-    #axis.ticks = element_blank(),
-    axis.title = element_blank(),
-    panel.grid = element_blank())
+ggMalMap = 
+  ggplot()+
+    geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+    geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
+    geom_segment(gulfMeta %>% filter(facilityName == "Malpeque"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "red2", alpha = 0.6, linewidth = 4, lineend = "round")+
+  
+    # Use this instead of coord_map to get the scalebar thing to work. 
+    # annotation_scale needs the crs to be set here too
+    #coord_sf(ylim = c(46.2, 46.6), xlim = c(-64.3, -64.4), crs = 4326)+
+    annotation_scale(location = "br", text_cex = 1)+
+    ggtitle("Malpeque")+
+    theme_bw()+
+    theme(
+      #axis.text = element_blank(),
+      #axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.grid = element_blank())
 
 # St. Peters
-ggplot()+
-  geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
-  geom_segment(gulfMeta %>% filter(facilityName == "StPeters"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "lightpink", alpha = 0.6, linewidth = 4, lineend = "round")+
+ggStPMap = 
+  ggplot()+
+    geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+    geom_segment(gulfMeta %>% filter(facilityName == "StPeters"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "lightpink", alpha = 0.6, linewidth = 4, lineend = "round")+
+    geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "black")+
   # Use this instead of coord_map to get the scalebar thing to work. 
-  # annotation_scale needs the crs to be set here too
-  #coord_sf(ylim = c(46.2, 46.6), xlim = c(-64.3, -64.4), crs = 4326)+
-  annotation_scale(location = "br", text_cex = 1)+
-  ggtitle("Malpeque")+
-  theme_bw()+
-  theme(
-    #axis.text = element_blank(),
-    #axis.ticks = element_blank(),
-    axis.title = element_blank(),
-    panel.grid = element_blank())
+    # annotation_scale needs the crs to be set here too
+    #coord_sf(ylim = c(46.2, 46.6), xlim = c(-64.3, -64.4), crs = 4326)+
+    annotation_scale(location = "br", text_cex = 1)+
+    ggtitle("Malpeque")+
+    theme_bw()+
+    theme(
+      #axis.text = element_blank(),
+      #axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.grid = element_blank())
 
 
+################################################################################
+## Newfoundland 
 
-
-
+# Southeast Arm (what name should I be using for this?)
+ggSeArmMap = 
+  ggplot()+
+    geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+    geom_point(nlMeta %>% filter(facilityName == "Southeast Arm"), mapping = aes(x = longitude, y = latitude), col = "lightpink", alpha = 0.6)+
+    # Use this instead of coord_map to get the scalebar thing to work. 
+    # annotation_scale needs the crs to be set here too
+    coord_sf(crs = 4326)+
+    annotation_scale(location = "br", text_cex = 1)+
+    ggtitle("Malpeque")+
+    theme_bw()+
+    theme(
+      #axis.text = element_blank(),
+      #axis.ticks = element_blank(),
+      axis.title = element_blank(),
+      panel.grid = element_blank())
 
 
 
