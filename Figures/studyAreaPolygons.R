@@ -4,18 +4,23 @@
 source("DataProcessing/rPackages.R")
 
 
-lemmensCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/lemmensCoastline.shp"))
-#cocagneCoastline = tidy(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/cocagneCoastline.shp"))
+lemmensCoastline = fortify(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/lemmensCoastline.shp"))
 
 # I am combining multiple steps because this is a LOT of data and I don't want to keep creating new variables at each step
 # Read in the data, reproject it (WGS84), convert to a data frame for easier plotting with ggplot() (although this maybe isn't necessary?)
 # Mapping in R seems to constantly be changing, so I hope this is still somewhat current.
 # Maritimes data have to be transformed to WGS 84. I think the code is constantly changing lol ahhh
-argyleCoastline = tidy(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/argyleCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
-countryCoastline = tidy(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/countryCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
-whiteheadCoastline = tidy(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/whiteheadCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+# I don't know what happened, but previously I was using tidy() instead of fortify() but then it randomly stopped working. I'm switching to fortify().
 
-soberCoastline = tidy(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/soberCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+
+
+argyleCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/argyleCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+countryCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/countryCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+whiteheadCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/whiteheadCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+soberCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/soberCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+
+gulfCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/gulfCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
+
 
 # TBH it probably should go in a function but I'm going to make individual plots first
 bayMaps = function(coastlineDf, regionMeta, latLimits, lonLimits){
@@ -66,8 +71,9 @@ ggPac = ggplot()+
 # Argyle                   
 ggArg = ggplot()+
   geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
-  geom_point(marMeta %>% filter(facilityName == "Argyle"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
-  # Use this instead of coord_map to get the scalebar thing to work. 
+  # geom_point(marMeta %>% filter(facilityName == "Argyle"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
+  geom_segment(marMeta %>% filter(facilityName == "Argyle"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "darkgreen", alpha = 0.6, linewidth = 4, lineend = "round")+
+    # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(-66.00, -65.89), ylim = c(43.73, 43.82), crs = 4326)+
 
@@ -75,8 +81,11 @@ ggArg = ggplot()+
   ggtitle("Argyle")+
   theme_bw()+
   theme(
-    axis.text = element_text(size = 10),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
     axis.title = element_blank(),
+    #axis.text = element_text(size = 10),
+    #axis.title = element_blank(),
     panel.grid = element_blank())
 
 # Country Harbour                   
@@ -113,7 +122,7 @@ ggwh = ggplot()+
 ggSobMap = ggplot()+
   geom_polygon(soberCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
   #geom_point(marMeta %>% filter(facilityName == "Sober Island Oyster"), mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "darkgreen", size = 7, alpha = 0.6)+
-  geom_segment(marMeta %>% filter(facilityName == "Sober Island Oyster"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "darkgreen", alpha = 0.6, linewidth = 4, lineend = "round")+
+  geom_segment(marMeta %>% filter(facilityName == "Sober Island Oyster"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "mediumspringgreen", alpha = 0.6, linewidth = 4, lineend = "round")+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(-62.48, -62.457), ylim = c(44.835, 44.85), expand = F, crs = 4326)+
@@ -131,6 +140,59 @@ ggSobMap = ggplot()+
 
 ################################################################################
 ## GULF
+
+# Cocagne
+ggplot()+
+  geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_segment(gulfMeta %>% filter(facilityName == "Cocagne"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "red4", alpha = 0.6, linewidth = 4, lineend = "round")+
+  # Use this instead of coord_map to get the scalebar thing to work. 
+  # annotation_scale needs the crs to be set here too
+  coord_sf(ylim = c(46.3, 46.41), xlim = c(-64.54, -64.66), expand = F, crs = 4326)+
+  
+  #coord_sf(xlim = c(-62.48, -62.457), ylim = c(44.835, 44.85), expand = F, crs = 4326)+
+  #coord_map()
+  #st_crop(soberCoastline, xmin = -62.490, xmax = -62.470, ymin = 44.832, ymax = 44.85)+
+  annotation_scale(location = "br", text_cex = 1)+
+  ggtitle("Cocagne")+
+  theme_bw()+
+  theme(
+    #axis.text = element_blank(),
+    #axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank())
+
+# Malpeque
+ggplot()+
+  geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_segment(gulfMeta %>% filter(facilityName == "Malpeque"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "red2", alpha = 0.6, linewidth = 4, lineend = "round")+
+  # Use this instead of coord_map to get the scalebar thing to work. 
+  # annotation_scale needs the crs to be set here too
+  #coord_sf(ylim = c(46.2, 46.6), xlim = c(-64.3, -64.4), crs = 4326)+
+  annotation_scale(location = "br", text_cex = 1)+
+  ggtitle("Malpeque")+
+  theme_bw()+
+  theme(
+    #axis.text = element_blank(),
+    #axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank())
+
+# St. Peters
+ggplot()+
+  geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_segment(gulfMeta %>% filter(facilityName == "StPeters"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "lightpink", alpha = 0.6, linewidth = 4, lineend = "round")+
+  # Use this instead of coord_map to get the scalebar thing to work. 
+  # annotation_scale needs the crs to be set here too
+  #coord_sf(ylim = c(46.2, 46.6), xlim = c(-64.3, -64.4), crs = 4326)+
+  annotation_scale(location = "br", text_cex = 1)+
+  ggtitle("Malpeque")+
+  theme_bw()+
+  theme(
+    #axis.text = element_blank(),
+    #axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank())
+
 
 
 
@@ -167,12 +229,82 @@ plot(canada_map)
 # Taken from here: https://ahurford.github.io/quant-guide-all-courses/making-maps.html
 can.lcc = "+proj=lcc +lat_1=49 +lat_2=77 +lon_0=-91.52 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"
 
+canMap = 
 ggplot()+
   geom_sf(data = canada_map, colour = "black", fill = "grey92")+
   theme_bw()+
   #theme(panel.background = element_rect(fill = "aliceblue"))+
   coord_sf(crs = can.lcc)
 
+
+ggarrange(canMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ncol = 3, nrow = 4, widths = c(2,1))
+
+
+ggarrange(
+  ggarrange(canMap, canMap, widths = c(2, 1)),
+  ggarrange(ggSobMap, ggSobMap, ggSobMap), 
+          nrow = 2, 
+          heights = c(2, 1)
+
+) 
+
+
+library(ggpubr)
+
+data("ToothGrowth")
+data("mtcars")
+
+P1 <- ggplot(mtcars, aes(x = wt, y = mpg, color=cyl))+
+  geom_point()       # Add correlation coefficient
+
+P2 <- ggboxplot(ToothGrowth, x = "dose", y = "len",
+                color = "dose", palette = "jco")+
+  scale_y_continuous(breaks=c(10.5, 20.5, 30.5))
+
+P3 <- ggdotplot(ToothGrowth, x = "dose", y = "len",
+                color = "dose", palette = "jco", binwidth = 1) +
+  scale_y_continuous(breaks=c(10.5, 20.5, 30.5))
+
+
+ggarrange(P1,
+          ggarrange(P2, P2, ncol = 2, labels = c("b", "d"), align = "h",widths = c(1.5,2)), 
+          ggarrange(P3, P3, ncol = 2, labels = c("c", "e"), align = "h",widths = c(1.5,2)), 
+          nrow = 3, 
+          heights = c(1.5, 1, 1),
+          labels = "a" 
+) 
+
+
+ggarrange(P1,
+          ggarrange(P2, P2, P2, ncol = 3, labels = c("b", "d", "i"), align = "h",widths = c(1,1,1)), 
+          ggarrange(P3, P3, P3, ncol = 3, labels = c("c", "e", "i"), align = "h",widths = c(1,1,1)), 
+          ggarrange(P3, P3, P3, ncol = 3, labels = c("c", "e", "i"), align = "h",widths = c(1,1,1)),
+          nrow = 4, 
+          heights = c(1.5, 1, 1, 1),
+          labels = "a" 
+) 
+
+
+ggarrange(canMap,
+          ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)), 
+          ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)), 
+          ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)),
+          nrow = 4, 
+          heights = c(1.5, 1, 1, 1)
+) 
+
+ggarrange(
+    ggarrange(canMap, ggSobMap, ncol = 2, align = "h", widths = c(2,1), heights = c(2,1)),
+          ggarrange(ggSobMap, ggArg, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)), 
+          ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)), 
+          ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)),
+          nrow = 4, 
+          heights = c(2, 1, 1, 1), align = "v"
+) 
+
+
+#####
+# GARBAGE
 
 map_nl <- canada_map[canada_map$name == "Newfoundland and Labrador",]
 
@@ -200,9 +332,10 @@ ggplot()+
   theme_bw()
 
 
+tidy(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/soberCoastline.shp"), sp::CRS("+proj=longlat +datum=WGS84 +no_dfs")))
 
 
-regions = readOGR("C:/Users/FINNISS/Desktop/dfoRegions.shp")
+regions = tidy(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/dfoRegions.shp"))
 d = fortify(regions, region = regions$data$region_EN)
 
 
@@ -221,6 +354,10 @@ ggplot()+
   theme_bw()+
   scale_fill_manual(values = c("#00BFC4", "#C77CFF", "grey90", "gray90", "gray90", "gray90", "#7CAE00", "#F8766D"))
   
+ggplot()+
+  geom_polygon(regions, mapping = aes(x = long, y = lat, group=group, fill = id), col = "black")+
+  theme_bw()+
+  scale_fill_manual(values = c("#00BFC4", "#C77CFF", "grey90", "gray90", "gray90", "gray90", "#7CAE00", "#F8766D"))
 
 
 
