@@ -35,29 +35,6 @@ nbLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFile
 peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 
 
-
-
-
-# TBH it probably should go in a function but I'm going to make individual plots first
-bayMaps = function(coastlineDf, regionMeta, latLimits, lonLimits){
-  ggplot()+
-    geom_polygon(coastlineDf, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
-    geom_point(regionMeta, mapping = aes(x = longitude, y = latitude), pch = 21, col = "black", fill = "#C77CFF", size = 7, alpha = 0.6)+
-    # Use this instead of coord_map to get the scalebar thing to work. 
-    # annotation_scale needs the crs to be set here too
-    coord_sf(xlim = lonLimits, ylim = latLimits, crs = 4326, breaks = scales::pretty_breaks(n=4))+
-    annotation_scale(location = "br", text_cex = 1)+
-    theme_bw()+
-    theme(
-      axis.text = element_text(size = 14),
-      axis.title = element_blank(),
-      panel.grid = element_blank(),
-      plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"))
-}
-
-
-pacBay = bayMaps(lemmensCoastline, pacMeta, c(49.15, 49.24), c(-125.9472, -125.82))
-
 ################################################################################
 ## PACIFIC 
 
@@ -253,10 +230,7 @@ ggSeArmMap =
 
 ggarrange(ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, ggMalMap, ggStPMap, ggSeArmMap, ggPacMap, ncol = 3, nrow = 3)
 
-plot_grid(ggSobMap, ggSobMap, ggSobMap)
-
-
-ggarrange(ggPac, ggArg, ggwh, ggPac, ggCh, ggArg, ggCh, ggSobMap, ggPac, ncol = 3, nrow = 3)
+plot_grid(ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, ggMalMap, ggStPMap, ggSeArmMap, ggPacMap, ncol = 3, nrow = 3)
 
 
 
@@ -287,16 +261,70 @@ ggplot()+
   coord_sf(crs = can.lcc)
 
 
-ggarrange(canMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ggSobMap, ncol = 3, nrow = 4, widths = c(2,1))
+can.lccTake2 = "+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
 
 
-ggarrange(
-  ggarrange(canMap, canMap, widths = c(2, 1)),
-  ggarrange(ggSobMap, ggSobMap, ggSobMap), 
-          nrow = 2, 
-          heights = c(2, 1)
 
-) 
+canMapTake2 = 
+  ggplot()+
+  geom_sf(data = canada_map, colour = "black", fill = "grey92")+
+  theme_bw()+
+  ggtitle("(A) Canada")+
+  geom_rect(aes(xmin = 2173445, xmax = 3097367, ymin = 911226, ymax = 2161814), col = "red", fill = NA)+
+  geom_rect(aes(xmin = -2243138, xmax = -1907966, ymin = 1323684, ymax = 1843861), col = "red", fill = NA)+
+  #theme(panel.background = element_rect(fill = "aliceblue"))+
+  coord_sf(crs = can.lccTake2)+
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank())
+
+pacMap = 
+  ggplot()+
+  geom_sf(data = canada_map, colour = "black", fill = "grey92")+
+  theme_bw()+
+  ggtitle("(B) Pacific")+
+  coord_sf(crs = can.lccTake2, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank())
+#coord_sf(xlim = c(-66, -53), ylim = c(43, 52))
+
+atlMap = 
+  ggplot()+
+    geom_sf(data = canada_map, colour = "black", fill = "grey92")+
+    theme_bw()+
+    coord_sf(crs = can.lccTake2, xlim = c(2173445, 3097367), ylim = c(911226, 2161814))+
+  ggtitle("(C) Atlantic")+
+  theme(
+    axis.text = element_blank(),
+  axis.ticks = element_blank(),
+  axis.title = element_blank())
+
+    #coord_sf(xlim = c(-66, -53), ylim = c(43, 52))
+
+
+
+
+library(patchwork)
+
+# (canMapTake2 | atlMap | pacMap) /
+# (ggArgMap | ggSobMap | ggChMap) /
+#   (ggWhMap | ggCocMap | ggMalMap) /
+#   (ggStPMap | ggSeArmMap | ggPacMap) +
+#   plot_layout(heights = (c(1, 1, 1, 1)))
+ 
+
+
+x = ggarrange(ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, ggMalMap, ggStPMap, ggSeArmMap, ggPacMap, ncol = 3, nrow = 3)
+
+(canMapTake2 | pacMap | AtlMap) /
+  (x) +
+  plot_layout(heights = (c(0.25, 0.75)))
+
+
+ canMapTake2
 
 
 library(ggpubr)
@@ -336,15 +364,17 @@ ggarrange(P1,
 
 
 ggarrange(canMap,
-          ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)), 
-          ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)), 
-          ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)),
+          ggarrange(ggArgMap, ggSobMap, ggChMap, ncol = 3, align = "h",widths = c(1,1,1)), 
+          ggarrange(ggWhMap, ggCocMap, ggMalMap, ncol = 3, align = "h",widths = c(1,1,1)), 
+          ggarrange(ggStPMap, ggSeArmMap, ggPacMap, ncol = 3, align = "h",widths = c(1,1,1)),
           nrow = 4, 
           heights = c(1.5, 1, 1, 1)
 ) 
 
+
+
 ggarrange(
-    ggarrange(canMap, ggSobMap, ncol = 2, align = "h", widths = c(2,1), heights = c(2,1)),
+    ggarrange(canMapTake2, atlMap, ncol = 2, align = "h", widths = c(2,1), heights = c(2,1)),
           ggarrange(ggSobMap, ggArg, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)), 
           ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)), 
           ggarrange(ggSobMap, ggSobMap, ggSobMap, ncol = 3, align = "h",widths = c(1,1,1)),
