@@ -224,4 +224,3 @@ marMap
 #   geom_segment(data = mistake, aes(x=longitude, y=latitude, xend = longitudeEnd, yend = latitudeEnd), col = "red")
   
 
-
