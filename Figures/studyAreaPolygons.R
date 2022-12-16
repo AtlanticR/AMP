@@ -4,6 +4,29 @@
 source("DataProcessing/rPackages.R")
 
 
+install.packages("rnaturalearth")
+install.packages("rnaturalearthdata")
+devtools::install_github("ropensci/rnaturalearthhires")
+
+library("rnaturalearth")
+library("rnaturalearthdata")
+library("rnaturalearthhires")
+
+# devtools::install_github("yutannihilation/ggsflabel")
+# library("ggsflabel")
+
+
+
+
+
+
+
+
+
+
+
+
+
 # I am combining multiple steps because this is a LOT of data and I don't want to keep creating new variables at each step
 # Read in the data, reproject it (WGS84), convert to a data frame for easier plotting with ggplot() (although this maybe isn't necessary?)
 # Mapping in R seems to constantly be changing, so I hope this is still somewhat current.
@@ -125,13 +148,13 @@ nlPunctualUTM = st_transform(nlPunctualWGS, CRS("+proj=utm +zone=21 +datum=WGS84
 
 ggPacMap = ggplot()+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "#C77CFF", size = 5, alpha = 0.6)+
+  geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
   # There might be a better way to do this but reduce the # of axis ticks:
 
-  annotation_scale(location = "br", text_cex = 1)+
+  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   ggtitle("(D) Lemmens")+
   theme_bw()+
   theme(
@@ -147,13 +170,13 @@ ggPacMap = ggplot()+
 # Argyle                   
 ggArgMap = ggplot()+
   geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
-  geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "darkgreen", alpha = 0.6, linewidth = 3, lineend = "round")+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+  geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
     # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(259213, 267918), ylim = c(4846335, 4855031), crs = 32620)+
   #coord_sf(xlim = c(-65.98, -65.897), ylim = c(43.73290, 43.80595), crs = 4326)+
-  annotation_scale(location = "br", text_cex = 1)+
+  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.8, "cm"))+
   ggtitle("(E) Argyle")+
   theme_bw()+
   theme(
@@ -165,12 +188,12 @@ ggArgMap = ggplot()+
 # Sober Island
 ggSobMap = ggplot()+
   geom_polygon(soberCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
-  geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "mediumspringgreen", alpha = 0.6, linewidth = 3, lineend = "round")+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+  geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.70, linewidth = 2.5, lineend = "round")+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(541154, 542825), ylim = c(4964661, 4966410), crs = 32620)+
-  annotation_scale(location = "br", text_cex = 1)+
+  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   ggtitle("(F) Sober Island")+
   theme_bw()+
   theme(
@@ -182,12 +205,12 @@ ggSobMap = ggplot()+
 # Country Harbour                   
 ggChMap = ggplot()+
   geom_polygon(countryCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
-  geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "green3", size = 5, alpha = 0.6)+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+  geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(596383, 611074), ylim = c(4996642, 5011378), crs = 32620)+
-  annotation_scale(location = "br", text_cex = 1)+
+  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   ggtitle("(G) Country Harbour")+
   theme_bw()+
   theme(
@@ -199,11 +222,11 @@ ggChMap = ggplot()+
 # Whitehead
 ggWhMap = ggplot()+
   geom_polygon(whiteheadCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
-  geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "mediumspringgreen", size = 5, alpha = 0.6)+  # Use this instead of coord_map to get the scalebar thing to work. 
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+  geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+  # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(641669, 647881), ylim = c(5013443, 5019630), crs = 32620)+
-  annotation_scale(location = "br", text_cex = 1)+
+  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(4.1, "cm"))+
   ggtitle("(H) Whitehead")+
   theme_bw()+
   theme(
@@ -220,12 +243,12 @@ ggWhMap = ggplot()+
 ggCocMap = 
   ggplot()+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-    geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
-    geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "red4", alpha = 0.6, linewidth = 3, lineend = "round")+
+    geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+    geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
     # Use this instead of coord_map to get the scalebar thing to work. 
     # annotation_scale needs the crs to be set here too
     coord_sf(xlim = c(373453, 382190), ylim = c(5131250, 5140014), crs = 32620)+
-    annotation_scale(location = "br", text_cex = 1)+
+    annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
     ggtitle("(I) Cocagne")+
     theme_bw()+
     theme(
@@ -238,10 +261,10 @@ ggCocMap =
 ggMalMap = 
   ggplot()+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-    geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
-    geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "red2", alpha = 0.6, linewidth = 3, lineend = "round")+
+    geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+    geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
     coord_sf(xlim = c(431139, 450611), ylim = c(5147976, 5167271), crs = 32620)+
-    annotation_scale(location = "br", text_cex = 1)+
+    annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
     ggtitle("(J) Malpeque")+
     theme_bw()+
     theme(
@@ -255,14 +278,14 @@ ggStPMap =
   ggplot()+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     #geom_segment(gulfMeta %>% filter(facilityName == "StPeters"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "lightpink", alpha = 0.6, linewidth = 4, lineend = "round")+
-    geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red")+
-    geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "lightpink", alpha = 0.6, linewidth = 3, lineend = "round")+
+    geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+    geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
   
   # Use this instead of coord_map to get the scalebar thing to work. 
     # annotation_scale needs the crs to be set here too
     coord_sf(xlim = c(519487, 532582), ylim = c(5136283, 5149220), crs = 32620)+
-    annotation_scale(location = "br", text_cex = 1)+
-    ggtitle("(K) Malpeque")+
+    annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
+    ggtitle("(K) St. Peters")+
     theme_bw()+
     theme(
       axis.text = element_blank(),
@@ -278,12 +301,12 @@ ggSeArmMap =
   ggplot()+
     geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     #geom_point(nlMeta %>% filter(facilityName == "Southeast Arm"), mapping = aes(x = longitude, y = latitude), col = "lightpink", alpha = 0.6)+
-    geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "lightpink", size = 5, alpha = 0.6)+
+    geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
   
   # Use this instead of coord_map to get the scalebar thing to work. 
     # annotation_scale needs the crs to be set here too
     coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+
-    annotation_scale(location = "br", text_cex = 1)+
+    annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
     ggtitle("(L) Southeast Arm")+
     theme_bw()+
     theme(
@@ -295,16 +318,7 @@ ggSeArmMap =
 
 ################################################################################
 
-install.packages("rnaturalearth")
-install.packages("rnaturalearthdata")
-devtools::install_github("ropensci/rnaturalearthhires")
 
-library("rnaturalearth")
-library("rnaturalearthdata")
-library("rnaturalearthhires")
-
-# devtools::install_github("yutannihilation/ggsflabel")
-# library("ggsflabel")
 
 
 # Get data for Canada
@@ -317,7 +331,7 @@ can.lcc = "+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ell
 
 canMap = 
   ggplot()+
-  geom_sf(data = canada_map, colour = "black", fill = "grey92")+
+  geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
   theme_bw()+
   ggtitle("(A) Canada")+
   geom_rect(aes(xmin = -2243138, xmax = -1907966, ymin = 1323684, ymax = 1843861), col = "red", fill = NA)+ # Pacific inset
@@ -335,8 +349,8 @@ canMap =
 
 pacMap = 
   ggplot()+
-    geom_sf(data = canada_map, colour = "black", fill = "grey92")+
-    geom_sf(data = pacPunctualUTM[1,], pch = 21, col = "black", fill = "red", size = 5)+ # label for Pacific
+    geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
+    geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+ # label for Pacific
     #ggsflabel::geom_sf_text_repel(data = pacPunctualUTM[1,], aes(label = "HI"), colour = "red", size = 5)+
     theme_bw()+
     ggtitle("(B) Pacific")+
@@ -346,34 +360,34 @@ pacMap =
       axis.ticks = element_blank(),
       axis.title = element_blank())
 
+marTrMap = marTransectUTM %>%
+  group_by(facilityName) %>%
+  filter(row_number()==1)
+
+marPunMap = marPunctualUTM %>%
+  group_by(facilityName) %>%
+  filter(row_number()==1)
+
+gulfTrMap = gulfTransectUTM %>%
+  group_by(facilityName) %>%
+  filter(row_number()==1)
+
+nlPunMap = nlPunctualUTM %>%
+  group_by(facilityName) %>%
+  filter(row_number()==1)
 
 atlMap = 
   ggplot()+
-    geom_sf(data = canada_map, colour = "black", fill = "grey92")+
+    geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
     # Filter for each bay. Then only plot first value from that (otherwise all will plot)
-    geom_sf(data = marTransectUTM %>%
-              filter(facilityName == "Argyle") %>%
-              filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ # circle for Argyle
-    geom_sf(data = marPunctualUTM %>%
-              filter(facilityName == "Country Harbour") %>%
-              filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ # circle for CH
-    geom_sf(data = marTransectUTM %>%
-              filter(facilityName == "Sober Island Oyster") %>%
-              filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ # circle for Sober Island
-    geom_sf(data = marPunctualUTM %>%
-              filter(facilityName == "WhiteHead") %>%
-              filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ # circle for Whitehead
-    geom_sf(data = gulfTransectUTM %>%
-            filter(facilityName == "Cocagne") %>%
-            filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+  
-    geom_sf(data = gulfTransectUTM %>%
-            filter(facilityName == "Malpeque") %>%
-            filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ 
-    geom_sf(data = gulfTransectUTM %>%
-            filter(facilityName == "StPeters") %>%
-            filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+
-    geom_sf(data = nlPunctualUTM %>%
-            filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+
+    # geom_sf(data = marTrMap, pch = 22, col = "black", fill = "red", size = 3)+
+    # geom_sf(data = marPunMap, pch = 22, col = "black", fill = "red", size = 3)+
+    # geom_sf(data = gulfTrMap, pch = 22, col = "black", fill = "red", size = 3)+
+    # geom_sf(data = nlPunMap, pch = 22, col = "black", fill = "red", size = 3)+
+  geom_sf(data = marTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+ # stroke changes width of square outline
+  geom_sf(data = marPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+
+  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+
+  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+
     theme_bw()+
     coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
     ggtitle("(C) Atlantic")+
@@ -384,7 +398,6 @@ atlMap =
 
 studyMaps = ggarrange(ggPacMap, ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, ggMalMap, ggStPMap, ggSeArmMap, ncol = 3, nrow = 3)
 
-x = marTransectUTM[1,] %>% filter(facilityName == "Sober Island Oyster")
 
 (canMap | pacMap | atlMap) /
   (studyMaps) +
