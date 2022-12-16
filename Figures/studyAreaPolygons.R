@@ -124,7 +124,7 @@ nlPunctualUTM = st_transform(nlPunctualWGS, CRS("+proj=utm +zone=21 +datum=WGS84
 ## PACIFIC 
 
 ggPacMap = ggplot()+
-  geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black")+
+  geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "#C77CFF", size = 5, alpha = 0.6)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
@@ -303,6 +303,10 @@ library("rnaturalearth")
 library("rnaturalearthdata")
 library("rnaturalearthhires")
 
+# devtools::install_github("yutannihilation/ggsflabel")
+# library("ggsflabel")
+
+
 # Get data for Canada
 canada_map = ne_states(country = "canada", returnclass = "sf")
 # Test what maps look like with more countries (didn't use)
@@ -327,14 +331,13 @@ canMap =
     axis.ticks = element_blank(),
     axis.title = element_blank())
 
-devtools::install_github("yutannihilation/ggsflabel")
-library("ggsflabel")
+
 
 pacMap = 
   ggplot()+
     geom_sf(data = canada_map, colour = "black", fill = "grey92")+
     geom_sf(data = pacPunctualUTM[1,], pch = 21, col = "black", fill = "red", size = 5)+ # label for Pacific
-    ggsflabel::geom_sf_text_repel(data = pacPunctualUTM[1,], aes(label = "HI"), colour = "red", size = 5)+
+    #ggsflabel::geom_sf_text_repel(data = pacPunctualUTM[1,], aes(label = "HI"), colour = "red", size = 5)+
     theme_bw()+
     ggtitle("(B) Pacific")+
     coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+
@@ -342,11 +345,6 @@ pacMap =
       axis.text = element_blank(),
       axis.ticks = element_blank(),
       axis.title = element_blank())
-
-x = 
-y = marPunctualUTM[, which(marPunctualUTM$facilityName== "Country Harbour")] %>%
-  filter(row_number()==1)
-
 
 
 atlMap = 
@@ -361,11 +359,21 @@ atlMap =
               filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ # circle for CH
     geom_sf(data = marTransectUTM %>%
               filter(facilityName == "Sober Island Oyster") %>%
-              filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ # circle for Whitehead
+              filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ # circle for Sober Island
     geom_sf(data = marPunctualUTM %>%
               filter(facilityName == "WhiteHead") %>%
               filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ # circle for Whitehead
-  
+    geom_sf(data = gulfTransectUTM %>%
+            filter(facilityName == "Cocagne") %>%
+            filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+  
+    geom_sf(data = gulfTransectUTM %>%
+            filter(facilityName == "Malpeque") %>%
+            filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+ 
+    geom_sf(data = gulfTransectUTM %>%
+            filter(facilityName == "StPeters") %>%
+            filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+
+    geom_sf(data = nlPunctualUTM %>%
+            filter(row_number() == 1), pch = 21, col = "black", fill = "red", size = 5)+
     theme_bw()+
     coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
     ggtitle("(C) Atlantic")+
