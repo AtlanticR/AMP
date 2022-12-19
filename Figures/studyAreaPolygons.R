@@ -1,21 +1,31 @@
-# Clipping land to a bounding box!
-# I definitely deleted a bunch of packages. But here's 
+################################################################################
+################################################################################
+#### STUDY AREA MAPS
+
+# For making my study area map with all the bays identified
+# Includes sampling locations for each bay and shellfish leases
+
+# The final map 
+
+
+
+
+
+################################################################################
+################################################################################
+
+# Set up
 
 source("DataProcessing/rPackages.R")
 
 
-install.packages("rnaturalearth")
-install.packages("rnaturalearthdata")
+# Install this extra library 
 devtools::install_github("ropensci/rnaturalearthhires")
-
-library("rnaturalearth")
-library("rnaturalearthdata")
 library("rnaturalearthhires")
 
-# devtools::install_github("yutannihilation/ggsflabel")
-# library("ggsflabel")
-
-
+# For saving my maps, just so nothing changes, the plotting window on my screen is:
+# Height: 25.5
+# Width: 25cm
 
 
 
@@ -54,6 +64,8 @@ lemmensCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMP
 nsLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/NS_leases_Apr_2022.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 nbLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/MASMPS_Data.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
+
+
 
 
 ################################################################################
@@ -141,6 +153,100 @@ pacPunctualUTM = st_transform(pacPunctualWGS, CRS("+proj=utm +zone=9 +datum=WGS8
 # Need to remove the ones with NAs (these have no data, don't worry about them)
 nlPunctualWGS = st_as_sf(nlMeta, coords = c("longitude", "latitude"), crs = 4326)
 nlPunctualUTM = st_transform(nlPunctualWGS, CRS("+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+
+
+################################################################################
+## Make top layer of map
+# Map of (A) Canada, (B) inset of Pacific and (C) inset of Atlantic 
+
+# Get data for Canada
+canada_map = ne_states(country = "canada", returnclass = "sf")
+# Test what maps look like with more countries (didn't use)
+countries_map = ne_states(country = c("United States of America","Canada","Denmark","Greenland","Iceland","Russia","Japan"), returnclass = "sf")
+
+# Define the Lambert Conformal Conic projection
+can.lcc = "+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+
+
+# Get the locations of each bay (facilityName) within each region
+# Only get the first row for each of these, otherwise all data points will plot. This is good enough since the map is zoomed out.
+# These are for plotting the bay locations
+# I don't totally understand why this works since I thought the units were different (Canada: LCC, inset: UTM) but whatever! It must just know.
+marTrMap = marTransectUTM %>%
+  group_by(facilityName) %>%
+  filter(row_number()==1)
+
+marPunMap = marPunctualUTM %>%
+  group_by(facilityName) %>%
+  filter(row_number()==1)
+
+gulfTrMap = gulfTransectUTM %>%
+  group_by(facilityName) %>%
+  filter(row_number()==1)
+
+nlPunMap = nlPunctualUTM %>%
+  group_by(facilityName) %>%
+  filter(row_number()==1)
+
+
+dfoRegions = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/dfoRegions.shp"), CRS("+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")))
+
+
+
+canMap = 
+  ggplot()+
+  #geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
+  
+  geom_rect(aes(xmin = -2243138, xmax = -1907966, ymin = 1323684, ymax = 1843861), col = "red", fill = NA)+ # Pacific inset outline
+  geom_rect(aes(xmin = 2173445, xmax = 3097367, ymin = 911226, ymax = 2161814), col = "red", fill = NA)+ # Atlantic inset outline
+  coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+ # limits of entire map+
+  geom_polygon(dfoRegions, mapping = aes(x = long, y = lat, group=group, fill = id), alpha = 0.6, col = "black")+
+  geom_sf(data = canada_map, colour = "black", fill = NA, linewidth = 0.1)+
+  coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+
+  ggtitle("(A) Canada")+
+  theme_bw()+
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank())
+
+pacMap = 
+  ggplot()+
+  #geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
+  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # outline square for Lemmens (why did this work?)
+  theme_bw()+
+  ggtitle("(B) Pacific")+
+  coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+ # limits for Pacific inset outline
+  geom_polygon(dfoRegions, mapping = aes(x = long, y = lat, group=group, fill = id), alpha = 0.6, col = "black")+
+
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank())
+
+atlMap = 
+  ggplot()+
+ # geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
+  # Filter for each bay. Then only plot first value from that (otherwise all will plot)
+  # Probably should have added as geom_rect, but instead I'm adding as empty squares (my original method)
+  geom_sf(data = marTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # stroke changes width of square outline
+  geom_sf(data = marPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
+  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
+  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
+  theme_bw()+
+  coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
+  geom_polygon(dfoRegions, mapping = aes(x = long, y = lat, group=group, fill = id), alpha = 0.6, col = "black")+
+  ggtitle("(C) Atlantic")+
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank())
+
+
+
+
+
+
 
 
 ################################################################################
@@ -321,80 +427,7 @@ ggSeArmMap =
 
 
 
-# Get data for Canada
-canada_map = ne_states(country = "canada", returnclass = "sf")
-# Test what maps look like with more countries (didn't use)
-countries_map = ne_states(country = c("United States of America","Canada","Denmark","Greenland","Iceland","Russia","Japan"), returnclass = "sf")
 
-# Define the Lambert Conformal Conic projection
-can.lcc = "+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
-
-canMap = 
-  ggplot()+
-  geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
-  theme_bw()+
-  ggtitle("(A) Canada")+
-  geom_rect(aes(xmin = -2243138, xmax = -1907966, ymin = 1323684, ymax = 1843861), col = "red", fill = NA)+ # Pacific inset
-  geom_text(data = canada_map, aes(x = mean(c(-2243138, -1907966)), y=1323684-200000), label="B", col = "red", size = 5)+ # label for Pacific
-  geom_rect(aes(xmin = 2173445, xmax = 3097367, ymin = 911226, ymax = 2161814), col = "red", fill = NA)+ # Atlantic inset
-  geom_text(data = canada_map, aes(x = mean(c(2173445, 3097367)), y=907226-200000), label="C", col = "red", size = 5)+ # label for Atlantic
-  #theme(panel.background = element_rect(fill = "aliceblue"))+
-  coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+
-  theme(
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank())
-
-
-
-pacMap = 
-  ggplot()+
-    geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
-    geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+ # label for Pacific
-    #ggsflabel::geom_sf_text_repel(data = pacPunctualUTM[1,], aes(label = "HI"), colour = "red", size = 5)+
-    theme_bw()+
-    ggtitle("(B) Pacific")+
-    coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(),
-      axis.title = element_blank())
-
-marTrMap = marTransectUTM %>%
-  group_by(facilityName) %>%
-  filter(row_number()==1)
-
-marPunMap = marPunctualUTM %>%
-  group_by(facilityName) %>%
-  filter(row_number()==1)
-
-gulfTrMap = gulfTransectUTM %>%
-  group_by(facilityName) %>%
-  filter(row_number()==1)
-
-nlPunMap = nlPunctualUTM %>%
-  group_by(facilityName) %>%
-  filter(row_number()==1)
-
-atlMap = 
-  ggplot()+
-    geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
-    # Filter for each bay. Then only plot first value from that (otherwise all will plot)
-    # geom_sf(data = marTrMap, pch = 22, col = "black", fill = "red", size = 3)+
-    # geom_sf(data = marPunMap, pch = 22, col = "black", fill = "red", size = 3)+
-    # geom_sf(data = gulfTrMap, pch = 22, col = "black", fill = "red", size = 3)+
-    # geom_sf(data = nlPunMap, pch = 22, col = "black", fill = "red", size = 3)+
-  geom_sf(data = marTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+ # stroke changes width of square outline
-  geom_sf(data = marPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+
-  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+
-  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.8)+
-    theme_bw()+
-    coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
-    ggtitle("(C) Atlantic")+
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(),
-      axis.title = element_blank())
 
 studyMaps = ggarrange(ggPacMap, ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, ggMalMap, ggStPMap, ggSeArmMap, ncol = 3, nrow = 3)
 
@@ -402,4 +435,14 @@ studyMaps = ggarrange(ggPacMap, ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, 
 (canMap | pacMap | atlMap) /
   (studyMaps) +
   plot_layout(heights = (c(0.25, 0.75)))
+
+
+
+
+
+
+
+ggplot()+
+  geom_polygon(dfoRegions, mapping = aes(x = long, y = lat, group=group, fill = id, col = piece))
+  
 
