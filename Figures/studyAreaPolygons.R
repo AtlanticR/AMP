@@ -65,6 +65,11 @@ nsLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFile
 nbLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/MASMPS_Data.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 
+# DFO regions
+dfoRegions = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/dfoRegions.shp"), CRS("+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"))
+
+# Turn into a dataframe but keep the original column names
+dfoRegions.df = merge(fortify(dfoRegions), as.data.frame(dfoRegions), by.x="id", by.y=0)
 
 
 
@@ -159,6 +164,9 @@ nlPunctualUTM = st_transform(nlPunctualWGS, CRS("+proj=utm +zone=21 +datum=WGS84
 ## Make top layer of map
 # Map of (A) Canada, (B) inset of Pacific and (C) inset of Atlantic 
 
+# See here for a helpful tutorial
+# https://ahurford.github.io/quant-guide-all-courses/making-maps.html
+
 # Get data for Canada
 canada_map = ne_states(country = "canada", returnclass = "sf")
 # Test what maps look like with more countries (didn't use)
@@ -189,43 +197,59 @@ nlPunMap = nlPunctualUTM %>%
   filter(row_number()==1)
 
 
-dfoRegions = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/dfoRegions.shp"), CRS("+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")))
+atlColour = c("Gulf" = "#F8766D", 
+              "Maritimes" = "#7CAE00", 
+              "Newfoundland" = "#00BFC4")
+# Pacific Ocean 
+# Note this is the colour when only Pacific OCEAN data is displayed
+# When Pacific (region) data is broken down by field season (below), 4 colours will be set
+pacColourOne = c("Pacific" = "#C77CFF")
 
 
+cols <- c("Newfoundland & Labrador" = "#00BFC4", "Pacific" = "#C77CFF", "Ontario and Prairie" = "gray92", "Quebec" = "gray92",
+          "Arctic" = "gray92", "Arctic-Water" = "gray92", "Maritimes" = "#7CAE00", "Gulf" = "#F8766D")
 
 canMap = 
   ggplot()+
-  #geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
-  
+  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", alpha = 0.7, linewidth = 0.1)+
+  scale_fill_manual(values=cols, limits = c("Gulf", "Maritimes", "Newfoundland & Labrador", "Pacific"),
+                    labels = c("Gulf", "Maritimes", "Newfoundland", "Pacific", "Other"), name = "Regions")+
+  geom_sf(data = canada_map, linewidth = 0.01, fill = NA, col = "black")+
+  coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+ # limits of entire map+
   geom_rect(aes(xmin = -2243138, xmax = -1907966, ymin = 1323684, ymax = 1843861), col = "red", fill = NA)+ # Pacific inset outline
   geom_rect(aes(xmin = 2173445, xmax = 3097367, ymin = 911226, ymax = 2161814), col = "red", fill = NA)+ # Atlantic inset outline
-  coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+ # limits of entire map+
-  geom_polygon(dfoRegions, mapping = aes(x = long, y = lat, group=group, fill = id), alpha = 0.6, col = "black")+
-  geom_sf(data = canada_map, colour = "black", fill = NA, linewidth = 0.1)+
-  coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+
   ggtitle("(A) Canada")+
   theme_bw()+
   theme(
     axis.text = element_blank(),
     axis.ticks = element_blank(),
-    axis.title = element_blank())
+    axis.title = element_blank(),
+    legend.position = c(1, 1), 
+    legend.justification = c(1, 1),
+    legend.background = element_rect(fill = "white", colour = "black"),
+    legend.title=element_text(size=10))
+
 
 pacMap = 
   ggplot()+
+  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", alpha = 0.7, linewidth = 0.1)+
   #geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
   geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # outline square for Lemmens (why did this work?)
   theme_bw()+
   ggtitle("(B) Pacific")+
   coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+ # limits for Pacific inset outline
-  geom_polygon(dfoRegions, mapping = aes(x = long, y = lat, group=group, fill = id), alpha = 0.6, col = "black")+
 
+  scale_fill_manual(values=cols)+
+  
   theme(
     axis.text = element_blank(),
     axis.ticks = element_blank(),
-    axis.title = element_blank())
+    axis.title = element_blank(),
+    legend.position = "none")
 
 atlMap = 
   ggplot()+
+  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", alpha = 0.7, linewidth = 0.1)+
  # geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
   # Filter for each bay. Then only plot first value from that (otherwise all will plot)
   # Probably should have added as geom_rect, but instead I'm adding as empty squares (my original method)
@@ -235,12 +259,14 @@ atlMap =
   geom_sf(data = nlPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
   theme_bw()+
   coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
-  geom_polygon(dfoRegions, mapping = aes(x = long, y = lat, group=group, fill = id), alpha = 0.6, col = "black")+
+
+  scale_fill_manual(values=cols)+
   ggtitle("(C) Atlantic")+
   theme(
     axis.text = element_blank(),
     axis.ticks = element_blank(),
-    axis.title = element_blank())
+    axis.title = element_blank(),
+    legend.position = "none")
 
 
 
