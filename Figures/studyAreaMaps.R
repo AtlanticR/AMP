@@ -2,33 +2,56 @@
 ################################################################################
 #### STUDY AREA MAPS
 
-# For making my study area map with all the bays identified
-# Includes sampling locations for each bay and shellfish leases
+# The map will have 11 panels total:
+# Top (3 panels): (1) map of Canada & DFO regions, (2) zoomed in view of Pacific, (3) zoomed in View of Atlantic
+# Then next 3 panels are the 9 sampling bays, which show the sampling stations and shellfish leases
 
-# The final map 
+# Some labels (e.g., "Inner", "Mid", "Outer") will be labelled by hand in PowerPoint or other software. 
+# It is too much work to set all the exact coordinates for each label, especially since things are still in draft mode and may 
+# be removed.
 
+# Note that the 9 bays should have approximately the same size dimensions (square)
+# The Pacific and Atlantic maps are also roughly the same relative dimensions
 
+# Data were prepared in a different script. Originally I had it all here, but it was too much
 
-
+# Making this figure was truly a nightmare, so if you're trying to copy this, good luck!
 
 ################################################################################
 ################################################################################
 
 # Set up
-source("Figures/colourPchSchemes.R")
+source("Figures/colourPchSchemes.R") # defines colour schemes for the region map
+source("DataProcessing/studyAreaDataPrep.R") # preps all the data for plotting
+
+
+################################################################################
+# Create the top panel of my maps
+# One with all of Canada (canMap)
+# One zoomed in on Pacific sites 
+# One zoomed in on Atlantic sites
+# I mostly just included the Pac/Atl maps because there was extra space I needed to fill
+# I couldn't show the sampled bays well enough with just one map of all of Canada
 
 
 # Colour scheme is defined in colourPchSchemes.R
 # Note that transparency of alpha = 0.7 was given to my regions of interest (Pac, Mar, Gulf, NL) so they are less aggressive
 # All others were "gray92", my standard colour for land
 
+# Map of Canada
+# Shows all of Canada. DFO regions I am analyzing are coloured. All other regions are in grey (gray92)
+# Also has a red outline around the insets that focus in more on the Pacific and Atlantic areas so it's easier to see the sampling bays
+# can_map needs to be added over top of the regions so we can see the outlines of each province
+# I thought I could add it below and adjust transparency of dfoRegions.df but something weird is happening and I think the data are stacking 
+# Multiple areas on top of each other, so the grey doesn't look grey. Parts look a lot darker.
 canMap = 
   ggplot()+
   geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
   scale_fill_manual(values=regionMapCols)+
-  
-  geom_sf(data = canada_map, linewidth = 0.01, fill = NA, col = "black")+
-  coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+ # limits of entire map+
+  geom_sf(data = canada_map, linewidth = 0.01, fill = NA, col = "black")+ # this shows the provinces. Make the linewidth very small
+  # Note that if an sf object is not plotted first, you need to use coord_sf to situate everything
+  # This will add graticules to the map. It also makes sure the scale bar is in correct units (but N/A for this map- no scale bar)
+  coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+ # limits of entire map. In Lambert Conformal Conic (defined in data prep)
   geom_rect(aes(xmin = -2243138, xmax = -1907966, ymin = 1323684, ymax = 1843861), col = "red", fill = NA)+ # Pacific inset outline
   geom_rect(aes(xmin = 2173445, xmax = 3097367, ymin = 911226, ymax = 2161814), col = "red", fill = NA)+ # Atlantic inset outline
   ggtitle("(A) Canada")+
@@ -39,37 +62,38 @@ canMap =
     axis.title = element_blank(),
     legend.position = "none")
 
-
+# The Pacific and Atlantic inset maps need to be approx the same size (relative height/width) to be combined together properly
+# I eyeballed this in QGIS to make sure each map was roughly the same height/width on the screen. Then I wrote down the coordinates.
+ 
+# Pacific inset
 pacMap = 
   ggplot()+
   geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
-  #geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
-  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # outline square for Lemmens (why did this work?)
+  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = "red", size = 3)+ # outline square for Lemmens (why did this work?)
   theme_bw()+
   ggtitle("(B) Pacific")+
-  coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+ # limits for Pacific inset outline
-
-  scale_fill_manual(values = regionMapCols)+
-  
+  coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+ # set map extents and define coordinate system
+  scale_fill_manual(values = regionMapCols)+ # Make this map purple
   theme(
     axis.text = element_blank(),
     axis.ticks = element_blank(),
     axis.title = element_blank(),
     legend.position = "none")
 
+# Atlantic inset
 atlMap = 
   ggplot()+
   geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
- # geom_sf(data = canada_map, colour = "black", fill = "grey92", linewidth = 0.1)+
-  # Filter for each bay. Then only plot first value from that (otherwise all will plot)
-  # Probably should have added as geom_rect, but instead I'm adding as empty squares (my original method)
-  geom_sf(data = marTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # stroke changes width of square outline
-  geom_sf(data = marPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
-  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
-  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
+  # Add markers (red outlines) for each of the bays that were sampled
+  # "Tr" refers to data that were transects. "Pun" is "punctual stations" (discrete locations)
+  # This only plots one point per region (the first one). 
+  # Could have added as geom_rect, but this might be better if I want them filled
+  geom_sf(data = marTrMap, pch = 22, col = "red", fill = "red", size = 3)+ 
+  geom_sf(data = marPunMap, pch = 22, col = "red", fill = "red", size = 3)+
+  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = "red", size = 3)+
+  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = "red", size = 3)+
   theme_bw()+
   coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
-
   scale_fill_manual(values = regionMapCols)+
   ggtitle("(C) Atlantic")+
   theme(
@@ -79,11 +103,24 @@ atlMap =
     legend.position = "none")
 
 
+################################################################################
+################################################################################
+##### Maps of individual bays
 
+## A note about the size of each plot:
+# I want these all to be squares. Otherwise, they don't line up properly when putting them all together
+# If I use ggarrange from egg package to line them up, this MOSTLY isn't an issue. It lines them up.
+# But that can distort the maps slightly. So when selecting xlim/ylim in coord_sf command, each axis should be approx the same
+# I could adjust them to be EXACTLY the same length, but that's too much work! 
+# To get ~square coordinates, I drew out a perfect square on my screen in QGIS, and wrote down the coordinates at these limits
 
-
-
-
+## A note about the stupid scalebar:
+# dding the scalebar with annotation_scale is very annoying! If you add it to the bottom right "location = "br", the text 
+# (distance) is on the left hand side of the scalebar. But I want it on the right, or it appears over top of coastline and it's difficult
+# to read. I didn't see/couldn't figure out if there was an easy way to move it.
+# Instead, if you set location = "bl" (bottom left) the text is on the left hand side of the scalebar
+# I then used pad_x to push the scalebar over to the right of the map.
+# Note these are relative units and the size of my plotting window has to be the same each time or the scalebar might get pushed out of the plot
 
 ################################################################################
 ## PACIFIC 
@@ -91,13 +128,10 @@ atlMap =
 # Lemmens 
 ggLemMap = ggplot()+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
-  # Use this instead of coord_map to get the scalebar thing to work. 
-  # annotation_scale needs the crs to be set here too
+  geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
+  # crs = 32609 is UTM zone 9
   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
-  # There might be a better way to do this but reduce the # of axis ticks:
-
-  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
+  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+ # see note above about scale bar
   ggtitle("(D) Lemmens")+
   theme_bw()+
   theme(
@@ -108,17 +142,16 @@ ggLemMap = ggplot()+
   
 ################################################################################
 ## MARITIMES
-
+# These were all UTM Zone 20N ie crs = 32620
 
 # Argyle                   
 ggArgMap = ggplot()+
   geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+ # add shellfish leases
+  # Data are transects. In theory, they could be plotted as lines using geom_sf
+  # However, idk how to get the data into the right format for that lol. So I am using geom_segment to connect between start/end coordinates of the tow
   geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
-    # Use this instead of coord_map to get the scalebar thing to work. 
-  # annotation_scale needs the crs to be set here too
-  coord_sf(xlim = c(259213, 267918), ylim = c(4846335, 4855031), crs = 32620)+
-  #coord_sf(xlim = c(-65.98, -65.897), ylim = c(43.73290, 43.80595), crs = 4326)+
+  coord_sf(xlim = c(259213, 267918), ylim = c(4846335, 4855031), crs = 32620)+ # UTM zone 20
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.8, "cm"))+
   ggtitle("(E) Argyle")+
   theme_bw()+
@@ -133,8 +166,6 @@ ggSobMap = ggplot()+
   geom_polygon(soberCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
   geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.70, linewidth = 2.5, lineend = "round")+
-  # Use this instead of coord_map to get the scalebar thing to work. 
-  # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(541154, 542825), ylim = c(4964661, 4966410), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   ggtitle("(F) Sober Island")+
@@ -167,7 +198,6 @@ ggWhMap = ggplot()+
   geom_polygon(whiteheadCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
   geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+  # Use this instead of coord_map to get the scalebar thing to work. 
-  # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(641669, 647881), ylim = c(5013443, 5019630), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(4.1, "cm"))+
   ggtitle("(H) Whitehead")+
@@ -178,9 +208,9 @@ ggWhMap = ggplot()+
     axis.title = element_blank(),
     panel.grid = element_blank())
 
-
 ################################################################################
 ## GULF
+# These are also all UTM Zone 20N i.e., crs = 32620
 
 # Cocagne
 ggCocMap = 
@@ -188,8 +218,6 @@ ggCocMap =
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
-    # Use this instead of coord_map to get the scalebar thing to work. 
-    # annotation_scale needs the crs to be set here too
     coord_sf(xlim = c(373453, 382190), ylim = c(5131250, 5140014), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
     ggtitle("(I) Cocagne")+
@@ -220,12 +248,8 @@ ggMalMap =
 ggStPMap = 
   ggplot()+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-    #geom_segment(gulfMeta %>% filter(facilityName == "StPeters"), mapping = aes(x = longitude, xend = longitudeEnd, y = latitude, yend = latitudeEnd), col = "lightpink", alpha = 0.6, linewidth = 4, lineend = "round")+
     geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
-  
-  # Use this instead of coord_map to get the scalebar thing to work. 
-    # annotation_scale needs the crs to be set here too
     coord_sf(xlim = c(519487, 532582), ylim = c(5136283, 5149220), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
     ggtitle("(K) St. Peters")+
@@ -243,12 +267,8 @@ ggStPMap =
 ggSeArmMap = 
   ggplot()+
     geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-    #geom_point(nlMeta %>% filter(facilityName == "Southeast Arm"), mapping = aes(x = longitude, y = latitude), col = "lightpink", alpha = 0.6)+
     geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
-  
-  # Use this instead of coord_map to get the scalebar thing to work. 
-    # annotation_scale needs the crs to be set here too
-    coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+
+    coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+ # UTM zone 21N
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
     ggtitle("(L) Southeast Arm")+
     theme_bw()+
@@ -270,7 +290,6 @@ ggSeArmMap =
 # This makes each plot line up perfectly. But I think it squishes the maps slightly to match the longest (?) dimension of each ggplot object
 # My maps are almost exactly square, so that's not too much of an issue
 studyMaps = ggarrange(ggLemMap, ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, ggMalMap, ggStPMap, ggSeArmMap, ncol = 3, nrow = 3)
-
 
 # Combine inset maps with study area maps using the patchwork package
 # studyMaps could instead be individual maps, but since they are not perfect squares, they are slightly unaligned
