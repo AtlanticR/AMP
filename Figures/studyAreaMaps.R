@@ -15,7 +15,6 @@
 ################################################################################
 
 # Set up
-source("DataProcessing/rPackages.R")
 source("Figures/colourPchSchemes.R")
 
 
@@ -89,7 +88,8 @@ atlMap =
 ################################################################################
 ## PACIFIC 
 
-ggPacMap = ggplot()+
+# Lemmens 
+ggLemMap = ggplot()+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
   # Use this instead of coord_map to get the scalebar thing to work. 
@@ -262,7 +262,6 @@ ggSeArmMap =
 ################################################################################
 ### Make the final map
 
-
 # Just in case, the plotting window on my screen is:
 # Height: 25.5
 # Width: 25cm
@@ -270,7 +269,7 @@ ggSeArmMap =
 # Arrange each study area map using the function from the egg package
 # This makes each plot line up perfectly. But I think it squishes the maps slightly to match the longest (?) dimension of each ggplot object
 # My maps are almost exactly square, so that's not too much of an issue
-studyMaps = ggarrange(ggPacMap, ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, ggMalMap, ggStPMap, ggSeArmMap, ncol = 3, nrow = 3)
+studyMaps = ggarrange(ggLemMap, ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, ggMalMap, ggStPMap, ggSeArmMap, ncol = 3, nrow = 3)
 
 
 # Combine inset maps with study area maps using the patchwork package
