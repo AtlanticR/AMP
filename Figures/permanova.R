@@ -38,6 +38,10 @@
 # RIGHT NOW IN MANY SPOTS I AM SQUARE ROOT TRANFORMING THE BRAY-CURTIS DISS MATRIX WHICH IS INCORRECT
 
 
+# So I don't lose it: https://onlinelibrary.wiley.com/doi/full/10.1111/jfb.13989
+# ^ simper with permutations
+
+
 ################################################################################
 ################################################################################
 ## Get things set up
@@ -110,6 +114,7 @@ simOcean = simper(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia
 
 # View the SIMPER results                  
 summary(simOcean)
+
 
 ################################################################################
 ################################################################################
@@ -386,12 +391,68 @@ ggplot() +
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
         plot.title = element_text(size=18))
 
+################################################################################
+# Making tables of the SIMPER outputs
+# The simper function puts together data that is missing some data and values rounded
+# to the incorrect number of decimal places
+# I am making a function to put it all together so it is less of a mess to manually correct later
+
+
+# Make adjustments to the simper table so I can export it as a csv
+# I have to pass in the Summary object, so species are listed in the correct order
+# The full simper table (fullObject) has species listed alphabetically. But I need this to get the "Overall average dissimilarity"
+# Also pass in the names of groups being compared. First one is "avA" (average abundance from group A) and second is "avB"". It
+# is easier to just rearrange these manually in Excel so group names can be listed alphabetically in the final table
+simDfMaker = function(summaryObject, fullObject, comparisonNames){
+                     
+  summaryObject %>%
+    # Make species names the first column (right now they are rownames)
+    mutate(species = rownames(summaryObject), .before = average) %>%
+    # Turn cumulative contributions into just contributions for each row. Change location of column.
+    mutate(cont = diff(c(0, cumsum)), .before = cumsum) %>% 
+    # Add new column to show which sites were compared and their order (will be manually moved in Google Doc table)
+    mutate(comp = comparisonNames) %>% 
+    # Add the overall average dissimilarity (will be manually moved in Google Doc table)
+    mutate(overall = fullObject$overall) %>% 
+    # Multiply certain columns by 100 to convert to percentages
+    mutate_at(vars(c(average, sd, cumsum, cont, overall)), .funs = funs(.*100)) %>% 
+    # Round most columns to 2 decimal places
+    mutate(across(c(average, sd, ratio, ava, avb, cumsum, cont, overall), round, 2)) %>% 
+    # Round p-value to 4 decimal places. Might change this later
+    mutate(across(c(p), round, 4)) %>% 
+    # Only get the top 5 species
+    slice(1:5) 
+
+}
+
+# Run the function and pass in the appropriate data
+
+# For Maritimes bay comparisons
+marBaysSimperTable = rbind(      
+  simDfMaker(summary(simMar)$`Country Harbour_Argyle`, simMar$`Country Harbour_Argyle`, "Country Harbour_Argyle"),
+  simDfMaker(summary(simMar)$`Sober Island_Argyle`, simMar$`Sober Island_Argyle`, "Sober Island_Argyle"), 
+  simDfMaker(summary(simMar)$`Whitehead_Argyle`, simMar$`Whitehead_Argyle`, "Whitehead_Argyle"),
+  simDfMaker(summary(simMar)$`Country Harbour_Sober Island`, simMar$`Country Harbour_Sober Island`, "Country Harbour_Sober Island"),
+  simDfMaker(summary(simMar)$`Country Harbour_Whitehead`, simMar$`Country Harbour_Whitehead`, "Country Harbour_Whitehead"),
+  simDfMaker(summary(simMar)$`Whitehead_Sober Island`, simMar$`Whitehead_Sober Island`, "Whitehead_Sober Island")
+)
 
 
 
+# For Gulf bay comparisons 
+gulfBaySimperTable = rbind(simDf(simGulf$`Cocagne_Malpeque`, "Cocagne Malpeque"),
+                           simDf(simGulf$`Cocagne_St. Peters`, "Cocagne St. Peters"),
+                           simDf(simGulf$`Malpeque_St. Peters`, "Malpeque St. Peters"))
+
+x = summary(simGulf)$`Malpeque_St. Peters`
 
 
+q = rbind(hi, hi2)
 
+
+x = diff(c(0, hi))
+
+x = as.data.frame(summary(simRegion))
 
 
 
