@@ -17,6 +17,13 @@ atlColour = c("Gulf" = "#F8766D",
 # When Pacific (region) data is broken down by field season (below), 4 colours will be set
 pacColourOne = c("Pacific" = "#C77CFF")
 
+# Colour scheme for creating my study area maps
+# Only the regions I want about should have colours. They are the same as above EXCEPT I
+# Added B3 to the end of the colours to adjust the transparency (equivalent to alpha = 0.7)
+# This makes the region colours look less aggressive
+# See here for more info: https://gist.github.com/lopspower/03fb1cc0ac9f32ef38f4
+regionMapCols = c("Newfoundland & Labrador" = "#00BFC4B3", "Pacific" = "#C77CFFB3", "Ontario and Prairie" = "gray92", "Quebec" = "gray92",
+                  "Arctic" = "gray92", "Arctic-Water" = "gray92", "Maritimes" = "#7CAE00B3", "Gulf" = "#F8766DB3")
 
 #### Based on bay
 # I just looked here and tried to find different shades of each colour set above:
