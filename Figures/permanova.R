@@ -476,6 +476,7 @@ pacFieldSimperTable = rbind(
 #################################################################################
 ## PERMANOVA results as dataframes to be exported as csvs
 
+# For getting PERMANOVA results from adonis2 function
 ocean.permdf = ocean.permdf %>%
   # Multiply R2 by 100 to convert to percentages
   mutate_at(vars(c(R2)), .funs = funs(.*100)) %>% 
@@ -485,16 +486,22 @@ ocean.permdf = ocean.permdf %>%
   mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
 
 
-
-x = data.frame(marPairwisePN)
-
-
+# Create a function to extract values from the pairwise.adonis2 function
+# Pass in the resulting object. It's  a list of lists so it's a bit confusing what's happening
+# I want to create a dataframe of results containing columns with the comparison (e.g., Maritimes vs Gulf), t-value, and psuedo p-value
 getPairwiseVals = function(pairwiseDf){
 
+  # I probably should have used dplyr but I got confused how to do it
+  # Create a new dataframe by combining values into unique colums
   as.data.frame(cbind(
-  comparison = names(pairwiseDf)[-1], # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
-  fValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 4)))), 3), nsmall = 3), # 4th value is the F-value
-  pValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 5)))), 4), nsmall = 4))) # 5th value is the P-value
+  # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
+  comparison = names(pairwiseDf)[-1], 
+  # 4th value from the list of lists is the F-value. Each test has one F-value followed by multiple NAs just due to how the function reports results
+  # I need to turn it into a number, round it to 3 decimal places, due the "format" function to make sure if there aren't 3 decimal places due to zeroes, they get added anyway
+  # Then square root the F-value to turn it into a t-value (see "Pairwise Comparisons" p.26 from http://updates.primer-e.com/primer7/manuals/PERMANOVA+_manual.pdf)
+  tValue = format(round(sqrt(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 4))))), 3), nsmall = 3),
+  # 5th value is the p-value. Convert from character to numeric and round to 4 decimal places 
+  pValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 5)))), 4), nsmall = 4)))
 
 
 }
@@ -502,10 +509,16 @@ getPairwiseVals = function(pairwiseDf){
 testMar = getPairwiseVals(marPairwisePN)
 
 
-hi = as.data.frame(cbind(
-  comparison = names(marPairwisePN)[-1], # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
-  fValue = na.omit(flatten_chr(map(marPairwisePN, 4))), # 4th value is the F-value
-  pValue = na.omit(flatten_chr(map(marPairwisePN, 5))))) # 5th value is the P-value
+getPairwiseVals = function(pairwiseDf){
+  
+  as.data.frame(cbind(
+    comparison = names(pairwiseDf)[-1], # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
+    fValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 4)))), 3), nsmall = 3), # 4th value is the F-value
+    pValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 5)))), 4), nsmall = 4))) # 5th value is the P-value
+  
+  
+}
+
 
 
 
