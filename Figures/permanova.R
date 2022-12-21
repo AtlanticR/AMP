@@ -218,7 +218,7 @@ pacPN = pacMerge %>%
 
 ### DISPERSION
 marDisp = betadisper(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])), as.factor(marPN$facetFactor), type = "centroid")
-pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999, set.seed(13))
+pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999, set.seed(11))
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairMarDisp
@@ -237,6 +237,9 @@ ggplot(disMar, aes(x = group, y = distances, fill=group))+
   # No groups are significantly different
   xlab("Bay")+
   ylab("Distance to centroid")+
+  # AHH There is actually one significant pairwise comparison
+  geom_signif(comparisons = list(c("Sober Island", "Whitehead")),
+              map_signif_level = T)+
   theme_bw()+
   theme(axis.text = element_text(size = 11),
         # setting the margin adds space between tick labels and titles
@@ -394,9 +397,15 @@ ggplot() +
 
 ################################################################################
 ################################################################################
-################################################################################
-
 ### EXTRACTING THE DATA FROM THE TESTS I JUST RAN
+
+
+
+
+
+
+
+
 
 ################################################################################
 ## SIMPER 
