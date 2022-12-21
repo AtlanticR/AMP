@@ -65,7 +65,8 @@ library(pairwiseAdonis)
 # It's  a bit clunky, but data in the species matrix always starts with 'Acartia spp." until the last column (ncol)
 # I am using type = "centroid" instead of "spatial" (spatial median) to be consistent with PRIMER. In R, "spatial" is default
 # See PRIMER manual for brief explanation of the differences. Manual recommends "centroid" in most cases
-oceanDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean), type = "centroid")
+oceanDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean), type = "centroid")
+
 # This will get you ANOVA results (i.e., are there differences in dispersion) but with non-permuted significance
 anova(oceanDisp) 
 # Get significance (overall) and also conduct pairwise tests. Report these results instead.
@@ -101,8 +102,8 @@ ggplot(disOcean, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # First selects only the species data (i.e., starting at Acartia until the end)
-adonis2(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]~
-          as.factor(allRegionsWide$ocean), method="bray", sqrt.dist = T, perm = 9999)
+adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
+          as.factor(allRegionsWide$ocean), method="bray", sqrt.dist = F, perm = 9999)
 
 # No need for pairwise tests since only 2 groups at this scale
 
@@ -122,7 +123,7 @@ summary(simOcean)
 # There are 4 factors (in this study): Maritimes, Gulf, Newfoundland, Pacific
 
 ### DISPERSION
-regDisp = betadisper(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), type = "centroid")
+regDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), type = "centroid")
 pairRegDisp = permutest(regDisp, pairwise = T, permutations = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
@@ -163,17 +164,13 @@ ggplot(disRegion, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 
-# Test 3 different adonis methods to make sure they're all the same. They are!!
-adonis2(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]~
-          as.factor(allRegionsWide$region), method="bray", sqrt.dist = T, perm = 9999, set.seed(13))
+# Test 2 different adonis methods to make sure they're all the same. They are!!
+adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
+  as.factor(allRegionsWide$region), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
-# Make sure I get same results using vegdist. I do!!
-adonis2(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]))~
+# Make sure I get same results using vegdist. I do!
+adonis2(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]))~
           as.factor(allRegionsWide$region), sqrt.dist = F, perm = 9999, set.seed(13))
-
-# Last check- adjust the square root distances. Also the same!
-adonis2(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
-          as.factor(allRegionsWide$region), sqrt.dist = T, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between each region
 # I don't think I actually need the as.factor() but I've added it just in case
