@@ -473,7 +473,8 @@ pacFieldSimperTable = rbind(
 
 
 
-
+#################################################################################
+# Things to delete but keeping just in case
 
 ### Nested PERMANOVA
 # There are too many issues to comment on right now. I'll come back to this, maybe
