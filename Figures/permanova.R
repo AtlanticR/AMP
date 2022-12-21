@@ -54,6 +54,10 @@ source("Figures/nmdsRegions.R")
 remotes::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
 library(pairwiseAdonis)
 
+# This will avoid numbers being written in scientific notation
+# (It's mostly so the p-values aren't written as e.g., 1e-04)
+options(scipen = 999)
+
 ################################################################################
 ################################################################################
 #### Test for differences between oceans
@@ -102,7 +106,7 @@ ggplot(disOcean, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # First selects only the species data (i.e., starting at Acartia until the end)
-adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
+ocean.permdf = adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
           as.factor(allRegionsWide$ocean), method="bray", sqrt.dist = F, perm = 9999)
 
 # No need for pairwise tests since only 2 groups at this scale
@@ -248,7 +252,7 @@ adonis2(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])~
                as.factor(marPN$facetFactor), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-pairwise.adonis2(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]))~as.factor(facetFactor), data = marPN, perm =9999, set.seed(13))
+marPairwisePN = pairwise.adonis2(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]))~as.factor(facetFactor), data = marPN, perm =9999, set.seed(13))
 
 ### SIMPER
 simMar = simper(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]), 
@@ -467,6 +471,42 @@ pacFieldSimperTable = rbind(
   simDfMaker(summary(simPac)$`September 2021_March 2021`, simPac$`September 2021_March 2021`, "September 2021_March 2021"),
   simDfMaker(summary(simPac)$`September 2021_June 2021`, simPac$`September 2021_June 2021`, "September 2021_June 2021")
 )
+
+
+#################################################################################
+## PERMANOVA results as dataframes to be exported as csvs
+
+ocean.permdf = ocean.permdf %>%
+  # Multiply R2 by 100 to convert to percentages
+  mutate_at(vars(c(R2)), .funs = funs(.*100)) %>% 
+  # Add mean sum of squares (MS) column. Note: this adds a value in the "total" row. Manually remove this.
+  mutate(MS = Df/SumOfSqs, .before = R2) %>%
+  # Round most columns to 2 decimal places
+  mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
+
+
+
+x = data.frame(marPairwisePN)
+
+
+getPairwiseVals = function(pairwiseDf){
+
+  as.data.frame(cbind(
+  comparison = names(pairwiseDf)[-1], # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
+  fValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 4)))), 3), nsmall = 3), # 4th value is the F-value
+  pValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 5)))), 4), nsmall = 4))) # 5th value is the P-value
+
+
+}
+
+testMar = getPairwiseVals(marPairwisePN)
+
+
+hi = as.data.frame(cbind(
+  comparison = names(marPairwisePN)[-1], # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
+  fValue = na.omit(flatten_chr(map(marPairwisePN, 4))), # 4th value is the F-value
+  pValue = na.omit(flatten_chr(map(marPairwisePN, 5))))) # 5th value is the P-value
+
 
 
 
