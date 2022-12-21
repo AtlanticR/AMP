@@ -106,7 +106,7 @@ ggplot(disOcean, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # First selects only the species data (i.e., starting at Acartia until the end)
-ocean.permdf = adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
+adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
           as.factor(allRegionsWide$ocean), method="bray", sqrt.dist = F, perm = 9999)
 
 # No need for pairwise tests since only 2 groups at this scale
@@ -173,7 +173,7 @@ adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):nc
   as.factor(allRegionsWide$region), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Make sure I get same results using vegdist. I do!
-adonis2(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]))~
+regPNresults = adonis2(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]))~
           as.factor(allRegionsWide$region), sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between each region
@@ -181,7 +181,7 @@ adonis2(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia s
 # Could take the square root of the F-value to get t-values (see PERMANOVA/PRIMER guide)
 # Note to get 4 decimal places for P-value, need to set perm = 9999. Function help says "nperm" which is wrong
 # set seed to get reproducible p-values
-pairwise.adonis2(vegdist(sqrt(allRegionsWide[12:ncol(allRegionsWide)]))~as.factor(region), data = allRegionsWide, perm=9999, set.seed(13))
+regPairwisePN = pairwise.adonis2(vegdist(sqrt(allRegionsWide[12:ncol(allRegionsWide)]))~as.factor(region), data = allRegionsWide, perm=9999, set.seed(13))
 
 
 ### SIMPER
@@ -248,7 +248,7 @@ ggplot(disMar, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
-adonis2(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])~
+marPNresults= adonis2(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])~
                as.factor(marPN$facetFactor), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
@@ -295,11 +295,11 @@ ggplot(disGulf, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
-adonis2(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])~
+gulfPNresults = adonis2(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])~
           as.factor(gulfPN$facetFactor), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-pairwise.adonis2(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]))~as.factor(facetFactor), data = gulfPN, perm =9999, set.seed(13))
+gulfPairwisePN = pairwise.adonis2(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]))~as.factor(facetFactor), data = gulfPN, perm =9999, set.seed(13))
 
 ### SIMPER
 simGulf = simper(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]), 
@@ -349,11 +349,11 @@ ggplot(disPac, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
-adonis2(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])~
+oacPNresults = adonis2(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])~
           as.factor(pacPNred$facetFactor), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-pairwise.adonis2(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)]))~as.factor(facetFactor), data = pacPNred, perm = 9999, set.seed(13))
+pacPairwisePN = pairwise.adonis2(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)]))~as.factor(facetFactor), data = pacPNred, perm = 9999, set.seed(13))
 
 ### SIMPER
 # Here I am using pacPN not pacPNred because I want to know which species make the March 2021 data different
@@ -393,6 +393,14 @@ ggplot() +
         plot.title = element_text(size=18))
 
 ################################################################################
+################################################################################
+################################################################################
+
+### EXTRACTING THE DATA FROM THE TESTS I JUST RAN
+
+################################################################################
+## SIMPER 
+
 # Making tables of the SIMPER outputs
 # The simper function puts together data that is missing some data and values rounded
 # to the incorrect number of decimal places
@@ -474,7 +482,23 @@ pacFieldSimperTable = rbind(
 
 
 #################################################################################
-## PERMANOVA results as dataframes to be exported as csvs
+## PERMANOVA
+
+testPNFun = function(permData){
+  
+  permResults %>%
+    # Multiply R2 by 100 to convert to percentages
+    mutate_at(vars(c(R2)), .funs = funs(.*100)) %>% 
+    # Add mean sum of squares (MS) column. Note: this adds a value in the "total" row. Manually remove this.
+    mutate(MS = Df/SumOfSqs, .before = R2) %>%
+    # Round most columns to 2 decimal places
+    mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
+  
+}
+
+
+hi = testPNFun(ocean.permdf)
+
 
 # For getting PERMANOVA results from adonis2 function
 ocean.permdf = ocean.permdf %>%
@@ -486,41 +510,74 @@ ocean.permdf = ocean.permdf %>%
   mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
 
 
-# Create a function to extract values from the pairwise.adonis2 function
-# Pass in the resulting object. It's  a list of lists so it's a bit confusing what's happening
-# I want to create a dataframe of results containing columns with the comparison (e.g., Maritimes vs Gulf), t-value, and psuedo p-value
-getPairwiseVals = function(pairwiseDf){
 
-  # I probably should have used dplyr but I got confused how to do it
-  # Create a new dataframe by combining values into unique colums
-  as.data.frame(cbind(
-  # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
-  comparison = names(pairwiseDf)[-1], 
-  # 4th value from the list of lists is the F-value. Each test has one F-value followed by multiple NAs just due to how the function reports results
-  # I need to turn it into a number, round it to 3 decimal places, due the "format" function to make sure if there aren't 3 decimal places due to zeroes, they get added anyway
-  # Then square root the F-value to turn it into a t-value (see "Pairwise Comparisons" p.26 from http://updates.primer-e.com/primer7/manuals/PERMANOVA+_manual.pdf)
-  tValue = format(round(sqrt(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 4))))), 3), nsmall = 3),
-  # 5th value is the p-value. Convert from character to numeric and round to 4 decimal places 
-  pValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 5)))), 4), nsmall = 4)))
+#################################################################################
+## PAIRWISE PERMANOVA
 
 
+permCreateTable = function(permResults, pairwiseDf, order){
+
+  # Get the results from the regular permanova (adonis2 output)
+  permResults = permResults %>%
+    # Multiply R2 by 100 to convert to percentages
+    mutate_at(vars(c(R2)), .funs = funs(.*100)) %>% 
+    # Add mean sum of squares (MS) column. Note: this adds a value in the "total" row. Manually remove this.
+    mutate(MS = Df/SumOfSqs, .before = R2) %>%
+    # Round most columns to 2 decimal places
+    mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
+  
+  
+  # Create a function to extract values from the pairwise.adonis2 function
+  # Pass in the resulting object. It's  a list of lists so it's a bit confusing what's happening
+  # I want to create a dataframe of results containing columns with the comparison (e.g., Maritimes vs Gulf), t-value, and p-value
+  pairwise.df = 
+    # I probably should have used dplyr but I got confused how to do it
+    # Create a new dataframe by combining values into unique colums
+    as.data.frame(cbind(
+    # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
+    comparison = names(pairwiseDf)[-1], 
+    # 4th value from the list of lists is the F-value. Each test has one F-value followed by multiple NAs just due to how the function reports results
+    # I need to turn it into a number, round it to 3 decimal places, due the "format" function to make sure if there aren't 3 decimal places due to zeroes, they get added anyway
+    # Then square root the F-value to turn it into a t-value (see "Pairwise Comparisons" p.26 from http://updates.primer-e.com/primer7/manuals/PERMANOVA+_manual.pdf)
+    tValue = format(round(sqrt(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 4))))), 3), nsmall = 3),
+    # 5th value is the p-value. Convert from character to numeric and round to 4 decimal places 
+    pValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 5)))), 4), nsmall = 4))) %>%
+      
+      # Then rearrange them to be in alphabetical order
+      slice(match(order, comparison))
+
+  # Combine the full permanova with the pairwise outputs
+  # This will not be a perfect table (e.g., columns don't perfectly line up)- I can fix that later! 
+  # This is good enough that I can copy and paste values into my existing table in Google Docs
+  bind_rows(permResults, pairwise.df)
+  
 }
 
-testMar = getPairwiseVals(marPairwisePN)
+# Make PERMANOVA tables to be exported that combine adonis2 and pairwise.adonis2 results
+# Also rearranges the pairwise.adonis2 in alphabetical order
+
+marPNtable = permCreateTable(marPNresults, marPairwisePN, order.marBays)
+gulfPNtable = permCreateTable(gulfPNresults, gulfPairwisePN, order.gulfBays)
+
+regPNresults
 
 
-getPairwiseVals = function(pairwiseDf){
-  
-  as.data.frame(cbind(
-    comparison = names(pairwiseDf)[-1], # Get the names of each list element (i.e., comparisons) but drop the first one since it's named "parent_call"
-    fValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 4)))), 3), nsmall = 3), # 4th value is the F-value
-    pValue = format(round(as.numeric(na.omit(flatten_chr(map(pairwiseDf, 5)))), 4), nsmall = 4))) # 5th value is the P-value
-  
-  
-}
+# I want the pairwise comparisons to be in alphabetical order. Specify the order I want them to be in
+# Note that sometimes it is alphabetical based on the second bay name below (e.g., Argyle is 1st). But that's too much work to change. I already have the row names written out in the Google Doc, I just need the data
+
+order.regions = c("Maritimes_vs_Gulf", "Newfoundland_vs_Gulf", "Pacific_vs_Gulf", "Maritimes_vs_Newfoundland", "Maritimes_vs_Pacific", "Newfoundland_vs_Pacific")
+order.marBays = c("Country Harbour_vs_Argyle", "Sober Island_vs_Argyle", "Whitehead_vs_Argyle", "Country Harbour_vs_Sober Island", "Country Harbour_vs_Whitehead", "Whitehead_vs_Sober Island")
+order.gulfBays = c("Cocagne_vs_Malpeque", "Cocagne_vs_St. Peters", "Malpeque_vs_St. Peters")
+order.pacField = c("September 2021_vs_August 2020", "August 2020_vs_June 2021", "September 2021_vs_June 2021")
 
 
 
+
+getPairwiseVals(regPairwisePN, order.regions)
+getPairwiseVals(pacPairwisePN, order.pacField)
+
+
+q = bind_rows(ocean.permdf, x)
 
 
 #################################################################################
