@@ -484,35 +484,6 @@ pacFieldSimperTable = rbind(
 #################################################################################
 ## PERMANOVA
 
-testPNFun = function(permData){
-  
-  permResults %>%
-    # Multiply R2 by 100 to convert to percentages
-    mutate_at(vars(c(R2)), .funs = funs(.*100)) %>% 
-    # Add mean sum of squares (MS) column. Note: this adds a value in the "total" row. Manually remove this.
-    mutate(MS = Df/SumOfSqs, .before = R2) %>%
-    # Round most columns to 2 decimal places
-    mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
-  
-}
-
-
-hi = testPNFun(ocean.permdf)
-
-
-# For getting PERMANOVA results from adonis2 function
-ocean.permdf = ocean.permdf %>%
-  # Multiply R2 by 100 to convert to percentages
-  mutate_at(vars(c(R2)), .funs = funs(.*100)) %>% 
-  # Add mean sum of squares (MS) column. Note: this adds a value in the "total" row. Manually remove this.
-  mutate(MS = Df/SumOfSqs, .before = R2) %>%
-  # Round most columns to 2 decimal places
-  mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
-
-
-
-#################################################################################
-## PAIRWISE PERMANOVA
 
 
 permCreateTable = function(permResults, pairwiseDf, order){
