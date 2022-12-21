@@ -371,29 +371,7 @@ summary(simPac)
 # No significance tests since only one bay and one field season (so far)
 
 
-################################################################################
-### ALTERNATIVE METHODS 
 
-
-#### NMDS of SIMPER
-
-ggplot() + 
- geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region, size = allRegionsWide$`Acartia spp.`), pch = 21, alpha= 0.9)+
-  # Don't need to define colours. These just show up as default ggplot colours for 4 elements
-  #scale_fill_manual(name = "Region")+ 
-  scale_size(range=c(0.1, 20), name="Acartia")+
-  annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=4, hjust=1)+
-  #ggtitle("Atlantic and Pacific")+
-  theme_bw()+
-  theme(axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        #legend.position = "none",
-        panel.border=element_rect(color="black", size=1), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        plot.background = element_blank(),
-        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
-        plot.title = element_text(size=18))
 
 ################################################################################
 ################################################################################
@@ -449,93 +427,8 @@ pacDisptable = dispCreateTable(pairPacDisp)
 
 
 
-
-################################################################################
-## SIMPER 
-
-# Making tables of the SIMPER outputs
-# The simper function puts together data that is missing some data and values rounded
-# to the incorrect number of decimal places
-# I am making a function to put it all together so it is less of a mess to manually correct later
-# Note that I also want the comparisons to be listed in alphabetical order, so that complicates things
-# I am manually choosing the order they should be passed into the function. Then rbinding all data together
-
-
-# Make adjustments to the simper table so I can export it as a csv
-# I have to pass in the Summary object, so species are listed in the correct order
-# The full simper table (fullObject) has species listed alphabetically. But I need this to get the "Overall average dissimilarity"
-# Also pass in the names of groups being compared. First one is "avA" (average abundance from group A) and second is "avB"". It
-# is easier to just rearrange these manually in Excel so group names can be listed alphabetically in the final table
-simDfMaker = function(summaryObject, fullObject, comparisonNames){
-                     
-  summaryObject %>%
-    # Make species names the first column (right now they are rownames)
-    mutate(species = rownames(summaryObject), .before = average) %>%
-    # Turn cumulative contributions into just contributions for each row. Change location of column.
-    mutate(cont = diff(c(0, cumsum)), .before = cumsum) %>% 
-    # Add new column to show which sites were compared and their order (will be manually moved in Google Doc table)
-    mutate(comp = comparisonNames) %>% 
-    # Add the overall average dissimilarity (will be manually moved in Google Doc table)
-    mutate(overall = fullObject$overall) %>% 
-    # Multiply certain columns by 100 to convert to percentages
-    mutate_at(vars(c(average, sd, cumsum, cont, overall)), .funs = funs(.*100)) %>% 
-    # Round most columns to 2 decimal places
-    mutate(across(c(average, sd, ratio, ava, avb, cumsum, cont, overall), round, 2)) %>% 
-    # Round p-value to 4 decimal places. Might change this later
-    mutate(across(c(p), round, 4)) %>% 
-    # Only get the top 5 species
-    slice(1:5) 
-
-}
-
-# Run the function and pass in the appropriate data
-# Remember the order is important because in the end I want the comparisons to be alphabetical
-
-# Region comparisons
-
-regSimperTable = rbind(
-  simDfMaker(summary(simRegion)$Maritimes_Gulf, simRegion$Maritimes_Gulf, "Maritimes_Gulf"),
-  simDfMaker(summary(simRegion)$Newfoundland_Gulf, simRegion$Newfoundland_Gulf, "Newfoundland_Gulf"),
-  simDfMaker(summary(simRegion)$Pacific_Gulf, simRegion$Pacific_Gulf, "Pacific_Gulf"),
-  simDfMaker(summary(simRegion)$Maritimes_Newfoundland, simRegion$Maritimes_Newfoundland, "Maritimes_Newfoundland"),
-  simDfMaker(summary(simRegion)$Maritimes_Pacific, simRegion$Maritimes_Pacific, "Maritimes_Pacific"),
-  simDfMaker(summary(simRegion)$Newfoundland_Pacific, simRegion$Newfoundland_Pacific, "Newfoundland_Pacific")
-)
-
-
-# Maritimes bay comparisons
-marBaySimperTable = rbind(      
-  simDfMaker(summary(simMar)$`Country Harbour_Argyle`, simMar$`Country Harbour_Argyle`, "Country Harbour_Argyle"),
-  simDfMaker(summary(simMar)$`Sober Island_Argyle`, simMar$`Sober Island_Argyle`, "Sober Island_Argyle"), 
-  simDfMaker(summary(simMar)$`Whitehead_Argyle`, simMar$`Whitehead_Argyle`, "Whitehead_Argyle"),
-  simDfMaker(summary(simMar)$`Country Harbour_Sober Island`, simMar$`Country Harbour_Sober Island`, "Country Harbour_Sober Island"),
-  simDfMaker(summary(simMar)$`Country Harbour_Whitehead`, simMar$`Country Harbour_Whitehead`, "Country Harbour_Whitehead"),
-  simDfMaker(summary(simMar)$`Whitehead_Sober Island`, simMar$`Whitehead_Sober Island`, "Whitehead_Sober Island")
-)
-
-
-# Gulf bay comparisons 
-gulfBaySimperTable = rbind(
-  simDfMaker(summary(simGulf)$`Cocagne_Malpeque`, simGulf$`Cocagne_Malpeque`, "Cocagne_Malpeque"),
-  simDfMaker(summary(simGulf)$`Cocagne_St. Peters`, simGulf$`Cocagne_St. Peters`, "Cocagne_St. Peters"), 
-  simDfMaker(summary(simGulf)$`Malpeque_St. Peters`, simGulf$`Malpeque_St. Peters`, "Malpeque_St. Peters")
-)
-  
-  
-# Pacific field season comparisons
-pacFieldSimperTable = rbind(
-  simDfMaker(summary(simPac)$`August 2020_March 2021`, simPac$`August 2020_March 2021`, "August 2020_March 2021"),
-  simDfMaker(summary(simPac)$`August 2020_June 2021`, simPac$`August 2020_June 2021`, "August 2020_June 2021"), 
-  simDfMaker(summary(simPac)$`September 2021_August 2020`, simPac$`September 2021_August 2020`, "September 2021_August 2020"),
-  simDfMaker(summary(simPac)$`March 2021_June 2021`, simPac$`March 2021_June 2021`, "March 2021_June 2021"), 
-  simDfMaker(summary(simPac)$`September 2021_March 2021`, simPac$`September 2021_March 2021`, "September 2021_March 2021"),
-  simDfMaker(summary(simPac)$`September 2021_June 2021`, simPac$`September 2021_June 2021`, "September 2021_June 2021")
-)
-
-
 #################################################################################
 ## PERMANOVA
-
 
 # Create a function to combine adonis2, pairwise.adonis2 results in one data frame
 # It extracts the relevant data and manipulates data to be in correct format (e.g., round values, add extra columns, etc)
@@ -594,15 +487,111 @@ gulfPNtable = permCreateTable(gulfPNresults, gulfPairwisePN, order.gulfBays)
 pacPNtable = permCreateTable(pacPNresults, pacPairwisePN, order.pacField)
 
 
+################################################################################
+## SIMPER 
+
+# Making tables of the SIMPER outputs
+
+# Note that I also want the comparisons to be listed in alphabetical order, so that complicates things
+# I am manually choosing the order they should be passed into the function. Then rbinding all data together
+# Make adjustments to the simper table so I can export it as a csv
+# I have to pass in the Summary object, so species are listed in the correct order
+# The full simper table (fullObject) has species listed alphabetically. But I need this to get the "Overall average dissimilarity"
+# Also pass in the names of groups being compared. First one is "avA" (average abundance from group A) and second is "avB"". It
+# is easier to just rearrange these manually in Excel so group names can be listed alphabetically in the final table
+simDfMaker = function(summaryObject, fullObject, comparisonNames){
+  
+  summaryObject %>%
+    # Make species names the first column (right now they are rownames)
+    tibble::rownames_to_column(var = "Taxa") %>%
+    # Turn cumulative contributions into just contributions for each row. Change location of column.
+    mutate(cont = diff(c(0, cumsum)), .before = cumsum) %>% 
+    # Add new column to show which sites were compared and their order (will be manually moved in Google Doc table)
+    mutate(comp = comparisonNames) %>% 
+    # Add the overall average dissimilarity (will be manually moved in Google Doc table)
+    mutate(overall = fullObject$overall) %>% 
+    # Multiply certain columns by 100 to convert to percentages
+    mutate_at(vars(c(average, sd, cumsum, cont, overall)), .funs = funs(.*100)) %>% 
+    # Round most columns to 2 decimal places
+    mutate(across(c(average, sd, ratio, ava, avb, cumsum, cont, overall), round, 2)) %>% 
+    # Round p-value to 4 decimal places. Might change this later
+    mutate(across(c(p), round, 4)) %>% 
+    # Only get the top 5 species
+    slice(1:5) 
+  
+}
+
+# Run the function and pass in the appropriate data
+# Remember the order is important because in the end I want the comparisons to be alphabetical
+
+# Region comparisons
+
+regSimperTable = rbind(
+  simDfMaker(summary(simRegion)$Maritimes_Gulf, simRegion$Maritimes_Gulf, "Maritimes_Gulf"),
+  simDfMaker(summary(simRegion)$Newfoundland_Gulf, simRegion$Newfoundland_Gulf, "Newfoundland_Gulf"),
+  simDfMaker(summary(simRegion)$Pacific_Gulf, simRegion$Pacific_Gulf, "Pacific_Gulf"),
+  simDfMaker(summary(simRegion)$Maritimes_Newfoundland, simRegion$Maritimes_Newfoundland, "Maritimes_Newfoundland"),
+  simDfMaker(summary(simRegion)$Maritimes_Pacific, simRegion$Maritimes_Pacific, "Maritimes_Pacific"),
+  simDfMaker(summary(simRegion)$Newfoundland_Pacific, simRegion$Newfoundland_Pacific, "Newfoundland_Pacific")
+)
 
 
+# Maritimes bay comparisons
+marBaySimperTable = rbind(      
+  simDfMaker(summary(simMar)$`Country Harbour_Argyle`, simMar$`Country Harbour_Argyle`, "Country Harbour_Argyle"),
+  simDfMaker(summary(simMar)$`Sober Island_Argyle`, simMar$`Sober Island_Argyle`, "Sober Island_Argyle"), 
+  simDfMaker(summary(simMar)$`Whitehead_Argyle`, simMar$`Whitehead_Argyle`, "Whitehead_Argyle"),
+  simDfMaker(summary(simMar)$`Country Harbour_Sober Island`, simMar$`Country Harbour_Sober Island`, "Country Harbour_Sober Island"),
+  simDfMaker(summary(simMar)$`Country Harbour_Whitehead`, simMar$`Country Harbour_Whitehead`, "Country Harbour_Whitehead"),
+  simDfMaker(summary(simMar)$`Whitehead_Sober Island`, simMar$`Whitehead_Sober Island`, "Whitehead_Sober Island")
+)
 
 
+# Gulf bay comparisons 
+gulfBaySimperTable = rbind(
+  simDfMaker(summary(simGulf)$`Cocagne_Malpeque`, simGulf$`Cocagne_Malpeque`, "Cocagne_Malpeque"),
+  simDfMaker(summary(simGulf)$`Cocagne_St. Peters`, simGulf$`Cocagne_St. Peters`, "Cocagne_St. Peters"), 
+  simDfMaker(summary(simGulf)$`Malpeque_St. Peters`, simGulf$`Malpeque_St. Peters`, "Malpeque_St. Peters")
+)
+
+
+# Pacific field season comparisons
+pacFieldSimperTable = rbind(
+  simDfMaker(summary(simPac)$`August 2020_March 2021`, simPac$`August 2020_March 2021`, "August 2020_March 2021"),
+  simDfMaker(summary(simPac)$`August 2020_June 2021`, simPac$`August 2020_June 2021`, "August 2020_June 2021"), 
+  simDfMaker(summary(simPac)$`September 2021_August 2020`, simPac$`September 2021_August 2020`, "September 2021_August 2020"),
+  simDfMaker(summary(simPac)$`March 2021_June 2021`, simPac$`March 2021_June 2021`, "March 2021_June 2021"), 
+  simDfMaker(summary(simPac)$`September 2021_March 2021`, simPac$`September 2021_March 2021`, "September 2021_March 2021"),
+  simDfMaker(summary(simPac)$`September 2021_June 2021`, simPac$`September 2021_June 2021`, "September 2021_June 2021")
+)
 
 
 
 #################################################################################
 # Things to delete but keeping just in case
+
+################################################################################
+### ALTERNATIVE METHODS 
+
+
+#### NMDS of SIMPER
+# ggplot() + 
+#   geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region, size = allRegionsWide$`Acartia spp.`), pch = 21, alpha= 0.9)+
+#   # Don't need to define colours. These just show up as default ggplot colours for 4 elements
+#   #scale_fill_manual(name = "Region")+ 
+#   scale_size(range=c(0.1, 20), name="Acartia")+
+#   annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=4, hjust=1)+
+#   #ggtitle("Atlantic and Pacific")+
+#   theme_bw()+
+#   theme(axis.text = element_blank(),
+#         axis.ticks = element_blank(),
+#         #legend.position = "none",
+#         panel.border=element_rect(color="black", size=1), 
+#         panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank(),
+#         plot.background = element_blank(),
+#         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+#         plot.title = element_text(size=18))
 
 ### Nested PERMANOVA
 # There are too many issues to comment on right now. I'll come back to this, maybe
