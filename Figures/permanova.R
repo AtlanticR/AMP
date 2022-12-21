@@ -401,8 +401,51 @@ ggplot() +
 
 
 
+################################################################################
+## DISPERSION
 
+# Create a function that reads in the results of the betadisper test and puts it all into 
+# a data frame so it can be exported as a csv
+# This includes the main test, but also the pairwise comparisons 
+dispCreateTable = function(permDispResults){
 
+  # Get the results from the main betadisper test (the table with the degrees of freedom, sum of squares etc.)
+  dispDf = data.frame(permDispResults$tab) %>%
+    tibble::rownames_to_column(var = "Source") %>%
+    # Create a "Total" row that sums a few (but not all) of the columns 
+    # I'm confused why the column names have to be written with ` ` when data.frame() gets rid of the spacing. Oh well, it works!
+    # It has something to do with the way everything is piped..
+    do(bind_rows(., data.frame(Source="Total", Df = sum(permDispResults$tab$Df), `Sum Sq` = sum(permDispResults$tab$`Sum Sq`),
+                               `Mean Sq` = sum(permDispResults$tab$`Mean Sq`)))) %>% 
+    # round some values to 3 decimal places
+    mutate(across(c(Sum.Sq, Mean.Sq, F), round, 3)) %>%
+    select(-N.Perm)
+  
+  
+  # Create data frame with t-values and permuted p-values
+  # Drop the first value from statistic column since it represents the overall f-value
+  dispPairwiseStats = data.frame(tstat = permDispResults$statistic[-1], permP = permDispResults$pairwise$permuted)
+  
+  # I think I have to break up this step from above or things don't work
+  # Make some adjustments to the table
+  # The comparisons are already in alphabetical order, yay!
+  dispPairwiseStats = dispPairwiseStats %>%
+    tibble::rownames_to_column(var = "Comparison") %>%
+    # I think I'm supposed to be taking the absolute value?? But maybe not!
+    mutate(tstat = abs(tstat)) %>%
+    mutate(across(c(tstat), round, 3))
+  
+  # Combine the ANOVA-like table with the pairwise comparison values
+  # This won't be combined perfectly but that's fine!
+  bind_rows(dispDf, dispPairwiseStats)
+
+}
+
+# Call the function to get the relevant dispersion test data in a data frame
+regDisptable = dispCreateTable(pairRegDisp)
+marDisptable = dispCreateTable(pairMarDisp)
+gulfDisptable = dispCreateTable(pairGulfDisp)
+pacDisptable = dispCreateTable(pairPacDisp)
 
 
 
