@@ -349,7 +349,7 @@ ggplot(disPac, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
-oacPNresults = adonis2(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])~
+pacPNresults = adonis2(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])~
           as.factor(pacPNred$facetFactor), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
@@ -485,18 +485,21 @@ pacFieldSimperTable = rbind(
 ## PERMANOVA
 
 
-
+# Create a function to combine adonis2, pairwise.adonis2 results in one data frame
+# It extracts the relevant data and manipulates data to be in correct format (e.g., round values, add extra columns, etc)
+# The resulting dataframe won't be perfect. But it gets it very close so I can just copy and paste the values into the tables already created in Google Docs
+# If I want an exact table to be exported (e.g., if using csasdown) it will need a bit of extra work
+# Function also passes in the "order" variable which specifies the order (alphabetical) the pairwise comparisons should be listed in
 permCreateTable = function(permResults, pairwiseDf, order){
 
   # Get the results from the regular permanova (adonis2 output)
   permResults = permResults %>%
     # Multiply R2 by 100 to convert to percentages
     mutate_at(vars(c(R2)), .funs = funs(.*100)) %>% 
-    # Add mean sum of squares (MS) column. Note: this adds a value in the "total" row. Manually remove this.
+    # Add mean sum of squares (MS) column. Note: this adds a cell in the "total" row. Will need to manually remove this.
     mutate(MS = Df/SumOfSqs, .before = R2) %>%
     # Round most columns to 2 decimal places
     mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
-  
   
   # Create a function to extract values from the pairwise.adonis2 function
   # Pass in the resulting object. It's  a list of lists so it's a bit confusing what's happening
@@ -524,31 +527,26 @@ permCreateTable = function(permResults, pairwiseDf, order){
   
 }
 
-# Make PERMANOVA tables to be exported that combine adonis2 and pairwise.adonis2 results
-# Also rearranges the pairwise.adonis2 in alphabetical order
-
-marPNtable = permCreateTable(marPNresults, marPairwisePN, order.marBays)
-gulfPNtable = permCreateTable(gulfPNresults, gulfPairwisePN, order.gulfBays)
-
-regPNresults
-
-
 # I want the pairwise comparisons to be in alphabetical order. Specify the order I want them to be in
 # Note that sometimes it is alphabetical based on the second bay name below (e.g., Argyle is 1st). But that's too much work to change. I already have the row names written out in the Google Doc, I just need the data
-
 order.regions = c("Maritimes_vs_Gulf", "Newfoundland_vs_Gulf", "Pacific_vs_Gulf", "Maritimes_vs_Newfoundland", "Maritimes_vs_Pacific", "Newfoundland_vs_Pacific")
 order.marBays = c("Country Harbour_vs_Argyle", "Sober Island_vs_Argyle", "Whitehead_vs_Argyle", "Country Harbour_vs_Sober Island", "Country Harbour_vs_Whitehead", "Whitehead_vs_Sober Island")
 order.gulfBays = c("Cocagne_vs_Malpeque", "Cocagne_vs_St. Peters", "Malpeque_vs_St. Peters")
 order.pacField = c("September 2021_vs_August 2020", "August 2020_vs_June 2021", "September 2021_vs_June 2021")
 
+# Make PERMANOVA tables to be exported that combine adonis2 and pairwise.adonis2 results
+# Also rearranges the pairwise.adonis2 in alphabetical order
+regPNtable = permCreateTable(regPNresults, regPairwisePN, order.regions)
+marPNtable = permCreateTable(marPNresults, marPairwisePN, order.marBays)
+gulfPNtable = permCreateTable(gulfPNresults, gulfPairwisePN, order.gulfBays)
+pacPNtable = permCreateTable(pacPNresults, pacPairwisePN, order.pacField)
 
 
 
-getPairwiseVals(regPairwisePN, order.regions)
-getPairwiseVals(pacPairwisePN, order.pacField)
 
 
-q = bind_rows(ocean.permdf, x)
+
+
 
 
 #################################################################################
