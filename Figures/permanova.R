@@ -396,6 +396,8 @@ ggplot() +
 # The simper function puts together data that is missing some data and values rounded
 # to the incorrect number of decimal places
 # I am making a function to put it all together so it is less of a mess to manually correct later
+# Note that I also want the comparisons to be listed in alphabetical order, so that complicates things
+# I am manually choosing the order they should be passed into the function. Then rbinding all data together
 
 
 # Make adjustments to the simper table so I can export it as a csv
@@ -426,9 +428,22 @@ simDfMaker = function(summaryObject, fullObject, comparisonNames){
 }
 
 # Run the function and pass in the appropriate data
+# Remember the order is important because in the end I want the comparisons to be alphabetical
 
-# For Maritimes bay comparisons
-marBaysSimperTable = rbind(      
+# Region comparisons
+
+regSimperTable = rbind(
+  simDfMaker(summary(simRegion)$Maritimes_Gulf, simRegion$Maritimes_Gulf, "Maritimes_Gulf"),
+  simDfMaker(summary(simRegion)$Newfoundland_Gulf, simRegion$Newfoundland_Gulf, "Newfoundland_Gulf"),
+  simDfMaker(summary(simRegion)$Pacific_Gulf, simRegion$Pacific_Gulf, "Pacific_Gulf"),
+  simDfMaker(summary(simRegion)$Maritimes_Newfoundland, simRegion$Maritimes_Newfoundland, "Maritimes_Newfoundland"),
+  simDfMaker(summary(simRegion)$Maritimes_Pacific, simRegion$Maritimes_Pacific, "Maritimes_Pacific"),
+  simDfMaker(summary(simRegion)$Newfoundland_Pacific, simRegion$Newfoundland_Pacific, "Newfoundland_Pacific")
+)
+
+
+# Maritimes bay comparisons
+marBaySimperTable = rbind(      
   simDfMaker(summary(simMar)$`Country Harbour_Argyle`, simMar$`Country Harbour_Argyle`, "Country Harbour_Argyle"),
   simDfMaker(summary(simMar)$`Sober Island_Argyle`, simMar$`Sober Island_Argyle`, "Sober Island_Argyle"), 
   simDfMaker(summary(simMar)$`Whitehead_Argyle`, simMar$`Whitehead_Argyle`, "Whitehead_Argyle"),
@@ -438,21 +453,25 @@ marBaysSimperTable = rbind(
 )
 
 
+# Gulf bay comparisons 
+gulfBaySimperTable = rbind(
+  simDfMaker(summary(simGulf)$`Cocagne_Malpeque`, simGulf$`Cocagne_Malpeque`, "Cocagne_Malpeque"),
+  simDfMaker(summary(simGulf)$`Cocagne_St. Peters`, simGulf$`Cocagne_St. Peters`, "Cocagne_St. Peters"), 
+  simDfMaker(summary(simGulf)$`Malpeque_St. Peters`, simGulf$`Malpeque_St. Peters`, "Malpeque_St. Peters")
+)
+  
+  
+# Pacific field season comparisons
+pacFieldSimperTable = rbind(
+  simDfMaker(summary(simPac)$`August 2020_March 2021`, simPac$`August 2020_March 2021`, "August 2020_March 2021"),
+  simDfMaker(summary(simPac)$`August 2020_June 2021`, simPac$`August 2020_June 2021`, "August 2020_June 2021"), 
+  simDfMaker(summary(simPac)$`September 2021_August 2020`, simPac$`September 2021_August 2020`, "September 2021_August 2020"),
+  simDfMaker(summary(simPac)$`March 2021_June 2021`, simPac$`March 2021_June 2021`, "March 2021_June 2021"), 
+  simDfMaker(summary(simPac)$`September 2021_March 2021`, simPac$`September 2021_March 2021`, "September 2021_March 2021"),
+  simDfMaker(summary(simPac)$`September 2021_June 2021`, simPac$`September 2021_June 2021`, "September 2021_June 2021")
+)
 
-# For Gulf bay comparisons 
-gulfBaySimperTable = rbind(simDf(simGulf$`Cocagne_Malpeque`, "Cocagne Malpeque"),
-                           simDf(simGulf$`Cocagne_St. Peters`, "Cocagne St. Peters"),
-                           simDf(simGulf$`Malpeque_St. Peters`, "Malpeque St. Peters"))
 
-x = summary(simGulf)$`Malpeque_St. Peters`
-
-
-q = rbind(hi, hi2)
-
-
-x = diff(c(0, hi))
-
-x = as.data.frame(summary(simRegion))
 
 
 
