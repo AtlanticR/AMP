@@ -27,6 +27,16 @@ breakupBayBay = function(regionData, bayName) {
     subset(facetFactor == bayName)
 }
 
+
+## TEST: WHAT IF I NEED THEM FROM COUNTS????
+# breakupBayBay = function(regionData, bayName) {
+#   # Change data with tows as rows, species as columns, counts as cells (with the metadata also as columns)
+#   regionData %>%
+#     pivot_wider(names_from = class, values_from = count) %>%
+#     mutate_all(~replace(., is.na(.), 0)) %>%
+#     subset(facetFactor == bayName)
+# }
+
 ################################################################################
 ## Now run the function for each bay
 # There is probably a more elegant way to do this so it's not repeated
