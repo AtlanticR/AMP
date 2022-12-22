@@ -371,13 +371,20 @@ summary(simPac)
 # No significance tests since only one bay and one field season (so far)
 
 
-
-
 ################################################################################
 ################################################################################
 ### EXTRACTING THE DATA FROM THE TESTS I JUST RAN
 
+# A lot of the tests above provide results that are not easy to copy and paste directly into tables
+# The section below does just that: extracts the information and puts it all in a data frame
+# Values are also rounded, columns added, rows added, absolute values taken, etc.
+# Note the final df may not be perfect (e.g., incorrect column names) , but it is in a "good enough" form 
+# since I already have the tables created in Google Docs
 
+# I am creating data frames for 3 of the tests: 
+# 1. Dispersion statistics (and the pairwise stats)
+# 2. PERMANOVA statistics (and pairwise stats)
+# 3. SIMPER
 
 ################################################################################
 ## DISPERSION
