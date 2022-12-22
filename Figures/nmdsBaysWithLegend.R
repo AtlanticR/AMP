@@ -198,7 +198,7 @@ wh.ycoord = c(1, 1, 1,
 wh.myLabel = c("Inner", "Inner", "Inner", "Mid", "Mid", "Mid", "Outer", "Outer", "Outer")
 wh.tidePhase = c("Low", "Mid-Falling", "High", "Low", "Mid-Falling", "High", "Low", "Mid-Falling", "High")
 
-wh.legDf = data.frame(xcoord, ycoord, myLabel, tidePhase)
+wh.legDf = data.frame(wh.xcoord, wh.ycoord, wh.myLabel, wh.tidePhase)
 
 wh.ggLeg = ggplot()+
   geom_point(data = wh.legDf, aes(x = as.factor(wh.xcoord), y = as.factor(wh.ycoord), pch = wh.tidePhase, fill = wh.myLabel), col = "black", size = 4)+
