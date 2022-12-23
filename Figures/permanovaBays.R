@@ -64,17 +64,17 @@ argStnDispResults = permutest(argStnDisp, pairwise = T, permutations = 9999)
 
 ## PERMANVOA
 set.seed(13)
-argPerm = adonis2(vegdist(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp."):ncol(argMinusMR)])) ~ tidePhase*myLabel, data = argMinusMR, perm = 9999)
+argPerm = adonis2(vegdist(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp."):ncol(argMinusMR)])) ~ tidePhase*myLabel, data = argMinusMR, permutations = 9999)
 
 # Note that this gives the same result as above. method = "bray is added instead of putting the data within vegdist() which creates a bray-curtis dissimilarity matrix
-adonis2(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp."):ncol(argMinusMR)]) ~ tidePhase*myLabel, data = argMinusMR, perm = 9999, method = "bray")
+adonis2(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp."):ncol(argMinusMR)]) ~ tidePhase*myLabel, data = argMinusMR, permutations = 9999, method = "bray")
 
 ################################################################################
 ### Whitehead
 
 # I won't be testing this but just including it here for reference
 # No residual component: therefore, won't test
-adonis2(sqrt(whitehead[,which(colnames(whitehead)== "Acartia spp."):ncol(whitehead)])~myLabel*tidePhase, data = whitehead, method = "bray", nperm = 9999)
+adonis2(sqrt(whitehead[,which(colnames(whitehead)== "Acartia spp."):ncol(whitehead)])~myLabel*tidePhase, data = whitehead, method = "bray", permutations = 9999)
 
 ################################################################################
 ### St. Peters
@@ -92,13 +92,13 @@ set.seed(13)
 stPStnDispResults = permutest(stPStnDisp, pairwise = T, permutations = 9999)
 
 set.seed(13)
-stPperm = adonis2(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp."):ncol(stPeters)])~tidePhase*myLabel, data = stPeters, method = "bray", nperm = 9999)
+stPperm = adonis2(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp."):ncol(stPeters)])~tidePhase*myLabel, data = stPeters, method = "bray", permutations = 9999)
 
 ################################################################################
 # Newfoundland
 # I DON'T THINK I SHOULD DO THIS
 # "No residual component"
-adonis2(sqrt(seArm2020[,which(colnames(seArm2020)== "Acartia spp."):ncol(seArm2020)])~tidePhase*myLabel, data = seArm2020, method = "bray", nperm = 9999)
+adonis2(sqrt(seArm2020[,which(colnames(seArm2020)== "Acartia spp."):ncol(seArm2020)])~tidePhase*myLabel, data = seArm2020, method = "bray", permutations = 9999)
 
 ################################################################################
 ### Pacific
@@ -117,7 +117,7 @@ aug2020StnDispResults = permutest(aug2020StnDisp, pairwise = T, permutations = 9
 
 # Run the permanova
 set.seed(13)
-aug2020perm = adonis2(sqrt(pacAug2020[,which(colnames(pacAug2020)== "Acartia spp."):ncol(pacAug2020)])~tidePhase*myLabel, data = pacAug2020, method = "bray", nperm = 9999)
+aug2020perm = adonis2(sqrt(pacAug2020[,which(colnames(pacAug2020)== "Acartia spp."):ncol(pacAug2020)])~tidePhase*myLabel, data = pacAug2020, method = "bray", permutations = 9999)
 
 
 ## June 2021
@@ -133,7 +133,7 @@ jun2021StnDispResults = permutest(jun2021StnDisp, pairwise = T, permutations = 9
 
 # Run the PERMANOVA
 set.seed(13)
-jun2021perm = adonis2(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)])~tidePhase*myLabel, data = pacJun2021, method = "bray", nperm = 9999)
+jun2021perm = adonis2(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)])~tidePhase*myLabel, data = pacJun2021, method = "bray", permutations = 9999)
 
 
 ## September 2021
@@ -148,7 +148,7 @@ sept2021TideDispResults = permutest(sept2021TideDisp, pairwise = T, permutations
 set.seed(13)
 sept2021StnDispResults = permutest(sept2021StnDisp, pairwise = T, permutations = 9999)
 
-sept2021perm= adonis2(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)])~tidePhase*myLabel, data = pacSept2021, method = "bray", nperm = 9999)
+sept2021perm= adonis2(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)])~tidePhase*myLabel, data = pacSept2021, method = "bray", permutations = 9999)
 
 
 
