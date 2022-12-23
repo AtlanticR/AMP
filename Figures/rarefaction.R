@@ -2,8 +2,26 @@
 ### RAREFACTION CURVES
 
 # Create rarefaction curves for each bay using the iNEXT R package
-# Also use the iNEXT 4 steps package for additional information about sample completeness
-# Undecided: should this also be for HT/LT comparisons, etc
+# I am also creating a data frame for each region with the asymptotic estimation of each bay 
+# i.e., # of observed taxa, asymptotic estimator, confidence intervals, etc
+
+# I am using the sample-based rarefaction approach (i.e., # of samples/tows on the x-axis)
+# Currently, I am unsure how to handle the issue of unequal tow volumes 
+# I think I will multiply the x-axis by the average tow volume? Or just menton that in the methods/results?
+
+# I am also unsure how to handle the issue of different taxonomic resolutions in the data
+# e.g., some measured to order, some to class, some to genus, etc. 
+# Currently just treating them as separate "taxa". TBD how to handle this 
+
+# Note, there are many different approaches for rarefaction
+# I am also including the approach with the vegan package. It does not do estimates for Shannon or Simpson diversity, like
+# iNEXT does
+# Also use the iNEXT 4 steps package for additional information about sample completeness. I think this is beyond the scope
+# of the project. I am also confused what "completeness" actually means. The definition in Chao et at al. 2020 is confusing
+# See https://esj-journals.onlinelibrary.wiley.com/doi/10.1111/1440-1703.12102
+
+# I am not actually conducting comparisons between bays. Just providing info for each bay (i.e, number of samples required, etc)
+# Therefore, I am not "rarefying by sample coverage" etc. or plotting the curves on the same graph for each bay. 
 
 ###########################################################################################################################
 # SETUP
@@ -76,28 +94,34 @@ baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
 
 # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
 bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
+
 # Plot the graph of diversity vs sampling units
+bay.gg = ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
+    scale_colour_manual(values=colourScheme) +
+    scale_fill_manual(values=colourScheme)+
+    xlab("Number of zooplankton tows")+
+    ylab("Taxa diversity")+
+    ggtitle(plotLetter)+
+    theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
+    theme(
+      axis.title.x = element_blank(),
+      legend.position = "none",
+      plot.margin=unit(c(0.1, 1, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
+      plot.title = element_text(size = 15),
+      plot.title.position = "plot")
 
-ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
-  scale_colour_manual(values=colourScheme) +
-  scale_fill_manual(values=colourScheme)+
-  xlab("Number of zooplankton tows")+
-  ylab("Taxa diversity")+
-  ggtitle(plotLetter)+
-  theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
-  theme(
-    axis.title.x = element_blank(),
-    legend.position = "none",
-    plot.margin=unit(c(0.1, 1, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
-    plot.title = element_text(size = 15),
-    plot.title.position = "plot")
+# Extract the asymptotic diversity estimates
+asy.df = data.frame(bay.inext$AsyEst) %>%
+  # Remove the Assemblage column
+  select(-c(Assemblage)) %>%
+  # Add a column with undetected species and put the column before the s.e. column
+  mutate(Undetected = Estimator-Observed, .before = s.e.) %>%
+  # Round numeric values to 2 decimal places
+  mutate_if(is.numeric, round, digits = 2) %>%
+  mutate(bay = bayData$facetFactor[1], .before = Diversity)
 
 
-# ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
-#   theme_bw()
-
-# For species diversity vs coverage
-# ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
+return(list(bay.gg, asy.df))
 
 }
 
@@ -107,14 +131,21 @@ countryInext = inextPrep(country, marColours[[2]], "(B) Country Harbour")
 soberInext = inextPrep(sober, marColours[[3]], "(C) Sober Island")
 whiteheadInext = inextPrep(whitehead, marColours[[4]], "(D) Whitehead")
 
-plot_grid(argInext, countryInext, soberInext, whiteheadInext, align = "v", ncol = 1)
+# Plots are stored in the first list element
+plot_grid(argInext[[1]], countryInext[[1]], soberInext[[1]], whiteheadInext[[1]], align = "v", ncol = 1)
+# Get the dataframe of asymptotic estimator results
+marInextResults = bind_rows(argInext[[2]], countryInext[[2]], soberInext[[2]], whiteheadInext[[2]])
+
 
 # Gulf
 cocagneInext = inextPrep(cocagne, gulfColours[[1]], "(A) Cocagne")
 malpequeInext = inextPrep(malpeque, gulfColours[[2]], "(B) Malpeque")
 stPetersInext = inextPrep(stPeters, gulfColours[[3]], "(C) St. Peters")
 
-plot_grid(cocagneInext, malpequeInext, stPetersInext, stPetersInext, align = "v", ncol = 1)
+# Add an extra plot of St. Peters so all plots in all regions are the same size
+plot_grid(cocagneInext[[1]], malpequeInext[[1]], stPetersInext[[1]], stPetersInext[[1]], align = "v", ncol = 1)
+gulfInextResults = bind_rows(cocagneInext[[2]], malpequeInext[[2]], stPetersInext[[2]])
+
 
 # Pacific
 pacAug2020Inext = inextPrep(pacAug2020, pacColours[[1]], "(A) August 2020")
@@ -123,11 +154,20 @@ pacJun2021Inext = inextPrep(pacJun2021, pacColours[[3]], "(C) June 2021")
 pacSept2021Inext = inextPrep(pacSept2021, pacColours[[4]], "(D) September 2021")
 
 # For now, add one extra plot so all the graphs look the same for each region
-plot_grid(pacAug2020Inext, pacJun2021Inext, pacSept2021Inext, pacSept2021Inext, align = "v", ncol = 1)
-
+plot_grid(pacAug2020Inext[[1]], pacJun2021Inext[[1]], pacSept2021Inext[[1]], pacSept2021Inext[[1]], align = "v", ncol = 1)
+pacInextResults = bind_rows(pacAug2020Inext[[2]], pacJun2021Inext[[2]], pacSept2021Inext[[2]])
 
 # Newfoundland
 seArm2020Inext = inextPrep(seArm2020, nlColours[[1]], "(A) Southeast Arm")
+plot_grid(seArm2020Inext[[1]], seArm2020Inext[[1]], seArm2020Inext[[1]], seArm2020Inext[[1]], align = "v", ncol = 1)
+seInextResults = seArm2020Inext[[2]]
+
+
+
+
+
+
+
 
 
 
@@ -177,6 +217,8 @@ inextCSRF = function(bayData, colourScheme, plotLetter){
   # For species diversity vs coverage
   # ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
   
+  return(bay.inext)
+  
 }
 
 
@@ -184,14 +226,6 @@ stPetersCSRF = inextCSRF(stPeters, "MediumBlue", "(B) St. Peters (Gulf)")
 nlCSRF = inextCSRF(seArm2020, "red", "(A) Southeast Arm (Newfoundland)")
 
 plot_grid(nlCSRF, stPetersCSRF, ncol = 1)
-
-
-
-
-
-
-
-
 
 
 
@@ -225,7 +259,6 @@ ggiNEXT(hi, facet.var = "Order.q", type = 1)
 
 
 
-
 # https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118445112.stat07841
 
 
@@ -234,11 +267,29 @@ ggiNEXT(hi, facet.var = "Order.q", type = 1)
 ### Using the iNEXT4steps methods
 
 
+argTaxa = argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]
+
+# Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
+argTaxa[argTaxa>0] = 1
+
+# I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
+# It never works!!! Instead, convert to incidence_freq lol
+# Need to get incidence freqncies by summing the columns
+argSums = as.vector(colSums(argTaxa))
+
+# It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
+argSumsList = list(append(argSums, nrow(argTaxa), after = 0))
+
+
+
+
 # I need to play around with this, but I think my data needs to be in data frame format
 arg4StepsPrep = as.data.frame(argSumsList)
 
 # Computes everything
 arg4Steps = iNEXT4steps(arg4StepsPrep, datatype = "incidence_freq", diversity = "TD")
+
+
 
 arg4Steps$summary # gives summary data
 arg4Steps$figure # gives all the figures together
