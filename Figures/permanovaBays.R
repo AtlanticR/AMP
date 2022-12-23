@@ -58,9 +58,9 @@ argStnDisp = betadisper(vegdist(sqrt(dataTest[,which(colnames(dataTest)== "Acart
 
 # Need to get permuted p-values. Use this to extract all the relevant information. I don't actually need pairwise comparisons, just including them for fun
 set.seed(13)
-permutest(argTideDisp, pairwise = T, permutations = 9999)
+argTideDispResults = permutest(argTideDisp, pairwise = T, permutations = 9999)
 set.seed(13)
-permutest(argStnDisp, pairwise = T, permutations = 9999)
+argStnDispResults = permutest(argStnDisp, pairwise = T, permutations = 9999)
 
 ## PERMANVOA
 set.seed(13)
