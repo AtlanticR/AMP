@@ -36,33 +36,6 @@ source("Figures/colourPchSchemes.R")
 install_github('AnneChao/iNEXT.4steps')
 library("iNEXT.4steps")
 
-###########################################################################################################################
-### Practice with the vegan package
-# The vegan package also creates rarefaction curves but it is only for richness. And does not do extrapolation although asymptotic estimators can be calculated
-
-# I think I finally get it
-# "exact" is "sample-based rarefaction". Some say that sample-based is not true rarefaction, it is averaged species accumulation curves
-# They also state that "rarefaction" is "individual-based rarefaction". This is the distinction the vegan package makes and it's why it's so confusing
-# Others say this distinction is dumb and both count as "rarefaction". I am going to call them both "rarefaction"
-
-# use the specaccum function for both individual-based and sample-based rarefaction
-# The "exact" method is for sample-based rarefaction. It is also called the "Mao Tau" estimator 
-# see https://academic.oup.com/jpe/article/5/1/3/1296712 and vegan help for specaccum
-
-# Make a plot for the Argyle data just to test it
-
-# Think about this some more: I think rounding (especially if close to zero) causes slightly different plots
-# But I will be using sample-based rarefaction where it's just presence-absence. So... it's not a huge issue?
-
-# Make plots of both sample-based and individual-based
-plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method= "exact")) # sample-based
-
-# Plot individual-based rarefaction over top. Data need to be rounded. (individual-based should be higher)
-lines(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), lty = 4)
-
-# I think it would make sense if individual-based rarefaction was instead plotted with xvar = "individuals" as default
-# It is odd to me that is not the default (it scales the x-axis to "Sites" which is confusing)
-plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), xvar = "individuals")
 
 ###########################################################################################################################
 ### With the iNEXT package
@@ -163,17 +136,39 @@ plot_grid(seArm2020Inext[[1]], seArm2020Inext[[1]], seArm2020Inext[[1]], seArm20
 seInextResults = seArm2020Inext[[2]]
 
 
+###########################################################################################################################
+### Practice with the vegan package
+# The vegan package also creates rarefaction curves but it is only for richness. And does not do extrapolation although asymptotic estimators can be calculated
 
+# I think I finally get it
+# "exact" is "sample-based rarefaction". Some say that sample-based is not true rarefaction, it is averaged species accumulation curves
+# They also state that "rarefaction" is "individual-based rarefaction". This is the distinction the vegan package makes and it's why it's so confusing
+# Others say this distinction is dumb and both count as "rarefaction". I am going to call them both "rarefaction"
 
+# use the specaccum function for both individual-based and sample-based rarefaction
+# The "exact" method is for sample-based rarefaction. It is also called the "Mao Tau" estimator 
+# see https://academic.oup.com/jpe/article/5/1/3/1296712 and vegan help for specaccum
 
+# Make a plot for the Argyle data just to test it
 
+# Think about this some more: I think rounding (especially if close to zero) causes slightly different plots
+# But I will be using sample-based rarefaction where it's just presence-absence. So... it's not a huge issue?
 
+# Make plots of both sample-based and individual-based
+plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method= "exact")) # sample-based
+
+# Plot individual-based rarefaction over top. Data need to be rounded. (individual-based should be higher)
+lines(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), lty = 4)
+
+# I think it would make sense if individual-based rarefaction was instead plotted with xvar = "individuals" as default
+# It is odd to me that is not the default (it scales the x-axis to "Sites" which is confusing)
+plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), xvar = "individuals")
 
 
 
 ###########################################################################################################################
-# For CSRF meeting I only want Newfoundland and St. Peters data
-
+# FOR PRESENTATIONS
+# For CSRF meeting I only want Newfoundland (poorly-sampled, curve doesn't level off) and St. Peters data (well-sampled, curve levels off)
 
 inextCSRF = function(bayData, colourScheme, plotLetter){
   
@@ -217,7 +212,7 @@ inextCSRF = function(bayData, colourScheme, plotLetter){
   # For species diversity vs coverage
   # ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
   
-  return(bay.inext)
+  #return(bay.inext)
   
 }
 
@@ -228,8 +223,8 @@ nlCSRF = inextCSRF(seArm2020, "red", "(A) Southeast Arm (Newfoundland)")
 plot_grid(nlCSRF, stPetersCSRF, ncol = 1)
 
 
-
-
+###########################################################################################################################
+# Play around with HT vs LT data to see if either is adequately sampled
 
 # Test breaking up HT/LT data
 
@@ -258,14 +253,9 @@ ggiNEXT(hi, facet.var = "Order.q", type = 1)
 
 
 
-
-# https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118445112.stat07841
-
-
-
 ###########################################################################################################################
-### Using the iNEXT4steps methods
-
+### Using the iNEXT4steps methods i.e., Chao et al. (2020)
+# Recall that iNEXT.4steps is not in CRAN yet!!
 
 argTaxa = argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]
 
@@ -281,15 +271,11 @@ argSums = as.vector(colSums(argTaxa))
 argSumsList = list(append(argSums, nrow(argTaxa), after = 0))
 
 
-
-
 # I need to play around with this, but I think my data needs to be in data frame format
 arg4StepsPrep = as.data.frame(argSumsList)
 
 # Computes everything
 arg4Steps = iNEXT4steps(arg4StepsPrep, datatype = "incidence_freq", diversity = "TD")
-
-
 
 arg4Steps$summary # gives summary data
 arg4Steps$figure # gives all the figures together
