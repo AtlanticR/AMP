@@ -2,7 +2,7 @@
 ################################################################################
 ### EXTRACTING THE DATA FROM THE TESTS I JUST RAN
 
-# A lot of the tests above provide results that are not easy to copy and paste directly into tables
+# For many of the multivariate stats, the results are not easy to copy and paste directly into tables
 # The section below does just that: extracts the information and puts it all in a data frame
 # Values are also rounded, columns added, rows added, absolute values taken, etc.
 # Note the final df may not be perfect (e.g., incorrect column names) , but it is in a "good enough" form 
@@ -11,9 +11,15 @@
 # I am creating data frames for 3 of the tests: 
 # 1. Dispersion statistics (and the pairwise stats)
 # 2. PERMANOVA statistics (and pairwise stats)
-# 3. SIMPER
+# 3. SIMPER (maybe not for bay comparisons. tbd)
 
 ################################################################################
+### Set up
+
+# Read in the appropriate scripts
+source("Figures/permanovaRegions.R") # for permanova, dispersion & simper between regions
+source("Figures/permanovaBays.R") # for permanova & dispersion for bays
+
 ## DISPERSION
 
 # Create a function that reads in the results of the betadisper test and puts it all into 
@@ -54,12 +60,30 @@ dispCreateTable = function(permDispResults){
 }
 
 # Call the function to get the relevant dispersion test data in a data frame
-regDisptable = dispCreateTable(pairRegDisp)
-marDisptable = dispCreateTable(pairMarDisp)
-gulfDisptable = dispCreateTable(pairGulfDisp)
-pacDisptable = dispCreateTable(pairPacDisp)
 
+# For the data from permanovaRegions.R
+regDispTable = dispCreateTable(pairRegDisp)
+marDispTable = dispCreateTable(pairMarDisp)
+gulfDispTable = dispCreateTable(pairGulfDisp)
+pacDispTable = dispCreateTable(pairPacDisp)
 
+# For the data from permanovaBays.R
+# Note that pairwise comparisons will be included in the table, but I won't be using these due to the low sample size
+# Each bay will have two tables: one for tide effects, one for station effects (must be done separately with betadisper)
+argTideDispTable = dispCreateTable(argTideDispResults)
+argStnDispTable = dispCreateTable(argStnDispResults)
+ 
+stPTideDispTable = dispCreateTable(stPTideDispResults)
+stPStnDispTable = dispCreateTable(stPStnDispResults) 
+
+aug2020TideDispTable = dispCreateTable(aug2020TideDispResults)
+aug2020StnDispTable = dispCreateTable(aug2020StnDispResults)
+
+jun2021TideDispTable = dispCreateTable(jun2021TideDispResults)
+jun2021StnDispTable = dispCreateTable(jun2021StnDispResults)
+
+sept2021TideDispTable = dispCreateTable(sept2021TideDispResults) 
+sept2021StnDispResults = dispCreateTable(sept2021TideDispResults)
 
 #################################################################################
 ## PERMANOVA
@@ -115,10 +139,21 @@ order.pacField = c("September 2021_vs_August 2020", "August 2020_vs_June 2021", 
 
 # Make PERMANOVA tables to be exported that combine adonis2 and pairwise.adonis2 results
 # Also rearranges the pairwise.adonis2 in alphabetical order
+
+# For the data from permanovaRegions.R
 regPNtable = permCreateTable(regPNresults, regPairwisePN, order.regions)
 marPNtable = permCreateTable(marPNresults, marPairwisePN, order.marBays)
 gulfPNtable = permCreateTable(gulfPNresults, gulfPairwisePN, order.gulfBays)
 pacPNtable = permCreateTable(pacPNresults, pacPairwisePN, order.pacField)
+
+# for the data from permanovaBays.R
+# Note, no pairwise comparisons were done, so just pass in NAs for the pairwise things
+argPNtable = permCreateTable(argPerm, NA, NA)
+stPpermTable = permCreateTable(stPperm, NA, NA)
+aug2020permTable = permCreateTable(aug2020perm, NA, NA)
+jun2021permTable = permCreateTable(jun2021perm, NA, NA)
+sept2021permTable = permCreateTable(sept2021perm, NA, NA)
+
 
 
 ################################################################################
