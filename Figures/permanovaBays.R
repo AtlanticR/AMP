@@ -22,6 +22,8 @@
 # This code is very similar to that in permanova.R
 # I have broken up the tests for each bay since the approach is very slightly different. And to avoid one huge script
 
+# To get the results in tables that are easier to copy and paste into Google Docs/Word, use the code found in:
+# Figures/permanovaTables.R
 
 # A few more notes for myself:
 # For dispersion tests, I am using spatial median as the definition of centroid
@@ -36,11 +38,10 @@
 
 ################################################################################
 ################################################################################
-# Set-up
+### Set-up
 
 # Read in script that has the plankton counts in each bay
 source("DataProcessing/bayBreakdown.R")
-
 
 ################################################################################
 ### Argyle
@@ -95,7 +96,8 @@ set.seed(13)
 stPperm = adonis2(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp."):ncol(stPeters)])~tidePhase*myLabel, data = stPeters, method = "bray", permutations = 9999)
 
 ################################################################################
-# Newfoundland
+### Newfoundland
+
 # I DON'T THINK I SHOULD DO THIS
 # "No residual component"
 adonis2(sqrt(seArm2020[,which(colnames(seArm2020)== "Acartia spp."):ncol(seArm2020)])~tidePhase*myLabel, data = seArm2020, method = "bray", permutations = 9999)
