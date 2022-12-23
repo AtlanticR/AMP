@@ -215,11 +215,12 @@ inextCSRF = function(bayData, colourScheme, plotLetter){
   #return(bay.inext)
   
 }
-
-
+ 
+# Pass in the dataframe of species counts, colour, and label
 stPetersCSRF = inextCSRF(stPeters, "MediumBlue", "(B) St. Peters (Gulf)")
 nlCSRF = inextCSRF(seArm2020, "red", "(A) Southeast Arm (Newfoundland)")
 
+#  Plot them both together
 plot_grid(nlCSRF, stPetersCSRF, ncol = 1)
 
 
