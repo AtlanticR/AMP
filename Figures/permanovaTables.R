@@ -83,7 +83,7 @@ jun2021TideDispTable = dispCreateTable(jun2021TideDispResults)
 jun2021StnDispTable = dispCreateTable(jun2021StnDispResults)
 
 sept2021TideDispTable = dispCreateTable(sept2021TideDispResults) 
-sept2021StnDispResults = dispCreateTable(sept2021TideDispResults)
+sept2021StnDispResults = dispCreateTable(sept2021StnDispResults)
 
 #################################################################################
 ## PERMANOVA
