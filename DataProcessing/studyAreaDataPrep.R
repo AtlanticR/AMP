@@ -74,6 +74,31 @@ nsLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFile
 nbLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/MASMPS_Data.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 
+# Newfoundland
+# I used the Nova Scotia Land Use Atlas: https://www.gov.nl.ca/landuseatlas/details/
+# However, I was not sure how to extract the data as shapefiles
+# Instead, I zoomed into the study area and saw two leases and used the Measurement --> Location tool to get the coordinates of the vertices
+# I copied and pasted these into csv files
+# Leases are for Crown title 118040 and 108739. Both say "Issue-Lease". Original title owner: Terry Mills
+# 500m blue aquaculture buffer around leases confirm these are aquaculture leases
+# If there were more leases, I would find a better way to obtain shapefiles, but this will work for now!
+lease1Sf = sfheaders::sf_polygon(
+  obj = read.csv("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/NLlease108739.csv"),
+  x = "Lon",
+  y = "Lat"
+)
+
+lease2Sf = sfheaders::sf_polygon(
+  obj = read.csv("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/NLlease118040.csv"),
+  x = "Lon",
+  y = "Lat"
+)
+
+# Set csr to WGS 84 and then reproject to UTM zone 21 for both leases
+sf::st_crs(lease1Sf) = 4326
+st_transform(lease1Sf, crs = "+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")
+sf::st_crs(lease2Sf) = 4326
+st_transform(lease2Sf, crs = "+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
 ################################################################################
 ## DFO regions
