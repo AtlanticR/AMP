@@ -36,6 +36,7 @@ source("Figures/colourPchSchemes.R")
 install_github('AnneChao/iNEXT.4steps')
 library("iNEXT.4steps")
 
+# Test with updated token
 
 ###########################################################################################################################
 ### With the iNEXT package
