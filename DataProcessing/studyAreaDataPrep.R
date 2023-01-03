@@ -100,6 +100,16 @@ st_transform(lease1Sf, crs = "+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs 
 sf::st_crs(lease2Sf) = 4326
 st_transform(lease2Sf, crs = "+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
+# Pacific
+# Shellfish leases are from Tantalis crown features
+# Available from various different sources but I found this is best: https://fisheries-map-gallery-crm.hub.arcgis.com/datasets/governmentofbc::tantalis-crown-tenures
+# If from Open Data, you can't click on many of the polygons to see what the features represent
+# Filter by TENURE_PURPOSE == "AQUACULTURE" and TENURE_SUBPURPOSE == "SHELL FISH"
+# Also turn "filter as map moves" on, so only data in the view get downloaded. Export as a shapefile.
+# Note for now I am combining leases that have status "Application" AND "Tenured"
+pacLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/TANTALIS_-_Crown_Tenures.shp"), sp::CRS("+proj=utm +zone=9 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
+
+
 ################################################################################
 ## DFO regions
 # Data are from here: https://open.canada.ca/data/en/dataset/3862c9fa-dbeb-4f00-ac03-c5da6551bf00
