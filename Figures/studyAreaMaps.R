@@ -268,6 +268,8 @@ ggSeArmMap =
   ggplot()+
     geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
+    geom_sf(data = lease1Sf, col = "red", fill = "pink")+
+    geom_sf(data = lease2Sf, col = "red", fill = "pink")+
     coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+ # UTM zone 21N
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
     ggtitle("(L) Southeast Arm")+
