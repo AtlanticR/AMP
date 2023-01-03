@@ -46,7 +46,8 @@ source("DataProcessing/studyAreaDataPrep.R") # preps all the data for plotting
 # Multiple areas on top of each other, so the grey doesn't look grey. Parts look a lot darker.
 canMap = 
   ggplot()+
-  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
+  geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
+  # geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
   scale_fill_manual(values=regionMapCols)+
   geom_sf(data = canada_map, linewidth = 0.01, fill = NA, col = "black")+ # this shows the provinces. Make the linewidth very small
   # Note that if an sf object is not plotted first, you need to use coord_sf to situate everything
@@ -68,8 +69,10 @@ canMap =
 # Pacific inset
 pacMap = 
   ggplot()+
-  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
-  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = "red", size = 3)+ # outline square for Lemmens (why did this work?)
+  geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
+  # geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
+  # geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = "red", size = 3)+ # outline square for Lemmens (why did this work?)
+  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # outline square for Lemmens (why did this work?)
   theme_bw()+
   ggtitle("(B) Pacific")+
   coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+ # set map extents and define coordinate system
@@ -83,15 +86,21 @@ pacMap =
 # Atlantic inset
 atlMap = 
   ggplot()+
-  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
+  geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
+  # geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
   # Add markers (red outlines) for each of the bays that were sampled
   # "Tr" refers to data that were transects. "Pun" is "punctual stations" (discrete locations)
   # This only plots one point per region (the first one). 
   # Could have added as geom_rect, but this might be better if I want them filled
-  geom_sf(data = marTrMap, pch = 22, col = "red", fill = "red", size = 3)+ 
-  geom_sf(data = marPunMap, pch = 22, col = "red", fill = "red", size = 3)+
-  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = "red", size = 3)+
-  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = "red", size = 3)+
+  geom_sf(data = marTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # stroke changes width of square outline
+  geom_sf(data = marPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
+  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
+  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ 
+  # Used filled squares if displaying DFO regions so they show up better
+  # geom_sf(data = marTrMap, pch = 22, col = "red", fill = "red", size = 3)+ 
+  # geom_sf(data = marPunMap, pch = 22, col = "red", fill = "red", size = 3)+
+  # geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = "red", size = 3)+
+  # geom_sf(data = nlPunMap, pch = 22, col = "red", fill = "red", size = 3)+
   theme_bw()+
   coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
   scale_fill_manual(values = regionMapCols)+
@@ -129,6 +138,7 @@ atlMap =
 ggLemMap = ggplot()+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
+  geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
   # crs = 32609 is UTM zone 9
   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+ # see note above about scale bar
@@ -147,7 +157,7 @@ ggLemMap = ggplot()+
 # Argyle                   
 ggArgMap = ggplot()+
   geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+ # add shellfish leases
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
   # Data are transects. In theory, they could be plotted as lines using geom_sf
   # However, idk how to get the data into the right format for that lol. So I am using geom_segment to connect between start/end coordinates of the tow
   geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
@@ -164,7 +174,7 @@ ggArgMap = ggplot()+
 # Sober Island
 ggSobMap = ggplot()+
   geom_polygon(soberCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
   geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.70, linewidth = 2.5, lineend = "round")+
   coord_sf(xlim = c(541154, 542825), ylim = c(4964661, 4966410), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
@@ -179,7 +189,7 @@ ggSobMap = ggplot()+
 # Country Harbour                   
 ggChMap = ggplot()+
   geom_polygon(countryCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
   geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
@@ -196,7 +206,7 @@ ggChMap = ggplot()+
 # Whitehead
 ggWhMap = ggplot()+
   geom_polygon(whiteheadCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+  geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
   geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+  # Use this instead of coord_map to get the scalebar thing to work. 
   coord_sf(xlim = c(641669, 647881), ylim = c(5013443, 5019630), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(4.1, "cm"))+
@@ -216,7 +226,7 @@ ggWhMap = ggplot()+
 ggCocMap = 
   ggplot()+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-    geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+    geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
     coord_sf(xlim = c(373453, 382190), ylim = c(5131250, 5140014), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
@@ -232,7 +242,7 @@ ggCocMap =
 ggMalMap = 
   ggplot()+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-    geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+    geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
     coord_sf(xlim = c(431139, 450611), ylim = c(5147976, 5167271), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
@@ -248,7 +258,7 @@ ggMalMap =
 ggStPMap = 
   ggplot()+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-    geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "red", linewidth = 0.1)+
+    geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
     coord_sf(xlim = c(519487, 532582), ylim = c(5136283, 5149220), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
@@ -268,8 +278,8 @@ ggSeArmMap =
   ggplot()+
     geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
-    geom_sf(data = lease1Sf, col = "red", fill = "pink")+
-    geom_sf(data = lease2Sf, col = "red", fill = "pink")+
+    geom_sf(data = lease1Sf, col = "#cc3d6f", fill = "pink")+
+    geom_sf(data = lease2Sf, col = "#cc3d6f", fill = "pink")+
     coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+ # UTM zone 21N
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
     ggtitle("(L) Southeast Arm")+
