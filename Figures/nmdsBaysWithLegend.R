@@ -490,4 +490,3 @@ grid.arrange(pacNMDSbays[[1]], pacNMDSbays[[2]], pacNMDSbays[[3]], pac.ggLeg, nr
                                                  c(3,3,3, NA, 4, NA),
                                                  c(3,3,3, NA, NA, NA)))
 
-
