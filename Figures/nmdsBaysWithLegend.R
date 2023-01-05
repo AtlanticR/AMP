@@ -47,7 +47,7 @@ arg.ycoord = c(1, 1, 1,
 
 # Corresponding station and tide information
 # Remember that (1,1) is first on plot (bottom left). Will therefore be "Inner" station, "Low" tide.
-arg.myLabel = c("Inner", "Inner", "Inner", "Mid", "Mid", "Mid", "Outer", "Outer", "Outer")
+arg.myLabel = c("Inner", "Inner", "Inner", "Mid", "Missing", "Mid", "Outer", "Outer", "Outer")
 arg.tidePhase = c("Low", "Mid-Rising", "High", "Low", "Mid-Rising", "High", "Low", "Mid-Rising", "High")
 
 # Put all of this in a data frame. Take a look at data frame to see how info is related.
