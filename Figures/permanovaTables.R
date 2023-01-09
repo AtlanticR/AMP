@@ -168,14 +168,12 @@ aug2020permTable = permCreateTable(aug2020perm, pacAug2020StnPairwise, order.aug
 jun2021permTable = permCreateTable(jun2021perm, NA, NA) # None were significant. No pairwise comparisons
 sept2021permTable = permCreateTable(sept2021perm, pacSept2021StnPairwise, order.sept2021)
 
-write.csv(argPNtable, "argPNtable.csv")
-write.csv(stPpermTable, "stPpermTable.csv")
-write.csv(aug2020permTable, "aug2020permTable.csv")
-write.csv(jun2021permTable, "jun2021permTable.csv")
-write.csv(sept2021permTable, "sept2021permTable.csv")
+# write.csv(argPNtable, "argPNtable.csv")
+# write.csv(stPpermTable, "stPpermTable.csv")
+# write.csv(aug2020permTable, "aug2020permTable.csv")
+# write.csv(jun2021permTable, "jun2021permTable.csv")
+# write.csv(sept2021permTable, "sept2021permTable.csv")
 
-
-pacSept2021StnPairwise$
 
 ################################################################################
 ## SIMPER 
@@ -281,7 +279,7 @@ stPSimperTableStn = rbind(
 aug2020SimperTableStn = rbind(
   simDfMaker(summary(simAug2020Stn)$Mid_Inner, simAug2020Stn$Mid_Inner, "Mid_Inner"),
   simDfMaker(summary(simAug2020Stn)$Outer_Inner, simAug2020Stn$Outer_Inner, "Outer_Inner"),
-  simDfMaker(summary(simAug2020Stn)$Mid_Outer, simAug2020Stn$Mid_Outer, "Mid_Outer") 
+  simDfMaker(summary(simAug2020Stn)$Outer_Mid, simAug2020Stn$Outer_Mid, "Outer_Mid") 
 )
 
 # Pacific Sept 2021
@@ -291,9 +289,12 @@ sept2021SimperTableStn = rbind(
   simDfMaker(summary(simSept2021Stn)$Outer_Mid, simSept2021Stn$Outer_Mid, "Outer_Mid") 
 )
 
-
-
-
+# write.csv(argyleSimperTableTide, "argyleSimperTableTide.csv")
+# write.csv(argyleSimperTableStn, "argyleSimperTableStn.csv")
+# write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
+# write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
+# write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
+# write.csv(sept2021SimperTableStn, "sept2021SimperTableStn.csv")
 
 
 
