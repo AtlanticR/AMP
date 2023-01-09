@@ -75,7 +75,7 @@ nbLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFile
 peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 
 # Newfoundland
-# I used the Nova Scotia Land Use Atlas: https://www.gov.nl.ca/landuseatlas/details/
+# I used the Newfoundland Land Use Atlas: https://www.gov.nl.ca/landuseatlas/details/
 # However, I was not sure how to extract the data as shapefiles
 # Instead, I zoomed into the study area and saw two leases and used the Measurement --> Location tool to get the coordinates of the vertices
 # I copied and pasted these into csv files
