@@ -71,7 +71,8 @@ stationCol = c("Outer" = "#82C738",
 stationColNL = c("Outer" = "#C69739",
                  "Mid-Outer" = "#29C651",
                  "Mid-Inner" = "#3968C6",
-                 "Inner" = "#C639AE")
+                 "Inner" = "#C639AE",
+                 "Missing" = "white")
 
 
 
