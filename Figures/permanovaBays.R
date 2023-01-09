@@ -167,130 +167,78 @@ sept2021StnDispResults = permutest(sept2021StnDisp, pairwise = T, permutations =
 sept2021perm= adonis2(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)])~tidePhase*myLabel, data = pacSept2021, method = "bray", permutations = 9999)
 
 
-
+####################################################################################################################################
+####################################################################################################################################
+####################################################################################################################################
 ##### NUMBER OF UNIQUE PERMUTATIONS
-# NUM
 
-# 
-# hh = how(plots = pacJun2021$myLabel)
-# numPerms(hh)
-# 
-# x = adonis2(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp."):ncol(argMinusMR)]) ~ tidePhase*myLabel, data = argMinusMR, permutations = 999, method = "bray")
-# 
-# 
+
 # ## Set up factors for the Plots and Blocks
 # plts <- gl(4, 10) ## 4 Plots of 10 samples each
 # blks <- gl(2, 20) ## 2 Blocks of 20 samples each
 # 
 # ## permutation design
 # h1 <- how(within = Within(type = "series", mirror = TRUE),
-#           plots = Plots(strata = plts, type = "series"),
-#           blocks = blks)
+#           plots = Plots(strata = plts, type = "series"))
 # 
-# numPerms(h1)
+# v= 1:20
 # 
-# permute::getAllperms(x)
-# 
+# numPerms(nobs(plts), h1)
 # 
 # 
+# perm <- with(stPeters, how(blocks = tidePhase, complete = F, maxperm = 9999))
+# 
+# numPerms(nobs(stPeters$tidePhase), perm)
+# 
+# adonis2(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp."):ncol(stPeters)]) ~ tidePhase*myLabel, data = stPeters, permutations = perm, method = "bray")
 # 
 # 
-# ## permutation design --- see ?how
-# ctrl <- how() ## defaults to freely exchangeable
-# ## vector input
-# v <- 1:10
-# (obs <- nobs(v))
-# numPerms(v, control = ctrl)
-# ## integer input
-# len <- length(v)
-# (obs <- nobs(len))
-# numPerms(len, control = ctrl)
-# ## new design, objects are a time series
-# ctrl <- how(within = Within(type = "series"))
-# numPerms(v, control = ctrl)
-# ## number of permutations possible drastically reduced...
-# ## ...turn on mirroring
-# ctrl <- how(within = Within(type = "series", mirror = TRUE))
-# numPerms(v, control = ctrl)
-# ## Try blocking --- 2 groups of 5
-# bl <- numPerms(v, control = how(blocks = gl(2,5)))
-# bl
-# ## should be same as
-# pl <- numPerms(v, control = how(plots = Plots(strata = gl(2,5))))
+# perm2 <- with(pacJun2021, how(blocks = tidePhase, complete = F, maxperm = 9999))
+# adonis2(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)]) ~ tidePhase*myLabel, data = pacJun2021, permutations = perm2, method = "bray")
 # 
 # 
-# bl = numPerms(v, control = how(blocks = gl(2,5)))
-# bl
+# 
+# adonis2(sqrt(sober[,which(colnames(sober)== "Acartia spp."):ncol(sober)]) ~ tidePhase*myLabel, data = sober, permutations = 9999, method = "bray")
+# 
+# 
+# 
+# thedata <- data.frame(
+#   score = c(replicate(4,sample(1:3))),
+#   judge = rep(1:4,each=3),
+#   wine  = rep.int(1:3,4)  
+# )
+# 
+# 
+# 
+# ctrl = how(within = Within("free"), 
+#            plots = Plots(strata = factor(score$hi)),
+#            complete = T)
+# 
 # numPerms(10, ctrl)
 # 
-
-
-## Set up factors for the Plots and Blocks
-plts <- gl(4, 10) ## 4 Plots of 10 samples each
-blks <- gl(2, 20) ## 2 Blocks of 20 samples each
-
-## permutation design
-h1 <- how(within = Within(type = "series", mirror = TRUE),
-          plots = Plots(strata = plts, type = "series"))
-
-v= 1:20
-
-numPerms(nobs(plts), h1)
-
-
-perm <- with(stPeters, how(blocks = tidePhase, complete = F, maxperm = 9999))
-
-numPerms(nobs(stPeters$tidePhase), perm)
-
-adonis2(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp."):ncol(stPeters)]) ~ tidePhase*myLabel, data = stPeters, permutations = perm, method = "bray")
-
-
-perm2 <- with(pacJun2021, how(blocks = tidePhase, complete = F, maxperm = 9999))
-adonis2(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)]) ~ tidePhase*myLabel, data = pacJun2021, permutations = perm2, method = "bray")
-
-
-
-adonis2(sqrt(sober[,which(colnames(sober)== "Acartia spp."):ncol(sober)]) ~ tidePhase*myLabel, data = sober, permutations = 9999, method = "bray")
-
-
-
-thedata <- data.frame(
-  score = c(replicate(4,sample(1:3))),
-  judge = rep(1:4,each=3),
-  wine  = rep.int(1:3,4)  
-)
-
-
-
-ctrl = how(within = Within("free"), 
-           plots = Plots(strata = factor(score$hi)),
-           complete = T)
-
-numPerms(10, ctrl)
-
-CTRL <- how(within=Within("free"),
-            plots=Plots(strata=factor(thedata$judge)))
-numPerms(nobs(thedata),CTRL)
-
-myData = data.frame(
-  judge = c(rep("A",5), rep("B", 5)),
-  nums = c(1:10)
-)
-
-# Create 2 groups of 5
-myVec = c(rep("A",5), rep("B", 5))
-
-# Define the permutation scheme
-hh <- how(within = Within(type = "free"),
-          blocks = as.factor(myVec))
-
-# Calculate number of permutations
-numPerms(nobs(myVec), hh)
-
-# Should be
-numGroups = 2
-numObs = 3
-factorial(numObs*numGroups)/(factorial(numObs)*(factorial(numGroups)^numObs))
+# CTRL <- how(within=Within("free"),
+#             plots=Plots(strata=factor(thedata$judge)))
+# numPerms(nobs(thedata),CTRL)
+# 
+# myData = data.frame(
+#   judge = c(rep("A",5), rep("B", 5)),
+#   nums = c(1:10)
+# )
+# 
+# # Create 2 groups of 5
+# myVec = c(rep("A",5), rep("B", 5))
+# 
+# # Define the permutation scheme
+# hh <- how(within = Within(type = "free"),
+#           blocks = as.factor(myVec))
+# 
+# # Calculate number of permutations
+# numPerms(nobs(myVec), hh)
+# 
+# # Should be
+# numGroups = 2
+# numObs = 3
+# factorial(numObs*numGroups)/(factorial(numObs)*(factorial(numGroups)^numObs))
 
 # 
 # q
