@@ -70,20 +70,27 @@ pacDispTable = dispCreateTable(pairPacDisp)
 # For the data from permanovaBays.R
 # Note that pairwise comparisons will be included in the table, but I won't be using these due to the low sample size
 # Each bay will have two tables: one for tide effects, one for station effects (must be done separately with betadisper)
-argTideDispTable = dispCreateTable(argTideDispResults)
-argStnDispTable = dispCreateTable(argStnDispResults)
- 
-stPTideDispTable = dispCreateTable(stPTideDispResults)
-stPStnDispTable = dispCreateTable(stPStnDispResults) 
+argDispTable = rbind(dispCreateTable(argTideDispResults),
+                         dispCreateTable(argStnDispResults))
 
-aug2020TideDispTable = dispCreateTable(aug2020TideDispResults)
-aug2020StnDispTable = dispCreateTable(aug2020StnDispResults)
+stPDispTable = rbind(dispCreateTable(stPTideDispResults),
+                     dispCreateTable(stPStnDispResults)) 
 
-jun2021TideDispTable = dispCreateTable(jun2021TideDispResults)
-jun2021StnDispTable = dispCreateTable(jun2021StnDispResults)
+aug2020DispTable = rbind(dispCreateTable(aug2020TideDispResults),
+                         dispCreateTable(aug2020StnDispResults))
 
-sept2021TideDispTable = dispCreateTable(sept2021TideDispResults) 
-sept2021StnDispResults = dispCreateTable(sept2021StnDispResults)
+jun2021DispTable = rbind(dispCreateTable(jun2021TideDispResults),
+                         dispCreateTable(jun2021StnDispResults))
+
+sept2021DispTable = rbind(dispCreateTable(sept2021TideDispResults),
+                          dispCreateTable(sept2021StnDispResults))
+
+# Write them out as csvs
+# write.csv(argDispTable, "argDispTable.csv")
+# write.csv(stPDispTable, "stPDispTable.csv")
+# write.csv(aug2020DispTable, "aug2020DispTable.csv")
+# write.csv(jun2021DispTable, "jun2021DispTable.csv")
+# write.csv(sept2021DispTable, "sept2021DispTable.csv")
 
 #################################################################################
 ## PERMANOVA
@@ -140,8 +147,8 @@ order.pacField = c("September 2021_vs_August 2020", "August 2020_vs_June 2021", 
 # For the bays, I also want the comparisons to be alphabetical
 order.arg = c("Mid_vs_Inner", "Outer_vs_Inner", "Mid_vs_Outer")
 order.stP = c("Mid_vs_East", "West_vs_East", "West_vs_Mid")
-order.aug2020 = c("Mid_vs_Inner", "Outer_vs_Inner", "Mid_vs_Outer")
-order.sept2021 = c("Mid_vs_Inner", "Outer_vs_Inner", "Mid_vs_Outer")
+order.aug2020 = c("Mid_vs_Inner", "Outer_vs_Inner", "Outer_vs_Mid")
+order.sept2021 = c("Inner_vs_Mid", "Outer_vs_Inner", "Outer_vs_Mid")
 
 # Make PERMANOVA tables to be exported that combine adonis2 and pairwise.adonis2 results
 # Also rearranges the pairwise.adonis2 in alphabetical order
@@ -158,10 +165,17 @@ pacPNtable = permCreateTable(pacPNresults, pacPairwisePN, order.pacField)
 argPNtable = permCreateTable(argPerm, argStnPairwise, order.arg)
 stPpermTable = permCreateTable(stPperm, stPStnPairwise, order.stP)
 aug2020permTable = permCreateTable(aug2020perm, pacAug2020StnPairwise, order.aug2020)
-# jun2021permTable = permCreateTable(jun2021perm, NA, NA) # None were significant. No pairwise comparisons
+jun2021permTable = permCreateTable(jun2021perm, NA, NA) # None were significant. No pairwise comparisons
 sept2021permTable = permCreateTable(sept2021perm, pacSept2021StnPairwise, order.sept2021)
 
+write.csv(argPNtable, "argPNtable.csv")
+write.csv(stPpermTable, "stPpermTable.csv")
+write.csv(aug2020permTable, "aug2020permTable.csv")
+write.csv(jun2021permTable, "jun2021permTable.csv")
+write.csv(sept2021permTable, "sept2021permTable.csv")
 
+
+pacSept2021StnPairwise$
 
 ################################################################################
 ## SIMPER 
@@ -200,7 +214,7 @@ simDfMaker = function(summaryObject, fullObject, comparisonNames){
 # Run the function and pass in the appropriate data
 # Remember the order is important because in the end I want the comparisons to be alphabetical
 
-# Region comparisons
+# Regional comparisons
 
 regSimperTable = rbind(
   simDfMaker(summary(simRegion)$Maritimes_Gulf, simRegion$Maritimes_Gulf, "Maritimes_Gulf"),
@@ -242,11 +256,40 @@ pacFieldSimperTable = rbind(
 )
 
 
+### Bay comparisons
 
+# Argyle Station
+argyleSimperTableTide = 
+  simDfMaker(summary(simArgTide)$Low_High, simArgTide$Low_High, "Low_High"
+)
 
+# Argyle Tide
+argyleSimperTableStn = rbind(
+  simDfMaker(summary(simArgStn)$Mid_Inner, simArgStn$Mid_Inner, "Mid_Inner"),
+  simDfMaker(summary(simArgStn)$Outer_Inner, simArgStn$Outer_Inner, "Outer_Inner"),
+  simDfMaker(summary(simArgStn)$Mid_Outer, simArgStn$Mid_Outer, "Mid_Outer")
+  )
 
+# St Peters
+stPSimperTableStn = rbind(
+  simDfMaker(summary(simStPStn)$Mid_East, simStPStn$Mid_East, "Mid_East"),
+  simDfMaker(summary(simStPStn)$West_East, simStPStn$West_East, "West_East"),
+  simDfMaker(summary(simStPStn)$West_Mid, simStPStn$West_Mid, "West_Mid")
+)
 
+# Pacific Aug 2020
+aug2020SimperTableStn = rbind(
+  simDfMaker(summary(simAug2020Stn)$Mid_Inner, simAug2020Stn$Mid_Inner, "Mid_Inner"),
+  simDfMaker(summary(simAug2020Stn)$Outer_Inner, simAug2020Stn$Outer_Inner, "Outer_Inner"),
+  simDfMaker(summary(simAug2020Stn)$Mid_Outer, simAug2020Stn$Mid_Outer, "Mid_Outer") 
+)
 
+# Pacific Sept 2021
+sept2021SimperTableStn = rbind(
+  simDfMaker(summary(simSept2021Stn)$Inner_Mid, simSept2021Stn$Inner_Mid, "Inner_Mid"),
+  simDfMaker(summary(simSept2021Stn)$Outer_Inner, simSept2021Stn$Outer_Inner, "Outer_Inner"),
+  simDfMaker(summary(simSept2021Stn)$Outer_Mid, simSept2021Stn$Outer_Mid, "Outer_Mid") 
+)
 
 
 
