@@ -390,7 +390,7 @@ nl.ycoord = c(1,1,1,
               3,3,3,
               4,4,4)
 
-nl.myLabel = c("Inner", "Inner", "Inner", "Mid-Inner", "Mid-Inner", "Mid-Inner", "Mid-Outer", "Mid-Outer", "Mid-Outer", "Outer", "Outer", "Outer")
+nl.myLabel = c("Inner", "Inner", "Inner", "Mid-Inner", "Mid-Inner", "Mid-Inner", "Mid-Outer", "Mid-Outer", "Missing", "Outer", "Outer", "Missing")
 nl.tidePhase = c("Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising")
 
 nl.legDf = data.frame(nl.xcoord, nl.ycoord, nl.myLabel, nl.tidePhase)
