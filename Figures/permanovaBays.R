@@ -151,21 +151,21 @@ aug2020TideDispResults = permutest(aug2020TideDisp, pairwise = T, permutations =
 set.seed(13)
 aug2020StnDispResults = permutest(aug2020StnDisp, pairwise = T, permutations = 9999)
 
-# PERMANOVA
+## PERMANOVA
 set.seed(13)
 aug2020perm = adonis2(sqrt(pacAug2020[,which(colnames(pacAug2020)== "Acartia spp."):ncol(pacAug2020)])~tidePhase*myLabel, data = pacAug2020, method = "bray", permutations = 9999)
 
 # Only station was significant. So use that for pairwise tests
 pacAug2020StnPairwise = pairwise.adonis2(vegdist(sqrt(pacAug2020[,which(colnames(pacAug2020)== "Acartia spp."):ncol(pacAug2020)]))~as.factor(myLabel), data = pacAug2020, perm=9999, set.seed(13))
 
-# SIMPER
+## SIMPER
 simAug2020Stn = simper(sqrt(pacAug2020[,which(colnames(pacAug2020)== "Acartia spp."):ncol(pacAug2020)]), 
                    group=pacAug2020$myLabel, permutations = 9999)
 
 ################################################################################
 ### June 2021
 
-# Dispersion test
+## DISPERSION
 jun2021TideDisp = betadisper(vegdist(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)])), as.factor(pacJun2021$tidePhase), type = "median")
 jun2021StnDisp = betadisper(vegdist(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)])), as.factor(pacJun2021$myLabel), type = "median")
 
@@ -175,31 +175,33 @@ jun2021TideDispResults = permutest(jun2021TideDisp, pairwise = T, permutations =
 set.seed(13)
 jun2021StnDispResults = permutest(jun2021StnDisp, pairwise = T, permutations = 9999)
 
-# Run the PERMANOVA
+## PERMANOVA
 set.seed(13)
 jun2021perm = adonis2(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)])~tidePhase*myLabel, data = pacJun2021, method = "bray", permutations = 9999)
 
 # None were significant: do not run pairwise Permanovas
 
 ################################################################################
-## September 2021
+### September 2021
 
-# Dispersion test
+# DISPERSION TESTS
 sept2021TideDisp = betadisper(vegdist(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)])), as.factor(pacSept2021$tidePhase), type = "median")
 sept2021StnDisp = betadisper(vegdist(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)])), as.factor(pacSept2021$myLabel), type = "median")
 
-# Get permuted results
+## Get permuted results
 set.seed(13)
 sept2021TideDispResults = permutest(sept2021TideDisp, pairwise = T, permutations = 9999)
 set.seed(13)
 sept2021StnDispResults = permutest(sept2021StnDisp, pairwise = T, permutations = 9999)
 
+## PERMANOVA
 sept2021perm= adonis2(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)])~tidePhase*myLabel, data = pacSept2021, method = "bray", permutations = 9999)
 
+## PAIRWISE PERMANOVA
 # Station was significant: run pairwise Permanova on that only
 pacSept2021StnPairwise = pairwise.adonis2(vegdist(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)]))~as.factor(myLabel), data = pacSept2021, perm=9999, set.seed(13))
 
-# SIMPER
+## SIMPER
 simSept2021Stn = simper(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)]), 
                    group=pacSept2021$myLabel, permutations = 9999)
 
@@ -271,10 +273,10 @@ simSept2021Stn = simper(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia
 # # Calculate number of permutations
 # numPerms(nobs(myVec), hh)
 # 
-# # Should be
-# numGroups = 2
-# numObs = 3
-# factorial(numObs*numGroups)/(factorial(numObs)*(factorial(numGroups)^numObs))
+# Should be
+numGroups = 2
+numObs = 4
+factorial(numObs*numGroups)/(factorial(numObs)*(factorial(numGroups)^numObs))
 
 # 
 # q
