@@ -82,7 +82,12 @@ nmdsBay = function(regionData, stationCol) {
     ggBay =
       ggplot() + 
       geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, pch = tidePhase, fill = myLabel), size = 5)+ # Use pch=21 to get black outline circles
-      #geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= myLabel), colour = "gray30")+ # Use pch=21 to get black outline circles
+      # Remember that ifelse can be nested in multiple ways. Here I'm using:
+      # ifelse(<condition>, <yes>, ifelse(<condition>, <yes>, <no>))
+      # I want Cocagne to have month labels as text since data was collected during months (it's the only site like this)
+      # Low tides are from July, Mid-Rising are from August
+      geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= ifelse(facetFactor == "Cocagne" & tidePhase == "Low", "Jul",
+                                                                            ifelse(facetFactor == "Cocagne" & tidePhase == "Mid-Rising", "Aug", ""))), colour = "gray30")+ # Use pch=21 to get black outline circles
       #geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= sampleCode), colour = "gray30")+ # Use pch=21 to get black outline circles
       # adding "breaks" will make sure only the tidePhases actually present in each plot will show up
       # sorting them will make sure they display alphabetically/consistently between each plot
