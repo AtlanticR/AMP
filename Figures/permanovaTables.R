@@ -137,6 +137,12 @@ order.marBays = c("Country Harbour_vs_Argyle", "Sober Island_vs_Argyle", "Whiteh
 order.gulfBays = c("Cocagne_vs_Malpeque", "Cocagne_vs_St. Peters", "Malpeque_vs_St. Peters")
 order.pacField = c("September 2021_vs_August 2020", "August 2020_vs_June 2021", "September 2021_vs_June 2021")
 
+# For the bays, I also want the comparisons to be alphabetical
+order.arg = c("Mid_vs_Inner", "Outer_vs_Inner", "Mid_vs_Outer")
+order.stP = c("Mid_vs_East", "West_vs_East", "West_vs_Mid")
+order.aug2020 = c("Mid_vs_Inner", "Outer_vs_Inner", "Mid_vs_Outer")
+order.sept2021 = c("Mid_vs_Inner", "Outer_vs_Inner", "Mid_vs_Outer")
+
 # Make PERMANOVA tables to be exported that combine adonis2 and pairwise.adonis2 results
 # Also rearranges the pairwise.adonis2 in alphabetical order
 
@@ -148,11 +154,12 @@ pacPNtable = permCreateTable(pacPNresults, pacPairwisePN, order.pacField)
 
 # for the data from permanovaBays.R
 # Note, no pairwise comparisons were done, so just pass in NAs for the pairwise things
-argPNtable = permCreateTable(argPerm, NA, NA)
-stPpermTable = permCreateTable(stPperm, NA, NA)
-aug2020permTable = permCreateTable(aug2020perm, NA, NA)
-jun2021permTable = permCreateTable(jun2021perm, NA, NA)
-sept2021permTable = permCreateTable(sept2021perm, NA, NA)
+# argPNtableTide = permCreateTable(argPerm, argTidePairwise, NA) # Do not need tide pairwise since only 2 factors
+argPNtable = permCreateTable(argPerm, argStnPairwise, order.arg)
+stPpermTable = permCreateTable(stPperm, stPStnPairwise, order.stP)
+aug2020permTable = permCreateTable(aug2020perm, pacAug2020StnPairwise, order.aug2020)
+# jun2021permTable = permCreateTable(jun2021perm, NA, NA) # None were significant. No pairwise comparisons
+sept2021permTable = permCreateTable(sept2021perm, pacSept2021StnPairwise, order.sept2021)
 
 
 
@@ -233,3 +240,17 @@ pacFieldSimperTable = rbind(
   simDfMaker(summary(simPac)$`September 2021_March 2021`, simPac$`September 2021_March 2021`, "September 2021_March 2021"),
   simDfMaker(summary(simPac)$`September 2021_June 2021`, simPac$`September 2021_June 2021`, "September 2021_June 2021")
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
