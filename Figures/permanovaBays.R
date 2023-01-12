@@ -179,7 +179,10 @@ jun2021StnDispResults = permutest(jun2021StnDisp, pairwise = T, permutations = 9
 set.seed(13)
 jun2021perm = adonis2(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)])~tidePhase*myLabel, data = pacJun2021, method = "bray", permutations = 9999)
 
-# None were significant: do not run pairwise Permanovas
+# UPDATE: 
+# If I do post-hoc pairwise tests, outer vs mid is very slightly significant (p = 0.0483). But the main permanova above is not significant.
+pacJun2021StnPairwise = pairwise.adonis2(vegdist(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp."):ncol(pacJun2021)]))~as.factor(myLabel), data = pacJun2021, perm=9999, set.seed(13))
+
 
 ################################################################################
 ### September 2021
@@ -198,6 +201,7 @@ sept2021StnDispResults = permutest(sept2021StnDisp, pairwise = T, permutations =
 sept2021perm= adonis2(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)])~tidePhase*myLabel, data = pacSept2021, method = "bray", permutations = 9999)
 
 ## PAIRWISE PERMANOVA
+# NOTE: SHOULD PROBABLY ACTUALLY NOT DO PERMANOVAS, SINCE NUMBER OF UNIQUE PERMUTATIONS BETWEEN 2 GROUPS OF 4 IS ONLY 35
 # Station was significant: run pairwise Permanova on that only
 pacSept2021StnPairwise = pairwise.adonis2(vegdist(sqrt(pacSept2021[,which(colnames(pacSept2021)== "Acartia spp."):ncol(pacSept2021)]))~as.factor(myLabel), data = pacSept2021, perm=9999, set.seed(13))
 
@@ -230,14 +234,12 @@ numPerms(df, hh)
 
 # Note than in this situation my imaginary model would be as follows with the permutation scheme specified (I think?)
 adonis2(df~myGroups, perm = hh)
-
+adonis2(vegdist(df)~myGroups, perm = hh)
 
 
 # Should be
-
 numGroups = 2
-numObs = 5
+numObs = 4
 factorial(numGroups*numObs)/(factorial(numGroups)*(factorial(numObs)^numGroups))
-
 
 
