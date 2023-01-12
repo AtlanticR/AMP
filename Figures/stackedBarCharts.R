@@ -18,7 +18,7 @@ library("ggh4x")
 # 2. Stacked bar chart of this info (ggplot object)
 # 3. Relative abundance chart of this info (ggplot object)
 
-stackedBarChart = function(bayData){
+stackedBarChart = function(bayData, plotTitle){
   
   # Find the __ most abundant taxa. Label all others as "Other"
   # Otherwise there are too many legend items
@@ -97,20 +97,21 @@ stackedBarChart = function(bayData){
       # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
       scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
+      ggtitle(plotTitle)+
       #theme_minimal(base_family = "Roboto Condensed") +
       theme_bw()+
       theme(
         #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
         axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 14),
+        axis.text.y = element_text(size = 13),
         axis.ticks.x = element_blank(),
-        axis.title = element_text(size = 14),
-        legend.text = element_text(size = 13),
-        legend.title = element_text(size=14),
+        axis.title = element_text(size = 13),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size=13),
         panel.grid.major.y = element_blank(),
         panel.spacing = unit(0.2, "cm"), # changes spacing between facets
-        #plot.title = element_text(size = 15, face = "bold"),
-        strip.text.x = element_text(size = 14),
+        plot.title = element_text(size = 15),
+        strip.text.x = element_text(size = 13),
         strip.placement = "outside",
       )
   
@@ -127,24 +128,41 @@ stackedBarChart = function(bayData){
 # Need to type variable name to get plot to show up
 
 # Maritimes
-argyleProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Argyle"))
-soberProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island"))
-whiteheadProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Whitehead"))
-cHarbourProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Country Harbour"))
+argyleProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Argyle"), "(A) Argyle")
+cHarbourProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Country Harbour"), "(B) Country Harbour")
+soberProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island"), "(C) Sober Island")
+whiteheadProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Whitehead"), "(D) Whitehead")
+
+ggarrange(argyleProcess, cHarbourProcess, soberProcess, whiteheadProcess, ncol = 1)
+
 
 # Gulf
-malpequeProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Malpeque"))
-cocagneProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Cocagne"))
-stPetersProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="St. Peters"))
+cocagneProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Cocagne"), "(A) Cocagne")
+malpequeProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Malpeque"), "(B) Malpeque")
+stPetersProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="St. Peters"), "(C) St. Peters")
+
+# Will add dummy grobs to fill the extra space. Want all plots for all regions to be approx. same size
+ggarrange(cocagneProcess, malpequeProcess, stPetersProcess, ncol = 1)
 
 # Newfoundland (only one bay)
-seArmProcess = stackedBarChart(nlMerge)
+seArmProcess = stackedBarChart(nlMerge, "",)
+ggarrange(cocagneProcess, cocagneProcess, cocagneProcess, seArmProcess, ncol = 1)
+
 
 # Pacific (only one bay, but separate by facetFactor instead)
-lemmens20Process = stackedBarChart(pacMerge %>% subset(facetFactor == "August 2020"))
-lemmensMar21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "March 2021"))
-lemmensJun21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "June 2021"))
-lemmensSept21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "September 2021"))
+lemmens20Process = stackedBarChart(pacMerge %>% subset(facetFactor == "August 2020"), "(A) August 2020")
+lemmensMar21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "March 2021"), "(B) March 2021")
+lemmensJun21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "June 2021"), "(C) June 2021")
+lemmensSept21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "September 2021"), "(D) September 2021")
+
+ggarrange(lemmens20Process, lemmensMar21Process, lemmensJun21Process, lemmensSept21Process, ncol = 1)
+
+
+
+################################################################################
+## For analysis later
+# Some of these will show more of an effect than others
+
 
 # High Risk Sites!!!
 soberHighRisk = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island") %>%
