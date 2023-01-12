@@ -136,6 +136,12 @@ seArm2020Inext = inextPrep(seArm2020, nlColours[[1]], "(A) Southeast Arm")
 plot_grid(seArm2020Inext[[1]], seArm2020Inext[[1]], seArm2020Inext[[1]], seArm2020Inext[[1]], align = "v", ncol = 1)
 seInextResults = seArm2020Inext[[2]]
 
+# write.csv(marInextResults, "marInextResults.csv")
+# write.csv(gulfInextResults, "gulfInextResults.csv")
+# write.csv(pacInextResults, "pacInextResults.csv")
+# write.csv(seInextResults, "seInextResults.csv")
+
+
 
 ###########################################################################################################################
 ### Practice with the vegan package
