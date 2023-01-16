@@ -480,7 +480,7 @@ pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 reducedMeta = function(metadata) {
   # Get the columns that are actually important to merge
   metadata = metadata %>%
-    select(sampleCode, waterVolume, tideRange, yearStart, monthStart, facilityName, myLabel, tidePhase, flowcamCode)
+    select(sampleCode, waterVolume, tideRange, yearStart, monthStart, depthWaterM, facilityName, myLabel, tidePhase, flowcamCode)
   return(metadata)
 }
 
@@ -504,7 +504,7 @@ pacMetaRed = reducedMeta(pacMeta) %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
   # Remember that each sample in the Pacific is made up of two (or more) tows that they combined together. Need to group these into one
   # by NOT including "sampleCode" in the grouping, the waterVolumes per flowcamCode can be summed
-  group_by(flowcamCode, myLabel, yearStart, monthStart, facilityName, tidePhase) %>%
+  group_by(flowcamCode, myLabel, yearStart, monthStart, depthWaterM, facilityName, tidePhase) %>%
   # Adjust the water volume that is the sum of the water volume from tow of both samples
   summarize(waterVolume = sum(as.numeric(waterVolume))) %>%
   # NOTE: This is not technically correct. But I use 'sampleCode' in future functions/scripts. 
@@ -521,7 +521,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     # Remove unnecessary columns
     select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount)) %>%
     # Group the stations so 5mm species are added to the regular counts 
-    group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, monthStart, myLabel, tidePhase, sampleCode) %>% 
+    group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, monthStart, depthWaterM, myLabel, tidePhase, sampleCode) %>% 
     # This is needed to combine the 250 fraction with the 5mm fraction
     summarize(abund = sum(abund))
 }
