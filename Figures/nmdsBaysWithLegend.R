@@ -342,7 +342,7 @@ stP.ycoord = c(1,1,
                2,2,
                3,3)
 
-stP.myLabel = c("South", "South", "Mid", "Mid", "North", "North")
+stP.myLabel = c("West", "West", "Mid", "Mid", "East", "East")
 stP.tidePhase = c("Low", "High", "Low", "High", "Low", "High")
 
 stP.legDf = data.frame(stP.xcoord, stP.ycoord, stP.myLabel, stP.tidePhase)
@@ -353,7 +353,7 @@ stP.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2), labels = c("LT", "HT"), position = "top")+
-  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("South", "Mid", "North"))+ 
+  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("West", "Mid", "East"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
