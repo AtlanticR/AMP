@@ -49,7 +49,6 @@ stackedBarChart = function(bayData, plotTitle){
     mutate(tidePhase = replace(tidePhase, tidePhase == "Mid-Rising", "M-R")) %>%
     mutate(tidePhase = replace(tidePhase, tidePhase == "Mid-Falling", "M-F"))
   
-  
   # Make ggplot for a Stacked Bar Chart
   # Write the y-axis label outside of ggplot so I don't get (as) lost in brackets
   yLabelStacked = expression(paste("Abundance (ind ", m^{-3}, ")"))
@@ -57,7 +56,7 @@ stackedBarChart = function(bayData, plotTitle){
   stackedGGPlot =
     ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
       geom_bar(stat="identity", color = "black")+
-      facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
+          facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
       #facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
       scale_x_discrete(name = "Station")+
       scale_y_continuous(labels = scales::comma, name = yLabelStacked) +
@@ -88,34 +87,38 @@ stackedBarChart = function(bayData, plotTitle){
   #   mutate(myLabel = replace(myLabel, myLabel == "Mid", "Mid/Inner")) %>%
   #   mutate(myLabel = replace(myLabel, myLabel == "Inner", "Mid/Inner"))
 
-  # Make ggplot for a relative abundance chart
-  relGGPlot = 
-    ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
-      geom_bar(stat = "identity", position = "fill", col = "black") +
-      scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
-      facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
-      # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
-      scale_x_discrete(name = "Station")+
-      scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
-      ggtitle(plotTitle)+
-      #theme_minimal(base_family = "Roboto Condensed") +
-      theme_bw()+
-      theme(
-        #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
-        axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 13),
-        axis.ticks.x = element_blank(),
-        axis.title = element_text(size = 13),
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size=13),
-        panel.grid.major.y = element_blank(),
-        panel.spacing = unit(0.2, "cm"), # changes spacing between facets
-        plot.title = element_text(size = 15),
-        strip.text.x = element_text(size = 13),
-        strip.placement = "outside",
-      )
+
   
-  bothPlots = plot_grid(stackedGGPlot, relGGPlot, ncol = 1, align = "v", axis = "l")
+  # Make ggplot for a relative abundance chart
+  relGGPlot =
+    ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
+    geom_bar(stat = "identity", position = "fill", col = "black") +
+    scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
+    
+    facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
+    # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
+    scale_x_discrete(name = "Site")+
+    scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
+    ggtitle(plotTitle)+
+    #theme_minimal(base_family = "Roboto Condensed") +
+    theme_bw()+
+    theme(
+      #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
+      axis.text.x = element_blank(),
+      axis.text.y = element_text(size = 13),
+      axis.ticks.x = element_blank(),
+      axis.title = element_text(size = 13),
+      legend.text = element_text(size = 12),
+      legend.title = element_text(size=13),
+      panel.grid.major.y = element_blank(),
+      panel.spacing = unit(0.2, "cm"), # changes spacing between facets
+      plot.title = element_text(size = 15),
+      strip.text.x = element_text(size = 13),
+      strip.placement = "outside",
+    )
+  
+  
+  #bothPlots = plot_grid(stackedGGPlot, relGGPlot, ncol = 1, align = "v", axis = "l")
   
   return(relGGPlot)
   
@@ -142,10 +145,10 @@ malpequeProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Malpeque"),
 stPetersProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="St. Peters"), "(C) St. Peters")
 
 # Will add dummy grobs to fill the extra space. Want all plots for all regions to be approx. same size
-ggarrange(cocagneProcess, malpequeProcess, stPetersProcess, ncol = 1)
+ggarrange(cocagneProcess, cocagneProcess, malpequeProcess, stPetersProcess, ncol = 1)
 
 # Newfoundland (only one bay)
-seArmProcess = stackedBarChart(nlMerge, "",)
+seArmProcess = stackedBarChart(nlMerge, "Southeast Arm")
 ggarrange(cocagneProcess, cocagneProcess, cocagneProcess, seArmProcess, ncol = 1)
 
 
