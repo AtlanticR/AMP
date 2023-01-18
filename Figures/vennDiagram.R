@@ -59,7 +59,7 @@ stPetersVec = as.vector(stPetersVen$class)
 malpequeVec = as.vector(malpequeVen$class)
 cocagneVec = as.vector(cocagneVen$class)
 
-gulfBayVen = list("St. Peters" = argyleVec, "Malpeque" = soberVec, "Cocagne" = cocagneVec)
+gulfBayVen = list("St. Peters" = stPetersVec, "Malpeque" = malpequeVec, "Cocagne" = cocagneVec)
 
 
 ### Pacific
@@ -123,7 +123,7 @@ makeVennDiagram = function(vennDataList, bayColours, plotLetter){
     geom_sf(color = "black", data = venn_setedge(gVenn1), show.legend = F)+
     # Use this if I want to set the actual colours as the outlines. I think it's a bit ugly
     #geom_sf(aes(color = name), data = venn_setedge(gVenn1), show.legend = F, linewidth = 1.1)+
-    geom_sf_text(aes(label = name), data = venn_setlabel(gVenn1), size = 6, vjust = -0.1)+
+    geom_sf_text(aes(label = name), data = venn_setlabel(gVenn1), size = 5.5, vjust = -0.1)+
     geom_sf_text(aes(label = count), data = venn_region(gVenn1), vjust = -0.5, size = 5)+ # add richness amounts
     geom_sf_text(aes(label = gPercentsBrackets), data = venn_region(gVenn1), vjust = 0.75, size = 4.2)+ # add percents
     scale_fill_manual(values = alpha(bayColours, 0.4))+ # adjust transparency of the fill
