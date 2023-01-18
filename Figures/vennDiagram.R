@@ -147,7 +147,8 @@ pacVennPlot = makeVennDiagram(pacVen, pacColours, ("(C) Pacific"))
 # Note that the (B) will not be aligned with the rest of the plots- I'll have to fix this at some point
 plot_grid(marVennPlot, gulfVennPlot, pacVennPlot, align = "v", ncol = 1)
 
-# COMPARE WITH EGG PACKAGE!!! MIGHT BE BETTER: but the sizing of the middle plot gets thrown off
+# Compare with egg package. I think this is better! The plots align based on ggtitle
+# Note that I have to add sample size in brackets in an editing software. It is too difficult to select placement in R
 ggarrange(marVennPlot, gulfVennPlot, pacVennPlot)
 
 # NOTE ABOUT USING GGSAVE!!!!!
@@ -156,4 +157,4 @@ ggarrange(marVennPlot, gulfVennPlot, pacVennPlot)
 # This will stop any annoying issues happening with font sizes 
 # Always save at 300 dpi for journal-quality resolution
 # Example:
-# ggsave("test.png", width = 16.25, height = 14.29, units = "in", dpi = 100)
+# ggsave("test.png", width = 10.55, height = 13.33, units = "in", dpi = 100)
