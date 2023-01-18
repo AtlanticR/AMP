@@ -248,6 +248,14 @@ grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
                                    c(1,1,1,3),
                                    c(1,1,1,4),
                                    c(1,1,1,NA)))
+
+# Somewhere here there is a method of arrange the legend items. 
+# Need to use as_ggplot instead of as_grob to use ggarrange
+# But the legends have different border sizes I think? ie. different amounts of whitespace so they don't line up well
+# library(ggpubr)
+# library(egg)
+ggarrange(gulfLegend, marLegend, nlLegend, ncol = 1, align = "h")
+
 #################################################################################
 
 #### MAYBE DO PACIFIC THINGS HERE???? TBD
