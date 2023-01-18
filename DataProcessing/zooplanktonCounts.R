@@ -480,7 +480,7 @@ pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 reducedMeta = function(metadata) {
   # Get the columns that are actually important to merge
   metadata = metadata %>%
-    select(sampleCode, waterVolume, tideRange, yearStart, monthStart, facilityName, myLabel, tidePhase, flowcamCode, depthWaterM)
+    select(sampleCode, waterVolume, tideRange, yearStart, dayStart, monthStart, facilityName, myLabel, tidePhase, flowcamCode, depthWaterM)
   return(metadata)
 }
 
@@ -504,7 +504,7 @@ pacMetaRed = reducedMeta(pacMeta) %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
   # Remember that each sample in the Pacific is made up of two (or more) tows that they combined together. Need to group these into one
   # by NOT including "sampleCode" in the grouping, the waterVolumes per flowcamCode can be summed
-  group_by(flowcamCode, myLabel, yearStart, monthStart, facilityName, tidePhase) %>%
+  group_by(flowcamCode, myLabel, yearStart, monthStart, dayStart, facilityName, tidePhase) %>%
   # Adjust the water volume that is the sum of the water volume from tow of both samples
   summarize(waterVolume = sum(as.numeric(waterVolume)),
             depthWaterM = mean(as.numeric(depthWaterM))) %>% # Need to add depthWaterM. Take the average from both tows
@@ -515,7 +515,7 @@ pacMetaRed = reducedMeta(pacMeta) %>%
 
 # Create function to merge the metadata with the species data from the flowcam
 mergeSpeciesMeta = function(metadata, speciesDataset) {
-  mergedData = full_join(metadata, speciesDataset,  by = c("flowcamCode" = "sample")) %>%
+  mergedData = full_join(metadata, speciesDataset, by = c("flowcamCode" = "sample")) %>%
     # Note: waterVolume is already in m^3 not litres like I had previously thought!! Do not divide by 1000.
     # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
     mutate(abund = adjCount / waterVolume * 4) %>%
@@ -524,7 +524,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     # Make depthWaterM numeric
     mutate(depthWaterM = as.numeric(depthWaterM)) %>%
     # Group the stations so 5mm species are added to the regular counts 
-    group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, monthStart, myLabel, tidePhase, sampleCode, depthWaterM) %>% 
+    group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM) %>% 
     # This is needed to combine the 250 fraction with the 5mm fraction
     summarize(abund = sum(abund))
 }
