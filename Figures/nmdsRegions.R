@@ -254,7 +254,9 @@ grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
 # But the legends have different border sizes I think? ie. different amounts of whitespace so they don't line up well
 # library(ggpubr)
 # library(egg)
-ggarrange(gulfLegend, marLegend, nlLegend, ncol = 1, align = "h")
+# ggarrange(gulfLegend, marLegend, nlLegend, ncol = 1, align = "h")
+
+# grid.arrange(get_legend(ggGulf))
 
 #################################################################################
 
