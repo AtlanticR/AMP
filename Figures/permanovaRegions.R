@@ -59,9 +59,12 @@ options(scipen = 999)
 # vegdist turns the data into dissimilarities. Bray-Curtis is the default
 # Need to also square root transform
 # It's  a bit clunky, but data in the species matrix always starts with 'Acartia spp." until the last column (ncol)
-# I am using type = "centroid" instead of "spatial" (spatial median) to be consistent with PRIMER. In R, "spatial" is default
+# There are two ways to define the centroid: "centroid" or "spatial median"
 # See PRIMER manual for brief explanation of the differences. Manual recommends "centroid" in most cases
-oceanDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean), type = "centroid")
+# However, betadisper function notes error in using type = centroid.
+# See warning here: https://rdrr.io/cran/vegan/man/betadisper.html#:~:text=betadisper%20is%20a%20multivariate%20analogue,means%20of%20assessing%20beta%20diversity.
+# I am switching this to type = "median" because of this
+oceanDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean), type = "median")
 
 # This will get you ANOVA results (i.e., are there differences in dispersion) but with non-permuted significance
 anova(oceanDisp) 
@@ -119,7 +122,7 @@ summary(simOcean)
 # There are 4 factors (in this study): Maritimes, Gulf, Newfoundland, Pacific
 
 ### DISPERSION
-regDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), type = "centroid")
+regDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), type = "median")
 pairRegDisp = permutest(regDisp, pairwise = T, permutations = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
@@ -209,7 +212,7 @@ pacPN = pacMerge %>%
 ## MARITIMES
 
 ### DISPERSION
-marDisp = betadisper(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])), as.factor(marPN$facetFactor), type = "centroid")
+marDisp = betadisper(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])), as.factor(marPN$facetFactor), type = "median")
 pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999, set.seed(11))
 
 # Look at pairRegDisp for F-values, permuted p-values
@@ -259,7 +262,7 @@ summary(simMar)
 ## GULF
 
 ### DISPERSION
-gulfDisp = betadisper(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])), as.factor(gulfPN$facetFactor), type = "centroid")
+gulfDisp = betadisper(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])), as.factor(gulfPN$facetFactor), type = "median")
 pairGulfDisp = permutest(gulfDisp, pairwise = T, permutations = 9999, perm = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
@@ -314,7 +317,7 @@ pacPNred = pacPN %>%
   filter(sampleCode != c("AMMP_PA_S04Pooled_202103LT_250UM"))
 
 ### DISPERSION
-pacDisp = betadisper(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])), as.factor(pacPNred$facetFactor), type = "centroid")
+pacDisp = betadisper(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])), as.factor(pacPNred$facetFactor), type = "median")
 pairPacDisp = permutest(pacDisp, pairwise = T, permutations = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
