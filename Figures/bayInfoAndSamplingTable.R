@@ -27,9 +27,21 @@ bayTable = allRegionsWide %>%
   group_by(region, facetFactor, myLabel) %>%
   # This takes the average depth for each station within each bay
   mutate(avgDepthStn = round(mean(depthWaterM), 2)) %>% 
-  group_by(region, facetFactor, yearStart,dateRange, myLabel, tidePhase, avgDepthStn) %>%
+  group_by(region, facetFactor, yearStart,dateRange, myLabel, tidePhase, avgDepthStn, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>%
   # In each bay, count the number of samples with this station and tide phase combination
-  summarise(stnTideCount = n())
+  summarise(stnTideCount = n()) %>%
+  # March 2021 had multiple samples combined from all stations
+  mutate(myLabel = ifelse(facetFactor == "March 2021", "Combined (Inner, Mid, Outer)", myLabel)) %>%
+  # Shellfish production type was missing for St. Peters and Malpeque
+  # I looked at the leases from https://www.arcgis.com/home/webmap/viewer.html?webmap=16aa8830c7084a8a92ce066b525978b4 (in QGIS)
+  # And looked at the shellfish types within both areas. I am not sure the difference between quahaug and clam?
+  mutate(productionType = ifelse(facetFactor == "St. Peters", "Mussel, oyster, scallop, quahaug, clam",
+                                 ifelse(facetFactor == "Malpeque", "Mussel, oyster, quahaug, clam", productionType))) %>%
+  # Make first letter in each cell upper case. Idk why this didn't work for "target" column. Maybe because of NAs?
+  mutate_if(is.character, str_to_upper) %>%
+  # Fix for consistency. Some Pacific field seasons were blank (but I know it should be Punctual Stations). Country Harbour and Whitehead did not have an "s" at the end
+  mutate(samplingDesign = ifelse(region == "Pacific" | facetFactor == "Country Harbour" | facetFactor == "Whitehead", "Punctual stations", samplingDesign)) %>%
+  mutate(TowType = ifelse(TowType == "obliq", "Oblique", TowType))
 
 
   
