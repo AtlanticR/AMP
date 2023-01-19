@@ -188,7 +188,7 @@ ordCoordsAtl = as.data.frame(scores(ordAtl, display="sites")) %>%
   mutate(myLabel = atlOnly$myLabel) %>%
   mutate(region = atlOnly$region)
 
-# GET NMDS stress
+# Get NMDS stress
 # Note that round() includes UP TO 2 decimal places. Does not include 0s 
 ordStressAtl = paste("2D Stress: ", format(round(ordAtl$stress, digits=2), nsmall=2))
 
@@ -259,74 +259,44 @@ grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
                                    c(1,1,1,4),
                                    c(1,1,1,NA)))
 
-
-
-
-
-
 #################################################################################
+# Actually I think what I want more than Maritimes, Gulf and Newfoundland is just Maritimes & Gulf
+# Here is the code for putting just those two together
+# Note that I don't need to make new legend items for Mar & Gulf because that was done above
 
-# Get only the Atlantic Ocean data
-atlOnly = allRegionsWide %>%
-  filter(ocean == "Atlantic") 
+# Get only the Maritimes and Gulf data
+gulfMarOnly = allRegionsWide %>%
+  filter(region == "Maritimes" | region == "Gulf") 
 
 # Set the start/stop column indices for NMDS to run on
-beginNMDSAtl = which(colnames(atlOnly)== "Acartia spp.")
-endNMDSAtl = ncol(atlOnly)
+beginNMDSGulfMar = which(colnames(gulfMarOnly)== "Acartia spp.")
+endNMDSGulfMar = ncol(gulfMarOnly)
 
 # Do NMDS ordination
-ordAtl = metaMDS(sqrt(atlOnly[,c(beginNMDSAtl:endNMDSAtl)]), distance = "bray", autotransform=FALSE)
+ordGulfMar = metaMDS(sqrt(gulfMarOnly[,c(beginNMDSGulfMar:endNMDSGulfMar)]), distance = "bray", autotransform=FALSE)
 
 # Get NMDS coordinates from plot and add back in certain columns (easier for aes commands)
-ordCoordsAtl = as.data.frame(scores(ordAtl, display="sites")) %>%
-  mutate(tidePhase = atlOnly$tidePhase) %>%
-  mutate(facetFactor = atlOnly$facetFactor) %>%
-  mutate(myLabel = atlOnly$myLabel) %>%
-  mutate(region = atlOnly$region)
+ordCoordsGulfMar = as.data.frame(scores(ordGulfMar, display="sites")) %>%
+  mutate(facetFactor = gulfMarOnly$facetFactor) %>%
+  mutate(myLabel = gulfMarOnly$myLabel) %>%
+  mutate(region = gulfMarOnly$region)
 
-# GET NMDS stress
+# Get NMDS stress
 # Note that round() includes UP TO 2 decimal places. Does not include 0s 
-ordStressAtl = paste("2D Stress: ", format(round(ordAtl$stress, digits=2), nsmall=2))
-
-# Gulf
-ggGulf = ggplot()+
-  geom_point(data = ordCoordsAtl %>% filter(region == "Gulf"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 21, size = 6)+
-  scale_fill_manual(values = c("red4", "red2", "lightpink"), name = "Gulf Region          ")+
-  coord_cartesian(xlim = c(-1, 1), ylim = c(-1,1))+ 
-  theme_bw()+
-  theme(legend.key.size = unit(0.2, "cm"),
-        legend.margin=margin(c(0,0,5,0)),
-        legend.text=element_text(size = 12),
-        legend.title = element_text(size = 14))
-
-# Maritimes
-ggMaritimes = ggplot()+
-  geom_point(data = ordCoordsAtl %>% filter(region == "Maritimes"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 22, size = 6)+
-  scale_fill_manual(values = c("darkgreen", "green3", "darkolivegreen2", "mediumspringgreen"), name = "Maritimes Region")+
-  coord_cartesian(xlim = c(-1, 1), ylim = c(-1,1))+ 
-  theme_bw()+
-  theme(legend.key.size = unit(0.2, "cm"),
-        legend.margin=margin(c(0,0,0,0)),
-        legend.text=element_text(size = 12),
-        legend.title = element_text(size = 14))
-
-
-# Get (just) the legends
-gulfLegend = as_grob(get_legend(ggGulf))
-marLegend = as_grob(get_legend(ggMaritimes))
-nlLegend = as_grob(get_legend(ggNewfoundland))
+ordStressGulfMar = paste("2D Stress: ", format(round(ordGulfMar$stress, digits=2), nsmall=2))
 
 # Now make a plot of everything (without the legend)
-ggAtlanticOnly = ggplot()+
-  geom_point(data = ordCoordsAtl, aes(x = NMDS1, y = NMDS2, fill = facetFactor, pch = region), size = 6)+
-  scale_shape_manual(values=c(21, 22, 24), name = "Bay")+
-  # Note that fill is alphabetical by facetFactor. Use sort(unique(ordCoordsAtl$facetFactor)) to determine order
-  scale_fill_manual(values = c("darkgreen", "red4", "green3", "red2", "darkolivegreen2", "#00BFC4", "lightpink", "mediumspringgreen"), name = "Region")+
-  annotate("text", x = max(ordCoordsAtl$NMDS1), y=max(ordCoordsAtl$NMDS2), label = ordStressAtl, size=4, hjust=1)+
-  ggtitle("Atlantic")+
+ggGulfMar = ggplot()+
+  geom_point(data = ordCoordsGulfMar, aes(x = NMDS1, y = NMDS2, fill = facetFactor, pch = region), size = 6)+
+  scale_shape_manual(values=c(21, 22), name = "Bay")+
+  # Note that fill is alphabetical by facetFactor. Use sort(unique(ordCoordsGulfMar$facetFactor)) to determine order
+  # Argyle, Cocagne, Country Harbour, Malpeque, Sober Island, St. Peters, Whitehead
+  scale_fill_manual(values = c("darkgreen", "red4", "green3", "red2", "darkolivegreen2", "lightpink", "mediumspringgreen"), name = "Region")+
+  annotate("text", x = min(ordCoordsGulfMar$NMDS1), y=max(ordCoordsGulfMar$NMDS2), label = ordStressGulfMar, size=5, hjust = -0.01)+
+  #ggtitle("Atlantic")+
   theme_bw()+
   theme(axis.text = element_blank(),
-        #axis.title = element_blank(),
+        axis.title = element_text(size = 13),
         axis.ticks = element_blank(),
         legend.position = "none",
         panel.border=element_rect(color="black", size=1), 
@@ -336,25 +306,20 @@ ggAtlanticOnly = ggplot()+
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
         plot.title = element_text(size=18))
 
+
 # Plot it all together
-grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
+# Note that I didn't need to use new legend items
+# But I did need to adjust the spacing between them. This is a hideous method, but it works!
+grid.arrange(ggGulfMar, gulfLegend, marLegend, nrow=2, ncol = 2,
              layout_matrix = rbind(c(1,1,1,NA), 
+                                   c(1,1,1,NA),
+                                   c(1,1,1,NA),
                                    c(1,1,1,2),
+                                   c(1,1,1,NA),
                                    c(1,1,1,3),
-                                   c(1,1,1,4),
+                                   c(1,1,1,NA),
+                                   c(1,1,1,NA),
                                    c(1,1,1,NA)))
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #################################################################################
