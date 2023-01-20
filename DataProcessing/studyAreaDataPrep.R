@@ -22,6 +22,58 @@
 # The code for putting everything together is in: Figures/StudyAreaMaps.R
 
 ################################################################################
+#### A note about shellfish leases
+
+# Our goal is to map the active shellfish leases that were present at the time of sampling
+# This does not include leases that were "proposed" or "accepted". We want the existing tenured leases
+# (ones that were potentially stocked)
+# However, note that even existing leases may not be stocked during sampling. The growers may use them
+# for part of the year, or not at all. There is no easy way to figure that out.
+
+# The current existing leases can be found online:
+# Nova Scotia: https://novascotia.ca/fish/aquaculture/site-mapping-tool/
+# New Brunswick: https://www2.gnb.ca/content/gnb/en/departments/10/aquaculture/content/masmp.html
+# PEI: https://www.dfo-mpo.gc.ca/aquaculture/management-gestion/pei-lic-ipe-baux-eng.htm
+# BC: https://fisheries-map-gallery-crm.hub.arcgis.com/datasets/governmentofbc::tantalis-crown-tenures
+# Newfoundland: https://www.gov.nl.ca/landuseatlas/details
+
+# However, there might be small differences between what was present now vs then
+# Jeff Barrell has saved many old shapefiles including:
+# Nova Scotia: 2020, 2021 and 2022 
+# PEI: 2020 and 2022
+# New Brunswick: 2020 and 2021
+
+# For Nova Scotia:
+# No changes to leases from 2020 -> 2021 -> 2022 for Country Harbour, Sober Island, Whitehead.
+# I am mapping the 2021 data for these leases (although it doesn't really matter) because that was the sampling year
+# For Argyle, there are 3 leases not present in 2020 shapefile, but present in 2021 and 2022: lease #s 1427-1429 (all in the south)
+# Jeff says: The three leases to the south (1427-1429) are listed as “proposed” in 2020, then “issued” in both 2021 and 2022 according to the lease data. 
+# I remember these leases coming through the pipeline, I think I reviewed them; they were officially approved in November 2020: Decision_NSARB_2020-001_to_003_Certified.pdf (novascotia.ca)
+# That document doesn’t seem to list the lease numbers, but here’s more proof from the NS DFA website: [insert screenshot- see email if needed]
+# [...] I think it’s fair to include them in the 2021 map. I am therefore including them!!
+
+# For PEI:
+# Bays were sampled in 2020. There is no difference in leases for Malpeque & St. Peters between 2020 and 2022. 
+# Therefore, I am mapping 2020 data (but it doesn't really matter)
+
+# For New Brunswick (Cocagne)
+# Bay was sampled in 2021. Only have data for 2020 and 2022.
+# Worked with Jeff to figure out what to do. Here are the changes (you can go on map viewer, and click on lease to see the info):
+# Site # MS-1240, current status: Overwintering. Excluded from study area map.
+# Site # MS-0946 and MS-0067, current status: Vacant. Excluded from map.
+# Site # MS-1363 and MS-1362, current status: Under Review. Excluded from map.
+# Site # MS-1369, current status: vacant. Excluded from map.
+# Site # MS-1434, current status: Leased. This was "Under Review" in 2020. Jeff had satellite imagery from Sept 2020 and noticed it was stocked with oysters. Therefore, include.
+# Site # MS-1357, current status: Leased. The lease in 2020 was slightly smaller. Jeff has satellite imagery from July 2021 showing shellfish presence in entire (larger 2022) lease. Include!
+# Therefore, I am mapping the 2022 leases, but excluding the ones mentioned above.
+
+# For Newfoundland:
+# Need to confirm with Olivia Gibb those were the existing leases from 2020 --> 2022 (we now have data for all 3 years)
+
+# For BC:
+# Need to confirm with Terri Sutherland to see which leases should be included
+
+################################################################################
 ################################################################################
 
 # Set up
@@ -65,14 +117,25 @@ lemmensCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMP
 
 
 ################################################################################
-## Shellfish leases
-# These were also from Jeff Barrell!! I need to double check the metadata. Some may be empty, old, etc. 
-# His note: NS and NB are current as of 2022, PEI as of 2020 (but it hasn’t changed much to my knowledge)
+## Read in shellfish lease shapefiles
+# See notes from above for explanation about which leases to map
 
-## Lease shapefiles
-nsLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/NS_leases_Apr_2022.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-nbLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/MASMPS_Data.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
+# Nova Scotia: for all bays, mapping 2021 data
+nsLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2021/NS_leases_April_2021.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
+# New Brunswick: map 2022 data but remove six leases
+# It's important to have all the other attributes because I need to select/remove based on shellfish lease # (columns MSNO)
+# If I don't do this next step, I will lose all the attribute information when using fortify(). I need to add it back in.
+nbLeases = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2022/2022_NB_MASMPS_Data.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+
+# Trying a new method for removing multiple leases at once
+removeLeaseNB = c("MS-1240", "MS-0946", "MS-0067", "MS-1363", "MS-1362", "MS-1369")
+
+nbLeases.df = merge(fortify(nbLeases), as.data.frame(nbLeases), by.x = "id", by.y = 0) %>%
+  # Add ! to exclude the leases mentioned above
+  filter(!(MSNO %in% removeLeaseNB))
+
+# PEI: map 2020 data
+peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2020/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 
 # Newfoundland
 # I used the Newfoundland Land Use Atlas: https://www.gov.nl.ca/landuseatlas/details/
