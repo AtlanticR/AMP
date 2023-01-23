@@ -188,7 +188,12 @@ dfoRegions = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shap
 
 # Turn into a dataframe but keep the original column names. I could do this with the other datasets, but it's not important to me
 # I need to do this so I don't lose the DFO region names
-dfoRegions.df = merge(fortify(dfoRegions), as.data.frame(dfoRegions), by.x="id", by.y=0)
+dfoRegions.df = merge(fortify(dfoRegions), as.data.frame(dfoRegions), by.x="id", by.y=0) %>%
+  # It's easiest (for the legend on study area map) to just rename everything else as "Other"
+  mutate(Region_EN = recode(Region_EN, "Arctic" = "Other",
+                            "Arctic-Water" = "Other",
+                            "Ontario and Prairie" = "Other",
+                            "Quebec" = "Other"))
 
 ################################################################################
 ## Get a map of Canadian provinces since the DFO Regions map above doesn't show them!!!
