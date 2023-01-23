@@ -69,9 +69,23 @@
 
 # For Newfoundland:
 # Need to confirm with Olivia Gibb those were the existing leases from 2020 --> 2022 (we now have data for all 3 years)
+# I used the Newfoundland Land Use Atlas: https://www.gov.nl.ca/landuseatlas/details/
+# However, I was not sure how to extract the data as shapefiles
+# Instead, I zoomed into the study area and saw two leases and used the Measurement --> Location tool to get the coordinates of the vertices
+# I copied and pasted these into csv files
+# Leases are for Crown title 118040 and 108739. Both say "Issue-Lease". Original title owner: Terry Mills
+# 500m blue aquaculture buffer around leases confirm these are aquaculture leases
+# If there were more leases, I would find a better way to obtain shapefiles, but this will work for now!
 
 # For BC:
-# Need to confirm with Terri Sutherland to see which leases should be included
+# ***I have sent an email to Terri Sutherland to confirm which leases should be included*** This may change
+# Currently, shellfish leases are from Tantalis crown features
+# Available from various different sources but I found this is best: https://fisheries-map-gallery-crm.hub.arcgis.com/datasets/governmentofbc::tantalis-crown-tenures
+# If from Open Data, you can't click on many of the polygons to see what the features represent
+# Filter by TENURE_PURPOSE == "AQUACULTURE" and TENURE_SUBPURPOSE == "SHELL FISH"
+# Also turn "filter as map moves" on, so only data in the view get downloaded. Export as a shapefile.
+# Right now, I am only including ones with tenure status "Tenured" and not "Application", since Application would not be stocked with shellfish
+
 
 ################################################################################
 ################################################################################
@@ -79,7 +93,7 @@
 # Set up
 source("DataProcessing/rPackages.R")
 
-# Install this extra library 
+# Install this extra library which contains a Canadian province shapefile
 devtools::install_github("ropensci/rnaturalearthhires")
 library("rnaturalearthhires")
 
@@ -122,15 +136,14 @@ lemmensCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMP
 
 # Nova Scotia: for all bays, mapping 2021 data
 nsLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2021/NS_leases_April_2021.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
+
 # New Brunswick: map 2022 data but remove six leases
 # It's important to have all the other attributes because I need to select/remove based on shellfish lease # (columns MSNO)
 # If I don't do this next step, I will lose all the attribute information when using fortify(). I need to add it back in.
-nbLeases = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2022/2022_NB_MASMPS_Data.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-
+nbLeasesOGR = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2022/2022_NB_MASMPS_Data.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 # Trying a new method for removing multiple leases at once
 removeLeaseNB = c("MS-1240", "MS-0946", "MS-0067", "MS-1363", "MS-1362", "MS-1369")
-
-nbLeases.df = merge(fortify(nbLeases), as.data.frame(nbLeases), by.x = "id", by.y = 0) %>%
+nbLeases = merge(fortify(nbLeasesOGR), as.data.frame(nbLeasesOGR), by.x = "id", by.y = 0) %>%
   # Add ! to exclude the leases mentioned above
   filter(!(MSNO %in% removeLeaseNB))
 
@@ -138,13 +151,7 @@ nbLeases.df = merge(fortify(nbLeases), as.data.frame(nbLeases), by.x = "id", by.
 peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2020/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 
 # Newfoundland
-# I used the Newfoundland Land Use Atlas: https://www.gov.nl.ca/landuseatlas/details/
-# However, I was not sure how to extract the data as shapefiles
-# Instead, I zoomed into the study area and saw two leases and used the Measurement --> Location tool to get the coordinates of the vertices
-# I copied and pasted these into csv files
-# Leases are for Crown title 118040 and 108739. Both say "Issue-Lease". Original title owner: Terry Mills
-# 500m blue aquaculture buffer around leases confirm these are aquaculture leases
-# If there were more leases, I would find a better way to obtain shapefiles, but this will work for now!
+# Read in the Excel spreadsheets where I saved the lease coordinate information
 lease1Sf = sfheaders::sf_polygon(
   obj = read.csv("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/NLlease108739.csv"),
   x = "Lon",
@@ -164,14 +171,11 @@ sf::st_crs(lease2Sf) = 4326
 st_transform(lease2Sf, crs = "+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
 # Pacific
-# Shellfish leases are from Tantalis crown features
-# Available from various different sources but I found this is best: https://fisheries-map-gallery-crm.hub.arcgis.com/datasets/governmentofbc::tantalis-crown-tenures
-# If from Open Data, you can't click on many of the polygons to see what the features represent
-# Filter by TENURE_PURPOSE == "AQUACULTURE" and TENURE_SUBPURPOSE == "SHELL FISH"
-# Also turn "filter as map moves" on, so only data in the view get downloaded. Export as a shapefile.
-# Note for now I am combining leases that have status "Application" AND "Tenured"
-pacLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/TANTALIS_-_Crown_Tenures.shp"), sp::CRS("+proj=utm +zone=9 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-
+pacLeasesOGR = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/TANTALIS_-_Crown_Tenures.shp"), sp::CRS("+proj=utm +zone=9 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+pacLeases = merge(fortify(pacLeasesOGR), as.data.frame(pacLeasesOGR), by.x = "id", by.y = 0) %>%
+  # Only include leases that are actually tenured, i.e. don't include ones with status "APPLICATION" because those wouldn't have been stocked with shellfish
+  # I could have filtered this out on the online portal, but when I downloaded it I wasn't sure what should be included
+  filter(TENURE_STA == "TENURE")
 
 ################################################################################
 ## DFO regions
