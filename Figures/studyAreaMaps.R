@@ -138,7 +138,7 @@ atlMap =
 # Lemmens 
 ggLemMap = ggplot()+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
+  geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group, fill = TENURE_STA), col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
   geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
   # crs = 32609 is UTM zone 9
   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
@@ -150,6 +150,23 @@ ggLemMap = ggplot()+
     axis.ticks = element_blank(),
     axis.title = element_blank(),
         panel.grid = element_blank())
+
+# Questino for Terri Sutherland
+ggLemMap = ggplot()+
+  geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
+  geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group, fill = TENURE_STA), col = "black", linewidth = 0.1)+
+  scale_fill_discrete(name = "TENURE_STATUS")+ # add shellfish leases
+  geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
+  # crs = 32609 is UTM zone 9
+  coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
+  annotation_scale(location = "br", text_cex = 0.8)+ # see note above about scale bar
+  ggtitle("Lemmens")+
+  theme_bw()+
+  theme(
+    #axis.text = element_blank(),
+    #axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank())
   
 ################################################################################
 ## MARITIMES
