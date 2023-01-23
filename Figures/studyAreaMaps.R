@@ -48,8 +48,9 @@ source("Figures/colourPchSchemes.R") # defines colour schemes for the region map
 canMap = 
   ggplot()+
   geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
-  # geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
-  scale_fill_manual(values=regionMapCols)+
+  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
+  # Adjust the names of the legend items so there's enough space on the map for them
+  scale_fill_manual(values=regionMapCols, labels = c("Gulf", "Mar", "Nfld", "Other", "Pac"))+
   geom_sf(data = canada_map, linewidth = 0.01, fill = NA, col = "black")+ # this shows the provinces. Make the linewidth very small
   # Note that if an sf object is not plotted first, you need to use coord_sf to situate everything
   # This will add graticules to the map. It also makes sure the scale bar is in correct units (but N/A for this map- no scale bar)
@@ -62,7 +63,19 @@ canMap =
     axis.text = element_blank(),
     axis.ticks = element_blank(),
     axis.title = element_blank(),
-    legend.position = "none")
+    # Idk if I needed to do both steps below, but put a black outline around legend
+    legend.background = element_blank(),
+    legend.box.background = element_rect(colour = "black"),
+    # Put legend in bottom left of plot and have it align with the actual plot
+    legend.justification = c(0,0),
+    legend.position = c(0,0),
+    # Make the size of the legend elements smaller
+    legend.key.size = unit(0.2, "cm"),
+    # Remove legend title
+    legend.title = element_blank()
+  ) +
+  # Set legend to have 3 columns
+  guides(fill = guide_legend(ncol = 3))
 
 # The Pacific and Atlantic inset maps need to be approx the same size (relative height/width) to be combined together properly
 # I eyeballed this in QGIS to make sure each map was roughly the same height/width on the screen. Then I wrote down the coordinates.
@@ -71,9 +84,9 @@ canMap =
 pacMap = 
   ggplot()+
   geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
-  # geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
-  # geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = "red", size = 3)+ # outline square for Lemmens (why did this work?)
-  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # outline square for Lemmens (why did this work?)
+  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
+  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = "red", size = 3)+ # outline square for Lemmens (why did this work?)
+  # geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # outline square for Lemmens (why did this work?)
   theme_bw()+
   ggtitle("(B) Pacific")+
   coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+ # set map extents and define coordinate system
@@ -88,20 +101,20 @@ pacMap =
 atlMap = 
   ggplot()+
   geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
-  # geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
+  geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
   # Add markers (red outlines) for each of the bays that were sampled
   # "Tr" refers to data that were transects. "Pun" is "punctual stations" (discrete locations)
   # This only plots one point per region (the first one). 
   # Could have added as geom_rect, but this might be better if I want them filled
-  geom_sf(data = marTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # stroke changes width of square outline
-  geom_sf(data = marPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
-  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
-  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ 
+  # geom_sf(data = marTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # stroke changes width of square outline
+  # geom_sf(data = marPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
+  # geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+
+  # geom_sf(data = nlPunMap, pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ 
   # Used filled squares if displaying DFO regions so they show up better
-  # geom_sf(data = marTrMap, pch = 22, col = "red", fill = "red", size = 3)+ 
-  # geom_sf(data = marPunMap, pch = 22, col = "red", fill = "red", size = 3)+
-  # geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = "red", size = 3)+
-  # geom_sf(data = nlPunMap, pch = 22, col = "red", fill = "red", size = 3)+
+  geom_sf(data = marTrMap, pch = 22, col = "red", fill = "red", size = 3)+
+  geom_sf(data = marPunMap, pch = 22, col = "red", fill = "red", size = 3)+
+  geom_sf(data = gulfTrMap, pch = 22, col = "red", fill = "red", size = 3)+
+  geom_sf(data = nlPunMap, pch = 22, col = "red", fill = "red", size = 3)+
   theme_bw()+
   coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
   scale_fill_manual(values = regionMapCols)+
@@ -138,7 +151,7 @@ atlMap =
 # Lemmens 
 ggLemMap = ggplot()+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group, fill = TENURE_STA), col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
+  geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
   geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
   # crs = 32609 is UTM zone 9
   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
@@ -151,22 +164,22 @@ ggLemMap = ggplot()+
     axis.title = element_blank(),
         panel.grid = element_blank())
 
-# Questino for Terri Sutherland
-ggLemMap = ggplot()+
-  geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group, fill = TENURE_STA), col = "black", linewidth = 0.1)+
-  scale_fill_discrete(name = "TENURE_STATUS")+ # add shellfish leases
-  geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
-  # crs = 32609 is UTM zone 9
-  coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
-  annotation_scale(location = "br", text_cex = 0.8)+ # see note above about scale bar
-  ggtitle("Lemmens")+
-  theme_bw()+
-  theme(
-    #axis.text = element_blank(),
-    #axis.ticks = element_blank(),
-    axis.title = element_blank(),
-    panel.grid = element_blank())
+# Question for Terri Sutherland
+# ggLemMap = ggplot()+
+#   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
+#   geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group, fill = TENURE_STA), col = "black", linewidth = 0.1)+
+#   scale_fill_discrete(name = "TENURE_STATUS")+ # add shellfish leases
+#   geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
+#   # crs = 32609 is UTM zone 9
+#   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
+#   annotation_scale(location = "br", text_cex = 0.8)+ # see note above about scale bar
+#   ggtitle("Lemmens")+
+#   theme_bw()+
+#   theme(
+#     #axis.text = element_blank(),
+#     #axis.ticks = element_blank(),
+#     axis.title = element_blank(),
+#     panel.grid = element_blank())
   
 ################################################################################
 ## MARITIMES
