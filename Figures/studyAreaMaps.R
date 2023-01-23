@@ -156,6 +156,10 @@ ggLemMap = ggplot()+
   # crs = 32609 is UTM zone 9
   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+ # see note above about scale bar
+  # Add a north arrow to Lemmens only in the top right
+  annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(1, "cm"), width = unit(1, "cm"),
+                         style = north_arrow_fancy_orienteering)+
   ggtitle("(D) Lemmens")+
   theme_bw()+
   theme(
