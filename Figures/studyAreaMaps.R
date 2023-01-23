@@ -157,7 +157,7 @@ ggLemMap = ggplot()+
   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+ # see note above about scale bar
   # Add a north arrow to Lemmens only in the top right
-  annotation_north_arrow(location = "tr", which_north = "true",
+  annotation_north_arrow(location = "tr", which_north = "grid",
                          height = unit(1, "cm"), width = unit(1, "cm"),
                          style = north_arrow_fancy_orienteering)+
   ggtitle("(D) Lemmens")+
@@ -198,6 +198,10 @@ ggArgMap = ggplot()+
   geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
   coord_sf(xlim = c(259213, 267918), ylim = c(4846335, 4855031), crs = 32620)+ # UTM zone 20
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.8, "cm"))+
+  # # Add a north arrow to map
+  # annotation_north_arrow(location = "tr", which_north = "true",
+  #                        height = unit(1, "cm"), width = unit(1, "cm"),
+  #                        style = north_arrow_fancy_orienteering)+
   ggtitle("(E) Argyle")+
   theme_bw()+
   theme(
@@ -213,6 +217,10 @@ ggSobMap = ggplot()+
   geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.70, linewidth = 2.5, lineend = "round")+
   coord_sf(xlim = c(541154, 542825), ylim = c(4964661, 4966410), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
+  # # Add a north arrow to map
+  # annotation_north_arrow(location = "tr", which_north = "true",
+  #                        height = unit(1, "cm"), width = unit(1, "cm"),
+  #                        style = north_arrow_fancy_orienteering)+
   ggtitle("(F) Sober Island")+
   theme_bw()+
   theme(
@@ -230,6 +238,10 @@ ggChMap = ggplot()+
   # annotation_scale needs the crs to be set here too
   coord_sf(xlim = c(596383, 611074), ylim = c(4996642, 5011378), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
+  # Add a north arrow to map
+  # annotation_north_arrow(location = "tr", which_north = "true",
+  #                        height = unit(1, "cm"), width = unit(1, "cm"),
+  #                        style = north_arrow_fancy_orienteering)+
   ggtitle("(G) Country Harbour")+
   theme_bw()+
   theme(
@@ -245,6 +257,10 @@ ggWhMap = ggplot()+
   geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+  # Use this instead of coord_map to get the scalebar thing to work. 
   coord_sf(xlim = c(641669, 647881), ylim = c(5013443, 5019630), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(4.1, "cm"))+
+  # Add a north arrow to map
+  # annotation_north_arrow(location = "tr", which_north = "true",
+  #                        height = unit(1, "cm"), width = unit(1, "cm"),
+  #                        style = north_arrow_fancy_orienteering)+
   ggtitle("(H) Whitehead")+
   theme_bw()+
   theme(
