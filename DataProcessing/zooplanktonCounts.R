@@ -502,6 +502,9 @@ pacMetaRed = reducedMeta(pacMeta) %>%
   # Pooled data from March 2021 are from all over the inlet. Replace with NA.
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
   mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
+  # Make an adjustment for March: if I group by dayStart, I will end up with 4 entries (instead of 2) because HT and LT were collected on multiple days
+  # Therefore, for the Pacific March data, just replace the "dayStart" to 3 (instead of 3 and 5)
+  mutate(dayStart = ifelse(monthStart == 3, 3, dayStart)) %>%
   # Remember that each sample in the Pacific is made up of two (or more) tows that they combined together. Need to group these into one
   # by NOT including "sampleCode" in the grouping, the waterVolumes per flowcamCode can be summed
   group_by(flowcamCode, myLabel, yearStart, monthStart, dayStart, facilityName, tidePhase, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>%
