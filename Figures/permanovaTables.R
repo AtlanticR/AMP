@@ -145,8 +145,8 @@ order.gulfBays = c("Cocagne_vs_Malpeque", "Cocagne_vs_St. Peters", "Malpeque_vs_
 order.pacField = c("September 2021_vs_August 2020", "August 2020_vs_June 2021", "September 2021_vs_June 2021")
 
 # For the bays, I also want the comparisons to be alphabetical
-order.arg = c("Mid_vs_Inner", "Outer_vs_Inner", "Mid_vs_Outer")
-order.stP = c("Mid_vs_East", "West_vs_East", "West_vs_Mid")
+order.arg = c("Central_vs_North", "Central_vs_South", "South_vs_North")
+order.stP = c("Mid_vs_Inner", "Outer_vs_Inner", "Outer_vs_Mid")
 order.aug2020 = c("Mid_vs_Inner", "Outer_vs_Inner", "Outer_vs_Mid")
 order.sept2021 = c("Inner_vs_Mid", "Outer_vs_Inner", "Outer_vs_Mid")
 
@@ -263,16 +263,16 @@ argyleSimperTableTide =
 
 # Argyle Tide
 argyleSimperTableStn = rbind(
-  simDfMaker(summary(simArgStn)$Mid_Inner, simArgStn$Mid_Inner, "Mid_Inner"),
-  simDfMaker(summary(simArgStn)$Outer_Inner, simArgStn$Outer_Inner, "Outer_Inner"),
-  simDfMaker(summary(simArgStn)$Mid_Outer, simArgStn$Mid_Outer, "Mid_Outer")
+  simDfMaker(summary(simArgStn)$Central_North, simArgStn$Central_North, "Central_North"),
+  simDfMaker(summary(simArgStn)$Central_South, simArgStn$Central_South, "Central_South"),
+  simDfMaker(summary(simArgStn)$South_North, simArgStn$South_North, "South_North")
   )
 
 # St Peters
 stPSimperTableStn = rbind(
-  simDfMaker(summary(simStPStn)$Mid_East, simStPStn$Mid_East, "Mid_East"),
-  simDfMaker(summary(simStPStn)$West_East, simStPStn$West_East, "West_East"),
-  simDfMaker(summary(simStPStn)$West_Mid, simStPStn$West_Mid, "West_Mid")
+  simDfMaker(summary(simStPStn)$Mid_Inner, simStPStn$Mid_Inner, "Mid_Inner"),
+  simDfMaker(summary(simStPStn)$Outer_Inner, simStPStn$Outer_Inner, "Outer_Inner"),
+  simDfMaker(summary(simStPStn)$Outer_Mid, simStPStn$Outer_Mid, "Outer_Mid")
 )
 
 # Pacific Aug 2020
