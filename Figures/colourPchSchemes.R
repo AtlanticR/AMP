@@ -59,8 +59,12 @@ stationCol = c("Outer" = "#82C738",
              "Mid" = "#3882C7",
              "Inner" = "#C73882",
              
-             "North" = "#82C738",
-             "South" = "#C73882",
+             "Inner-North" = "#C73882",
+             "Inner-South" = "#3882C7",
+             
+             "North" = "#C73882",
+             "Central" = "#3882C7",
+             "South" = "#82C738",
              
              "East" = "#82C738",
              "West" = "#C73882",
