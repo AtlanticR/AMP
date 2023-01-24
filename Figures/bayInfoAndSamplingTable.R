@@ -28,6 +28,7 @@ bayTable = allRegionsWide %>%
   group_by(region, facetFactor, myLabel) %>%
   # This takes the average depth for each station within each bay
   mutate(avgDepthStn = round(mean(depthWaterM), 2)) %>% 
+  mutate(equipmentType = ifelse(facetFactor == "St. Peters", "250/150", equipmentType)) %>%
   group_by(region, facetFactor, yearStart,dateRange, myLabel, tidePhase, avgDepthStn, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>%
   # In each bay, count the number of samples with this station and tide phase combination
   summarise(stnTideCount = n()) %>%
@@ -42,10 +43,11 @@ bayTable = allRegionsWide %>%
   mutate_if(is.character, str_to_upper) %>%
   # Fix for consistency. Some Pacific field seasons were blank (but I know it should be Punctual Stations). Country Harbour and Whitehead did not have an "s" at the end
   mutate(samplingDesign = ifelse(region == "Pacific" | facetFactor == "Country Harbour" | facetFactor == "Whitehead", "Punctual stations", samplingDesign)) %>%
-  mutate(TowType = ifelse(TowType == "obliq", "Oblique", TowType))
+  mutate(TowType = ifelse(TowType == "obliq", "Oblique", TowType)) %>%
+  #ungroup() %>%
+  select(region, facetFactor, yearStart, dateRange, productionType, target, samplingDesign, TowType, equipmentType, netMesh, myLabel, avgDepthStn, tidePhase, stnTideCount)
 
-
-  
+# write.csv(bayTable, "bayTable.csv")
   
 
 
