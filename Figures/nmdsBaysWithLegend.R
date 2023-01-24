@@ -60,7 +60,7 @@ arg.ggLeg = ggplot()+
   scale_fill_manual(values = stationCol)+ 
   # Rename the labels to be a bit shorter so they all fit in a grid
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("LT", "MR", "HT"), position = "top")+ 
-  scale_y_discrete(name = "Station", breaks = c(3, 2, 1), labels = c("N", "Cen", "S"))+ 
+  scale_y_discrete(name = "Station", breaks = c(3, 2, 1), labels = c("North", "Cen", "South"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -334,17 +334,17 @@ mal.withLeg = grid.arrange(gulfNMDSbays[[2]], mal.ggLeg, nrow=6, ncol = 4,
 # St. Peters
 
 # x-axis is tide phase (symbol)
-stP.xcoord = c(1,2,
-               1,2,
-               1,2)
+stP.xcoord = c(1,2,3,
+               1,2,3,
+               1,2,3)
 
 # y-axis is station (colour)
-stP.ycoord = c(3,3,
-               2,2,
-               1,1)
+stP.ycoord = c(3,3,3,
+               2,2,2,
+               1,1,1)
 
-stP.myLabel = c("Inner", "Inner", "Mid", "Mid", "Outer", "Outer")
-stP.tidePhase = c("Low", "High", "Low", "High", "Low", "High")
+stP.myLabel = c("Inner", "Missing", "Inner", "Mid", "Mid", "Mid", "Outer", "Missing", "Outer")
+stP.tidePhase = c("Low", "Mid-Falling", "High", "Low", "Mid-Falling", "High", "Low", "Mid-Falling", "High")
 
 stP.legDf = data.frame(stP.xcoord, stP.ycoord, stP.myLabel, stP.tidePhase)
 
@@ -353,7 +353,7 @@ stP.ggLeg = ggplot()+
   geom_point(data = stP.legDf, aes(x = as.factor(stP.xcoord), y = as.factor(stP.ycoord), pch = stP.tidePhase, fill = stP.myLabel), col = "black", size = 4)+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
-  scale_x_discrete(name = "Tide Phase", breaks = c(1, 2), labels = c("LT", "HT"), position = "top")+
+  scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("LT", "MF", "HT"), position = "top")+
   scale_y_discrete(name = "Station", breaks = c(3, 2, 1), labels = c("In", "Mid", "Out"))+ 
   theme_minimal()+
   theme(
