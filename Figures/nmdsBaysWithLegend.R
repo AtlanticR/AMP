@@ -41,13 +41,13 @@ arg.xcoord = c(1, 2, 3,
             1, 2, 3)
 
 # y-coordinates for plot. This will show stations (as colours)
-arg.ycoord = c(1, 1, 1,
+arg.ycoord = c(3, 3, 3,
                2, 2, 2, 
-               3, 3, 3)
+               1, 1, 1)
 
 # Corresponding station and tide information
 # Remember that (1,1) is first on plot (bottom left). Will therefore be "Inner" station, "Low" tide.
-arg.myLabel = c("Inner", "Inner", "Inner", "Mid", "Missing", "Mid", "Outer", "Outer", "Outer")
+arg.myLabel = c("North", "North", "North", "Central", "Missing", "Central", "South", "South", "South")
 arg.tidePhase = c("Low", "Mid-Rising", "High", "Low", "Mid-Rising", "High", "Low", "Mid-Rising", "High")
 
 # Put all of this in a data frame. Take a look at data frame to see how info is related.
@@ -60,7 +60,7 @@ arg.ggLeg = ggplot()+
   scale_fill_manual(values = stationCol)+ 
   # Rename the labels to be a bit shorter so they all fit in a grid
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("LT", "MR", "HT"), position = "top")+ 
-  scale_y_discrete(name = "Station", breaks = c(1, 2, 3), labels = c("In", "Mid", "Out"))+ 
+  scale_y_discrete(name = "Station", breaks = c(3, 2, 1), labels = c("N", "Cen", "S"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -98,9 +98,9 @@ ch.xcoord = c(1,2,
               1,2,
               1,2)
 
-ch.ycoord = c(1, 1,
+ch.ycoord = c(3, 3,
               2, 2, 
-              3, 3)
+              1, 1)
 
 ch.myLabel = c("Inner", "Inner", "Mid", "Mid", "Outer", "Outer")
 ch.tidePhase = c("Low", "High", "Low", "High", "Low", "High")
@@ -112,7 +112,7 @@ ch.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2), labels = c("LT", "HT"), position = "top")+ 
-  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("In", "Mid", "Out"))+ 
+  scale_y_discrete(name = "Station", breaks = c(3, 2, 1), labels = c("In", "Mid", "Out"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -142,16 +142,17 @@ sob.xcoord = c(1,2,3,
               1,2,3,
               1,2,3)
 
-sob.ycoord = c(1, 1, 1,
+sob.ycoord = c(3, 3, 3,
               2, 2, 2, 
-              3, 3, 3)
+              1, 1, 1)
 
 # Only the "Outer" stations were sampled at High Tide and Low Tide
 # Inner and Mid stations sampled at "Mid-Rising" tide
 # Mid and In therefore blank for HT/LT (shapes not filled in). Same with "MR" for "Outer" station
 # "Missing" stations are shown in white
 # This helps show the imbalance in sampling 
-sob.myLabel = c("Missing", "Inner", "Missing", "Missing", "Mid", "Missing", "Outer", "Missing", "Outer")
+sob.myLabel = c("Missing", "Inner-North", "Missing", "Missing", "Inner-South", "Missing", "Outer", "Missing", "Outer")
+
 sob.tidePhase = c("Low", "Mid-Rising", "High", "Low", "Mid-Rising", "High", "Low", "Mid-Rising", "High")
 
 sob.leg = data.frame(sob.xcoord, sob.ycoord, sob.myLabel, sob.tidePhase)
@@ -161,7 +162,7 @@ sob.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("LT", "MR", "HT"), position = "top")+ 
-  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("In", "Mid", "Out"))+ 
+  scale_y_discrete(name = "Station", breaks = c(3, 2, 1), labels = c("I-N", "I-S", "Out"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -191,9 +192,9 @@ wh.xcoord = c(1, 2, 3,
             1, 2, 3, 
             1, 2, 3)
 
-wh.ycoord = c(1, 1, 1,
+wh.ycoord = c(3, 3, 3,
               2, 2, 2, 
-              3, 3, 3)
+              1, 1, 1)
 
 wh.myLabel = c("Inner", "Inner", "Inner", "Mid", "Mid", "Mid", "Outer", "Outer", "Outer")
 wh.tidePhase = c("Low", "Mid-Falling", "High", "Low", "Mid-Falling", "High", "Low", "Mid-Falling", "High")
@@ -205,7 +206,7 @@ wh.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("LT", "MF", "HT"), position = "top")+ 
-  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("In", "Mid", "Out"))+ 
+  scale_y_discrete(name = "Station", breaks = c(1,2,3), labels = c("Out", "Mid", "In"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -248,7 +249,7 @@ coc.ycoord = c(1, 1,
                2, 2, 
                3, 3)
 
-coc.myLabel = c("South", "South", "Mid", "Mid", "North", "North")
+coc.myLabel = c("South", "South", "Central", "Central", "North", "North")
 coc.tidePhase = c("Low", "Mid-Rising", "Low", "Mid-Rising", "Low", "Mid-Rising")
 
 coc.legDf = data.frame(coc.xcoord, coc.ycoord, coc.myLabel, coc.tidePhase)
@@ -258,7 +259,7 @@ coc.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2), labels = c("LT", "MR"), position = "top")+ 
-  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("South", "Mid", "North"))+ 
+  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("South", "Central", "North"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -295,7 +296,7 @@ mal.ycoord = c(1,
                2, 
                3)
 
-mal.myLabel = c("South", "Mid", "North")
+mal.myLabel = c("South", "Central", "North")
 mal.tidePhase = c("Low", "Low", "Low")
 
 mal.legDf = data.frame(mal.xcoord, mal.ycoord, mal.myLabel, mal.tidePhase)
@@ -305,7 +306,7 @@ mal.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1), labels = c("LT"), position = "top")+ 
-  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("South", "Mid", "North"))+ 
+  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("South", "Central", "North"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -338,11 +339,11 @@ stP.xcoord = c(1,2,
                1,2)
 
 # y-axis is station (colour)
-stP.ycoord = c(1,1,
+stP.ycoord = c(3,3,
                2,2,
-               3,3)
+               1,1)
 
-stP.myLabel = c("West", "West", "Mid", "Mid", "East", "East")
+stP.myLabel = c("Inner", "Inner", "Mid", "Mid", "Outer", "Outer")
 stP.tidePhase = c("Low", "High", "Low", "High", "Low", "High")
 
 stP.legDf = data.frame(stP.xcoord, stP.ycoord, stP.myLabel, stP.tidePhase)
@@ -353,7 +354,7 @@ stP.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2), labels = c("LT", "HT"), position = "top")+
-  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("West", "Mid", "East"))+ 
+  scale_y_discrete(name = "Station", breaks = c(3, 2, 1), labels = c("In", "Mid", "Out"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -385,10 +386,10 @@ nl.xcoord = c(1, 2, 3,
               1, 2, 3,
               1, 2, 3)
 
-nl.ycoord = c(1,1,1,
-              2,2,2,
-              3,3,3,
-              4,4,4)
+nl.ycoord = c(4, 4, 4,
+              3, 3, 3,
+              2, 2, 2,
+              1, 1, 1)
 
 nl.myLabel = c("Inner", "Inner", "Inner", "Mid-Inner", "Mid-Inner", "Mid-Inner", "Mid-Outer", "Mid-Outer", "Missing", "Outer", "Outer", "Missing")
 nl.tidePhase = c("Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising")
@@ -400,7 +401,7 @@ nl.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationColNL)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("MF", "LT", "MR"), position = "top")+
-  scale_y_discrete(name = "Station", breaks = c(1, 2, 3, 4), labels = c("In", "MI", "MO", "Out"))+ 
+  scale_y_discrete(name = "Station", breaks = c(4, 3, 2, 1), labels = c("In", "MI", "MO", "Out"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -435,9 +436,9 @@ pac.xcoord = c(1,2,
                1,2)
 
 # y-axis is station (colour)
-pac.ycoord = c(1,1,
-               2,2,
-               3,3)
+pac.ycoord = c(3, 3,
+               2, 2,
+               1, 1)
 
 pac.myLabel = c("Inner", "Inner", "Mid", "Mid", "Outer", "Outer")
 pac.tidePhase = c("Low", "High", "Low", "High", "Low", "High")
@@ -450,7 +451,7 @@ pac.ggLeg = ggplot()+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationCol)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2), labels = c("LT", "HT"), position = "top")+ 
-  scale_y_discrete(name = "Station", breaks = c("1", "2", "3"), labels = c("Inner", "Mid", "Outer"))+ 
+  scale_y_discrete(name = "Station", breaks = c(1, 2, 3), labels = c("Outer", "Mid", "Inner"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
