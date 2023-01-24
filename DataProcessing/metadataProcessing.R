@@ -43,9 +43,19 @@ gulfMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_
 # We want tide phase categories, i.e., High, Mid-Rising, Mid-Falling, Low which was not always directly defined in the metadata
 # Tide info in metadata does not always follow what it is supposed to (i.e., tideRange = high, mid, low. tideRiseFall = rising, falling)
 # I have therefore added a TidePhase column
+
 # Maritimes: comes from a combination of tideRange (high, mid, low) and tideRiseFall (rising, falling)
-# Gulf: provided by Thomas Guyondet. However, some were included in the FlowCam names. Tides used were prioritized by using the designations from the Flowcam labels first, then using Thomas' classes.
+
+# Gulf: provided by Thomas Guyondet. However, some were included in the FlowCam names. Tides were from Thomas' classes, then compared against flowcam labels
+# NOTE: sample 20_09_01_Gulf_S04_Z38_0938_250	aka AMMP_Gulf_StPeters_3_20200902LT_250UM was labelled incorrectly. So it is actually a HT sample.
+# Also, there are 4 "mid-falling". When looking at the tideLevel and Thomas' classes, these are definitely in the middle. I am ignoring the HT from the labels, and asking what is correct
+# 20_09_02_Gulf_S04_Z39_1106_250	AMMP_Gulf_StPeters_2A_20200902HT_250UM
+# 20_09_02_Gulf_S04_Z39_1126_250	AMMP_Gulf_StPeters_2B_20200902HT_250UM
+# 20_09_02_Gulf_S04_Z39_1150_250	AMMP_Gulf_StPeters_2C_20200902_250UM
+# 20_09_02_Gulf_S04_Z39_1213_250	AMMP_Gulf_StPeters_2D_20200902_250UM
+
 # Newfoundland: in 2020, samples were not taken from specific high/mid/low periods. However, Thomas Gyundet has also provided.
+
 # Pacific: tides were either Low or High. Get this from the FlowcamSample name OR from nearby Tofino tide station (https://www.isdm-gdsi.gc.ca/isdm-gdsi/twl-mne/maps-cartes/inventory-inventaire-eng.asp?user=isdm-gdsi&region=ATL&tst=1&perm=0)
 # For some Pacific sites, when comparing sampling times to Tofino tide data, some could be classified as 'mid-falling' or 'mid-rising'
 # However, to reduce the # of classes, keep as just high/low. But tidePhaseOld has mid-rising/falling if it's ever needed
