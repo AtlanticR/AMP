@@ -328,7 +328,7 @@ grid.arrange(ggGulfMar, gulfLegend, marLegend, nrow=2, ncol = 2,
 # Run as a function and pass in the various  
 
 
-nmdsPrep = function(mergeData, bayColours) {
+nmdsPrep = function(mergeData, bayColours, breakVals) {
   # alter the dataframe so it is in appropriate format for NMDS
   # names_from: The column whose values will be used as column names
   # values_from: The column whose values will be used as cell values
@@ -350,6 +350,7 @@ nmdsPrep = function(mergeData, bayColours) {
     mutate(tidePhase = mergeData$tidePhase) %>%
     mutate(facetFactor = mergeData$facetFactor) %>%
     mutate(myLabel = mergeData$myLabel)
+  
   # Add NMDS stress
   # Note that round() includes UP TO 2 decimal places. Does not include 0s 
   ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
@@ -366,15 +367,17 @@ nmdsPrep = function(mergeData, bayColours) {
   centFacet = aggregate(cbind(NMDS1, NMDS2)~facetFactor, data =ordCoords, FUN = mean) # centroid of the regions
   # Now merge the region coordinates. These now form "segments" from centroid to actual coordinates
   segs = merge(ordCoords, setNames(centFacet, c('facetFactor', 'fNMDS1', 'fNMDS2')),
-               by = "facetFactor", sort = FALSE)
+               by = "facetFactor", sort = FALSE) %>%
+    mutate(region = mergeData$region)
   
   # Make the ggplot item for each DFO region
   ggBay =
     ggplot() + 
     geom_segment(data = segs, mapping = aes(x = NMDS1, xend = fNMDS1, y = NMDS2, yend = fNMDS2), col = "grey49")+ # map segments for distance to centroid
     geom_point(data = ordCoords, aes(x=NMDS1, y=NMDS2, fill = facetFactor, pch = facetFactor), alpha = 0.9, size = 5)+ # Use pch=21 to get black outline circles
-    scale_fill_manual(name = legendTitle, values = bayColours)+
-    scale_shape_manual(values = c(21:24),  name = legendTitle)+ 
+    # I couldn't get my stupid ifelse() statement to work. Instead, just pass in the specified break values 
+    scale_shape_manual(values = c(21:24), name = legendTitle, breaks = breakVals)+
+    scale_fill_manual(name = legendTitle, values = bayColours, breaks = breakVals)+
     ggtitle(mergeData$region)+
     #annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust=1)+ # for all others
     annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust = -0.01)+ # for Maritimes (otherwise 2D stress gets blocked)
@@ -395,14 +398,17 @@ nmdsPrep = function(mergeData, bayColours) {
   
 }
 
-marNMDS = nmdsPrep(marMerge, marColours)
-nlNMDS = nmdsPrep(nlMerge, nlColours)
-pacNMDS = nmdsPrep(pacMerge, pacColours)
-gulfNMDS = nmdsPrep(gulfMerge, gulfColours)
+# Last argument is the "breaks" which changes the order of the legend items
+# The default is alphabetical order, which is correct for all but Pacific!
+# For Pacific, need to rearrange chronologically, so specify the order needed
+# waiver() is what you enter for breaks if you just want the default value
+marNMDS = nmdsPrep(marMerge, marColours, waiver())
+nlNMDS = nmdsPrep(nlMerge, nlColours, waiver())
+pacNMDS = nmdsPrep(pacMerge, pacColours, c("August 2020", "March 2021", "June 2021", "September 2021"))
+gulfNMDS = nmdsPrep(gulfMerge, gulfColours, waiver())
 
 # This works better than grid.arrange! It aligns all the plots with unequal legends
 plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
-
 plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 
 
