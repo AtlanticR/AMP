@@ -22,8 +22,9 @@ bayTable = allRegionsWide %>%
          maxDate = max(dayStart),
          # ifelse(<condition>, <yes>, ifelse(<condition>, <yes>, <no>))
          dateRange = ifelse(facetFactor == "Argyle", "Aug 30 - Sep 1", # for Argyle, just manually enter the date range to prevent errors
-                            ifelse(minDate == maxDate, paste(monthLetters, minDate), # If data only collected on one day, enter that day (not as a range)
-           paste(monthLetters, minDate, "-", monthLetters, maxDate)))) %>% # Otherwise, specify the range
+                            ifelse(facetFactor == "March 2021", "Mar 3-5", # I had to initially adjust to only say "March 3" so samples would group properly in zooplanktonCounts.R. But it's actually Mar 3-5
+                              ifelse(minDate == maxDate, paste(monthLetters, minDate), # If data only collected on one day, enter that day (not as a range)
+           paste(monthLetters, minDate, "-", monthLetters, maxDate))))) %>% # Otherwise, specify the range
   group_by(region, facetFactor, myLabel) %>%
   # This takes the average depth for each station within each bay
   mutate(avgDepthStn = round(mean(depthWaterM), 2)) %>% 
