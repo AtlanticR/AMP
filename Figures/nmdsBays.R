@@ -88,7 +88,7 @@ nmdsBay = function(regionData, stationCol) {
       # Low tides are from July, Mid-Rising are from August
       geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= ifelse(facetFactor == "Cocagne" & tidePhase == "Low", "Jul",
                                                                             ifelse(facetFactor == "Cocagne" & tidePhase == "Mid-Rising", "Aug", ""))), colour = "gray30")+ # Use pch=21 to get black outline circles
-      #geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= myLabel), colour = "gray30")+ # Use pch=21 to get black outline circles
+      # geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= myLabel), colour = "gray30")+ # Use pch=21 to get black outline circles
       # adding "breaks" will make sure only the tidePhases actually present in each plot will show up
       # sorting them will make sure they display alphabetically/consistently between each plot
       scale_shape_manual(values = pchTide, name = "Tide Phase", breaks = sort(unique(ordCoords$tidePhase)))+
