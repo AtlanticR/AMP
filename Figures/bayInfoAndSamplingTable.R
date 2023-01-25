@@ -7,6 +7,8 @@ source("Figures/nmdsRegions.R")
 
 # Get the columns that are actually important to merge
 bayTable = allRegionsWide %>%
+  
+  ## Figure out the date ranges for each bay/field season
   # If I don't ungroup I get an "add missing grouping variables:..." warning
   # See here for more details: https://datacornering.com/dplyr-adding-missing-grouping-variable/
   ungroup() %>%
@@ -25,27 +27,58 @@ bayTable = allRegionsWide %>%
                             ifelse(facetFactor == "March 2021", "Mar 3-5", # I had to initially adjust to only say "March 3" so samples would group properly in zooplanktonCounts.R. But it's actually Mar 3-5
                               ifelse(minDate == maxDate, paste(monthLetters, minDate), # If data only collected on one day, enter that day (not as a range)
            paste(monthLetters, minDate, "-", monthLetters, maxDate))))) %>% # Otherwise, specify the range
-  group_by(region, facetFactor, myLabel) %>%
-  # This takes the average depth for each station within each bay
-  mutate(avgDepthStn = round(mean(depthWaterM), 2)) %>% 
+  
+  ## Fix typos and make adjustments to the entries
+  
+  # Change equipment type for all St. Peters to "250/150". (Some were just "250" but it must be the same)
   mutate(equipmentType = ifelse(facetFactor == "St. Peters", "250/150", equipmentType)) %>%
-  group_by(region, facetFactor, yearStart,dateRange, myLabel, tidePhase, avgDepthStn, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>%
-  # In each bay, count the number of samples with this station and tide phase combination
-  summarise(stnTideCount = n()) %>%
-  # March 2021 had multiple samples combined from all stations
+  
+  # Change station name for March 2021. Samples combined from all stations
   mutate(myLabel = ifelse(facetFactor == "March 2021", "Combined (Inner, Mid, Outer)", myLabel)) %>%
+  
   # Shellfish production type was missing for St. Peters and Malpeque
-  # I looked at the leases from https://www.arcgis.com/home/webmap/viewer.html?webmap=16aa8830c7084a8a92ce066b525978b4 (in QGIS)
+  # I looked at the leases from https://www.arcgis.com/home/webmap/viewer.html?webmap=16aa8830c7084a8a92ce066b525978b4 (some archive files are from Jeff)
   # And looked at the shellfish types within both areas. I am not sure the difference between quahaug and clam?
   mutate(productionType = ifelse(facetFactor == "St. Peters", "Mussel, oyster, scallop, quahaug, clam",
                                  ifelse(facetFactor == "Malpeque", "Mussel, oyster, quahaug, clam", productionType))) %>%
+  
+  
   # Make first letter in each cell upper case. Idk why this didn't work for "target" column. Maybe because of NAs?
-  mutate_if(is.character, str_to_upper) %>%
-  # Fix for consistency. Some Pacific field seasons were blank (but I know it should be Punctual Stations). Country Harbour and Whitehead did not have an "s" at the end
-  mutate(samplingDesign = ifelse(region == "Pacific" | facetFactor == "Country Harbour" | facetFactor == "Whitehead", "Punctual stations", samplingDesign)) %>%
-  mutate(TowType = ifelse(TowType == "obliq", "Oblique", TowType)) %>%
-  #ungroup() %>%
-  select(region, facetFactor, yearStart, dateRange, productionType, target, samplingDesign, TowType, equipmentType, netMesh, myLabel, avgDepthStn, tidePhase, stnTideCount)
+  # mutate_if(is.character, str_to_title) %>%
+  # Try again for the ones it didn't work for
+  mutate(target = str_to_title(target),
+         productionType = str_to_title(productionType)) %>%
+  
+  # Rename the transect type. I did this by comparing the entries for equipmentType and TowType and combining into one column (they were a bit inconsistent)
+  mutate(mySampleType = ifelse(region == "Gulf" | facetFactor == "Sober Island", "Transect (horizontal)",
+                               ifelse(facetFactor == "Argyle", "Transect (oblique)",
+                                      "Punctual station (vertical)"))) %>%
+  
+  ## Start doing some calculations:
+  
+  # Need to take the average value for every station within each bay/field season
+  group_by(region, facetFactor, myLabel) %>%
+  # This takes the average depth for each station within each bay
+  mutate(avgDepthStn = round(mean(depthWaterM), 2)) %>% 
+  
+  # In each bay, count the number of samples with this station and tide phase combination. Need to "group_by" everything else so I don't lose the columns
+  group_by(region, facetFactor, yearStart,dateRange, myLabel, tidePhase, avgDepthStn, productionType, target, equipmentType, netMesh, mySampleType) %>%
+  summarise(stnTideCount = n()) %>%
+  
+  ## Last steps! Select the columns I actually need and rename them.
+  ungroup() %>% # I have to do this again or it will "add missing grouping variables" lol
+  select(region, facetFactor, yearStart, dateRange, productionType, target, mySampleType, equipmentType, netMesh, myLabel, avgDepthStn, tidePhase, stnTideCount) %>%
+  rename("Region" = region, 
+         "Bay or field season" = facetFactor, 
+         "Year" = yearStart, 
+         "Date range" = dateRange,
+         "Production type" = productionType,
+         "Tow type" = mySampleType, # note this is my category
+         "Net mesh size" = netMesh,
+         "Station name" = myLabel,
+         "Av. station depth (m)" = avgDepthStn,
+         "Tide phase" = tidePhase,
+         "Station-Tide count" = stnTideCount)
 
 # write.csv(bayTable, "bayTable.csv")
   
