@@ -32,6 +32,8 @@ nlMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Me
 pacMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_Pacific_Jan262022.xlsx", sheet = "zoo"))
 gulfMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo"))
 
+nlMetaRaw2122 = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_2022_NL_Jan252023.xlsx"))
+
 ### Read in Extra Information: Tide Phase and Location in Bay
 
 ## Location
@@ -150,6 +152,9 @@ marMeta = processMeta(marMetaRaw) %>%
 
 nlMeta = processMeta(nlMetaRaw) %>%
   left_join(nlLoc)
+
+# NEw addition:
+nlMeta2122 = processMeta(nlMetaRaw2122)
 
 pacMeta = processMeta(pacMetaRaw) %>%
   # Note, there are 2 duplicates: 20_08_29_Pac_S04_Z15_1105_236 and 21_03_05_Pac_S04_Z20_NA_250
