@@ -64,7 +64,8 @@ regionArray = c(21:(20+length(unique(allRegions$region))))
 
 # Add region and ocean onto this data frame (it's easier for plotting in aes for ggplot)
 ordCoordsAll = ordCoordsAll %>%
-  mutate(region = allRegionsWide$region, ocean = allRegionsWide$ocean)
+  mutate(region = allRegionsWide$region, ocean = allRegionsWide$ocean) %>%
+  mutate(month = allRegionsWide$monthStart)
 
 
 # Compute the group centroids
@@ -107,7 +108,9 @@ ggBoth =
   ggplot() + 
   #geom_segment(data = segs, mapping = aes(x = NMDS1, xend = oNMDS1, y = NMDS2, yend = oNMDS2), col = "grey49")+ # map segments for ocean
   geom_segment(data = segs2, mapping = aes(x = NMDS1, xend = rNMDS1, y = NMDS2, yend = rNMDS2), col = "grey49")+ # map segments for regions
-  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$ocean, fill = allRegionsWide$region), alpha= 0.9, size = 6)+
+  #geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$ocean, fill = allRegionsWide$region), alpha= 0.9, size = 6)+
+  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$region, fill = as.factor(month)), size = 6)+
+  
   # Don't need to define colours. These just show up as default ggplot colours for 4 elements
   scale_shape_manual(values = regionArray, name = "Region")+ 
   annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=4, hjust=1)+
@@ -115,13 +118,14 @@ ggBoth =
   theme_bw()+
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
-        legend.position = "none",
+        #legend.position = "none",
         panel.border=element_rect(color="black", size=1), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
         plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
-        plot.title = element_text(size=18))
+        plot.title = element_text(size=18))+
+  guides(fill = guide_legend(override.aes = list(shape=21)))
 
 # Put everything together
 # This gets me PRETTY CLOSE to the Figure that I want, except that the legend items aren't totally lined up
