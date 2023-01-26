@@ -434,6 +434,11 @@ nl21Adj =full_join(nl21, Nl21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   mutate(sample = str_replace(sample, "_5mm", "_250"))
 
+########  Newfoundland 2022 ########
+
+nl22Adj =full_join(nl22, Nl22Perc, by=c("sample" = "FlowCamSampleName")) %>%
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
+
 
 ########  Pacific 2020 ########  
 
@@ -475,6 +480,8 @@ pacSept21Adj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
 ## First, need to combine Gulf and Pacific datasets together.
 # Combine 2020 and 2021 flowcam data
 gulfAll = rbind(gulf20Adj, gulf21Adj)
+# Combine 2020, 2021, 2022 Newfoundland data together
+nlAll = rbind(nl20Adj, nl21Adj, nl22Adj)
 # all Pacific datasets
 pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 
@@ -482,7 +489,7 @@ pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 reducedMeta = function(metadata) {
   # Get the columns that are actually important to merge
   metadata = metadata %>%
-    select(sampleCode, waterVolume, tideRange, yearStart, monthStart, dayStart, facilityName, myLabel, tidePhase, flowcamCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh)
+    select(sampleCode, waterVolume, yearStart, monthStart, dayStart, facilityName, myLabel, tidePhase, flowcamCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh)
   return(metadata)
 }
 
@@ -545,11 +552,11 @@ gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
          ocean = "Atlantic") %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters"))
 
-nlMerge = mergeSpeciesMeta(nlMetaRed, nl20Adj) %>%
+nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
   mutate(facetFactor = dataset,
-         region = "Newfoundland",
-         ocean = "Atlantic") %>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Newfoundland 2020", "Southeast Arm 2020"))
+         region = "Newfoundland")
+  #        ocean = "Atlantic") %>%
+  # mutate(facetFactor = replace(facetFactor, facetFactor == "Newfoundland 2020", "Southeast Arm 2020"))
 
 marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
   mutate(facetFactor = facilityName,
