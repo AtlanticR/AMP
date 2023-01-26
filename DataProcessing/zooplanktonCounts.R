@@ -554,7 +554,9 @@ gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
 
 nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
   mutate(facetFactor = dataset,
-         region = "Newfoundland")
+         region = "Newfoundland") %>%
+  filter(flowcamCode != "NO MATCH")
+
   #        ocean = "Atlantic") %>%
   # mutate(facetFactor = replace(facetFactor, facetFactor == "Newfoundland 2020", "Southeast Arm 2020"))
 
