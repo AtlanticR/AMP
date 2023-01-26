@@ -8,6 +8,12 @@
 # for each spatial scale 
 source("DataProcessing/zooplanktonCounts.R")
 
+# Don't include this in DataProcess/rPackages.R are there are issues when reading in shapefiles 
+# I think this has to do with both having an sp() function
+# Instead, only install when running this code
+install.packages("ggVennDiagram")
+library("ggVennDiagram")
+
 ####################################################################################
 ##### Prepare all the data
 # This is a bit clunky but I am also in a rush!
