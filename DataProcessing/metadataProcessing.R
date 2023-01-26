@@ -86,7 +86,8 @@ nl2122Loc = read.csv("../AMPDataFiles/LocationAndNameMatches/nl2122Location.csv"
 # Join the 2 nNewfoundland location information datasets
 # The columns that truly matter are in both spreadsheets. So they will join properly. 
 # There are a few extra, unimportant columns that aren't shared between the two
-nlAllLoc = full_join(nl20Loc, nl2122Loc)
+nlAllLoc = full_join(nl20Loc, nl2122Loc) %>%
+  select(-tidePhaseThomas)
 
 # Pacific: broken into 3, just like FlowCam adata
 pac20Loc = read_excel("../AMPDataFiles/LocationAndNameMatches/pacific2020Location.xlsx")
@@ -173,7 +174,7 @@ marMeta = processMeta(marMetaRaw) %>%
 
 # Not sure why I had to specify "by = " in this case, but it made it work?
 nlMeta = processMeta(nlMetaRaw) %>%
-  left_join(nlAllLoc, by = "sampleCode")
+  left_join(nlAllLoc, by = c("sampleCode"))
 
 pacMeta = processMeta(pacMetaRaw) %>%
   # Note, there are 2 duplicates: 20_08_29_Pac_S04_Z15_1105_236 and 21_03_05_Pac_S04_Z20_NA_250
