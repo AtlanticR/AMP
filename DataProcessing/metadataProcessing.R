@@ -28,11 +28,20 @@ source("DataProcessing/rPackages.R")
 # ".." means "go back a directory"
 # Suppress warnings ("expecting numeric but got  date") 
 marMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP Metadata Plankton_2021_Maritimes_21Dec2021.xlsx", sheet = "zoo"))
-nlMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_NL_Jan132022_OG.xlsx", sheet = "zoo"))
+nlMetaRaw20 = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_NL_Jan132022_OG.xlsx", sheet = "zoo"))
+
+nlMetaRaw20$regionalSampleID = as.character(nlMetaRaw20$regionalSampleID)
+
+
 pacMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_Pacific_Jan262022.xlsx", sheet = "zoo"))
 gulfMetaRaw = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_GULF_Feb22022_JB.xlsx", sheet = "zoo"))
 
 nlMetaRaw2122 = suppress_warnings(read_excel("../AMPDataFiles/FlowCamMetadata/AMP_Metadata_Plankton_2021_2022_NL_Jan252023.xlsx"))
+nlMetaRaw2122$tideLevel = as.character(nlMetaRaw2122$tideLevel)
+nlMetaRaw2122$flowmeter = as.character(nlMetaRaw2122$flowmeter)
+
+nlMetaRaw = nlMetaRaw20 %>%
+  full_join(nlMetaRaw2122)
 
 ### Read in Extra Information: Tide Phase and Location in Bay
 
@@ -69,8 +78,16 @@ marLoc = read.csv("../AMPDataFiles/LocationAndNameMatches/marLocation.csv")
 # This is where I also included the matches from the FlowCam sample names to the metadata (col: flowcamCode)
 # These were provided from Jeff Barrell. I need these for the Maritimes 2020 data which were different
 gulfLoc = read.csv("../AMPDataFiles/LocationAndNameMatches/gulfLocation.csv")
+
 # Newfoundland: matches provided from Olivia Gibb
-nlLoc = read.csv("../AMPDataFiles/LocationAndNameMatches/nl20Location.csv")
+nl20Loc = read.csv("../AMPDataFiles/LocationAndNameMatches/nl20Location.csv") # 2020 data
+nl2122Loc = read.csv("../AMPDataFiles/LocationAndNameMatches/nl2122Location.csv")  # 2021 and 2022 data
+
+# Join the 2 nNewfoundland location information datasets
+# The columns that truly matter are in both spreadsheets. So they will join properly. 
+# There are a few extra, unimportant columns that aren't shared between the two
+nlAllLoc = full_join(nl20Loc, nl2122Loc)
+
 # Pacific: broken into 3, just like FlowCam adata
 pac20Loc = read_excel("../AMPDataFiles/LocationAndNameMatches/pacific2020Location.xlsx")
 pacMar21Loc = read_excel("../AMPDataFiles/LocationAndNameMatches/pacificMarch2021Location.xlsx")
@@ -103,6 +120,10 @@ processMeta = function(xlData) {
   # volume of cylinder = pi * r^2 * depth. Here, a flowmeter conversion factor is included instead of depth
   # The conversion factor is specific to the flowmeter model
   # r is the net radius. It should be in meters but in a few instances it is in cm (these are fixed below)
+  
+  # Fix monthStart: should be integer
+  #dfProc$monthStart = as.numeric(dfProc$monthStart)
+  #dfProc$dayStart = as.numeric(dfProc$dayStar)
   
   # GULF: there are several NAs. They just forgot to do the waterVolume calculation
   dfProc$waterVolume = ifelse(is.na(dfProc$waterVolume) & dfProc$region == "Gulf", # check for NAs in Gulf region metadata
@@ -150,11 +171,9 @@ marMeta = processMeta(marMetaRaw) %>%
   mutate(latitudeEnd = replace(latitudeEnd, sampleCode == "21_08_27_Mar_S01_Z07_1115_250", 44.83887)) %>%
   mutate(longitudeEnd = replace(longitudeEnd, sampleCode == "21_08_27_Mar_S01_Z07_1115_250", -62.47138))
 
+# Not sure why I had to specify "by = " in this case, but it made it work?
 nlMeta = processMeta(nlMetaRaw) %>%
-  left_join(nlLoc)
-
-# NEw addition:
-nlMeta2122 = processMeta(nlMetaRaw2122)
+  left_join(nlAllLoc, by = "sampleCode")
 
 pacMeta = processMeta(pacMetaRaw) %>%
   # Note, there are 2 duplicates: 20_08_29_Pac_S04_Z15_1105_236 and 21_03_05_Pac_S04_Z20_NA_250
@@ -170,3 +189,4 @@ pacMeta = processMeta(pacMetaRaw) %>%
 
 gulfMeta = processMeta(gulfMetaRaw) %>%
   left_join(gulfLoc)
+
