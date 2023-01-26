@@ -324,10 +324,11 @@ nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) %>%
   # This was above "===END METADATA STATISTICS===". Remove this or else there will be a blank class with a count of zero
   subset(class != "")
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
-pac20 = speciesDF(dirFull[[6]], dirShort[[6]])
-pacJun21 = speciesDF(dirFull[[7]], dirShort[[7]])
-pacMar21 = speciesDF(dirFull[[8]], dirShort[[8]])
-pacSep21 = speciesDF(dirFull[[9]], dirShort[[9]])
+nl22 = speciesDF(dirFull[[6]], dirShort[[6]])
+pac20 = speciesDF(dirFull[[7]], dirShort[[7]])
+pacJun21 = speciesDF(dirFull[[8]], dirShort[[8]])
+pacMar21 = speciesDF(dirFull[[9]], dirShort[[9]])
+pacSep21 = speciesDF(dirFull[[10]], dirShort[[10]])
 
 ################################################################################
 # TESTING FOR UNUSUAL SPECIES NAMES
@@ -340,24 +341,25 @@ gulf21$dataset = "Gulf 2021"
 mar21$dataset = "Maritimes"
 nl20$dataset = "Newfoundland 2020"
 nl21$dataset = "Newfoundland 2021"
+nl22$dataset = "Newfoundland 2022"
 pac20$dataset = "Pacific August 2020"
 pacJun21$dataset = "Pacific June 2021"
 pacMar21$dataset = "Pacific March 2021"
 pacSep21$dataset = "Pacific September 2021"
 
 # Get of each species in whole dataset
-taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21) %>%
+taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
   group_by(class) %>%
   summarize(countPerClass = sum(count))
 
 # Get counts BY DATASET 
-taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21) %>%
+taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
   group_by(class, dataset) %>%
   summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
 
 # Get counts BY SAMPLE 
-taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, pac20, pacJun21, pacMar21, pacSep21) %>%
+taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
   group_by(class, dataset, sample) %>%
   summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
