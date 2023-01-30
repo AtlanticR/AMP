@@ -179,6 +179,8 @@ speciesDF = function(xlDataFull, xlDataShort) {
   typoFixes = list(
     # cypris, actinula, nauplii/nauplius, metanauplius, calyptopsis, furcilia are all larval stages
     
+    
+    "Ascidiaceae larva" = "Ascidiacea larvae",
     "Aglantha digitale medusa" = "Aglantha spp. medusa", # some to higher level than others
     "Calanoid" = "Calanoida (unid)", 
     "Calananoida (unid)" = "Calanoida (unid)",
