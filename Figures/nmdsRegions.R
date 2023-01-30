@@ -418,3 +418,114 @@ plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 
 
+###### TEST NEWFOUNDLAND DATA
+
+
+
+
+
+
+
+
+
+nlMergeWide = nlMerge %>% 
+  pivot_wider(names_from = class, values_from = abund) %>%
+  mutate_all(~replace(., is.na(.), 0)) %>% # replace NAs with 0
+  filter(yearStart != 2020)
+  
+  
+# For NMDS calculations, must only include species data from dataframe
+# I will constantly be removing columns, adding columns etc. 
+# Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
+beginNMDS = which(colnames(nlMergeWide)== "Acartia spp.")
+endNMDS = ncol(nlMergeWide)
+
+# Do NMDS ordination but only include species data
+ord = metaMDS(sqrt(nlMergeWide[,c(beginNMDS:endNMDS)]), distance = "bray", autotransform=FALSE)
+
+# Get NMDS coordinates from plot
+ordCoords = as.data.frame(scores(ord, display="sites")) %>%
+  mutate(tidePhase = nlMergeWide$tidePhase) %>%
+  mutate(facetFactor = nlMergeWide$facetFactor) %>%
+  mutate(myLabel = nlMergeWide$myLabel) %>%
+  mutate(month = nlMergeWide$monthStart) %>%
+  mutate(year = as.factor(nlMergeWide$yearStart))
+
+ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
+
+
+# Compute the group centroids
+centMonth = aggregate(cbind(NMDS1, NMDS2)~month, data = ordCoords, FUN = mean) %>%  # centroid of the oceans
+  mutate(year = "centroid") 
+
+ordCoordsJoin = ordCoords %>%
+  full_join(centMonth)
+
+# Add these centroids by merging with ordCoordsAll. Rename the centroids to 'oNMDS1' and 'oNMDS2' to represent NMDS coordinate centroids
+segs = merge(ordCoords, setNames(centMonth, c('month','oNMDS1','oNMDS2')),
+             by = 'month', sort = FALSE)
+
+
+
+route = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+centMonth$numMonth =  c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+
+
+library(tidyverse)
+
+df2 = tibble(start = route, end = route[c(2:length(route), 1)]) %>% 
+  filter(start != end) %>%
+  left_join(centMonth, by = c("start" = "numMonth")) %>%
+  left_join(centMonth,  by = c("end" = "numMonth"), suffix = c("_start", "_end")) %>%
+  mutate(temp_coloring = if_else(start == 1, 1, 0)) %>%
+  mutate(coloring = if_else(temp_coloring == 1, cumsum(temp_coloring), NA_real_)) %>%
+  fill(coloring) %>%
+  select(-temp_coloring) %>%
+  mutate(coloring = as_factor(coloring))
+
+month = c(1:12)
+colPal = hue_pal()(12)
+
+colPalette = data.frame(month, colPal)
+
+ordCoordsJoin = ordCoordsJoin %>%
+  full_join(colPalette)
+
+
+ggplot() + 
+  geom_point(data = ordCoordsJoin %>% filter(year != "centroid"), aes(x=NMDS1, y=NMDS2, fill = as.factor(month), pch = as.factor(year)), alpha = 0.9, size = 5)+ # Use pch=21 to get black outline circles
+  #geom_point(data = centMonth, aes(x=NMDS1, y=NMDS2, col = as.factor(numMonth)), pch = 8, alpha = 0.9, size = 5)+
+  
+  # I couldn't get my stupid ifelse() statement to work. Instead, just pass in the specified break values 
+  scale_shape_manual(values = c(21, 22), name = "Year")+
+  #scale_fill_discrete(name = "Month", values = hue_pal)+
+  #scale_color_manual(name = "Month", values = centMonth$numMonth, breaks = c("2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"))+
+  geom_point(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, col = as.factor(month)), pch = 8, alpha = 0.9, size = 5)+
+  geom_segment(data = df2, aes(x = NMDS1_start, y = NMDS2_start, xend = NMDS1_end, yend = NMDS2_end), arrow = arrow(length = unit(0.2, "inches")), linewidth = 0.7)+ # map segments for distance to centroid
+  
+  ggtitle("Newfoundland")+
+  annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust=1)+ # for all others
+  #annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust = -0.01)+ # for Maritimes (otherwise 2D stress gets blocked)
+  theme_bw()+
+  theme(axis.text = element_blank(),
+        axis.title = element_text(size = 12), # don't want 
+        axis.ticks = element_blank(),
+        legend.text=element_text(size = 13),
+        legend.title = element_text(size = 14),
+        panel.border=element_rect(color="black", size=1), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"),
+        plot.title = element_text(size=16))+
+  guides(fill = guide_legend(override.aes = list(shape=c(21))))
+
+
+
+ggplot(ordCoordsJoin, aes(x = NMDS1, y = NMDS2), colour = factor(month), shape = factor(year))+
+  geom_point(size = 3)+
+  scale_colour_manual(values = hue_pal()(12))+
+  scale_shape_manual(values = c(21, 22, 8), guide = F)
+
+
+
