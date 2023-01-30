@@ -417,8 +417,8 @@ gulfNMDS = nmdsPrep(gulfMerge, gulfColours, waiver())
 plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 
-
-###### TEST NEWFOUNDLAND DATA
+########################################################################################################################
+## Make NMDS of Newfoundland 2020 and 2021 data
 
 
 
@@ -489,19 +489,25 @@ colPal = hue_pal()(12)
 colPalette = data.frame(month, colPal)
 
 ordCoordsJoin = ordCoordsJoin %>%
-  full_join(colPalette)
+  full_join(colPalette) %>%
+  mutate(monthAbb = month.abb[month])
+
 
 
 ggplot() + 
   geom_point(data = ordCoordsJoin %>% filter(year != "centroid"), aes(x=NMDS1, y=NMDS2, fill = as.factor(month), pch = as.factor(year)), alpha = 0.9, size = 5)+ # Use pch=21 to get black outline circles
   #geom_point(data = centMonth, aes(x=NMDS1, y=NMDS2, col = as.factor(numMonth)), pch = 8, alpha = 0.9, size = 5)+
+  geom_label_repel(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, label= monthAbb), colour = "black", size = 5)+ # Use pch=21 to get black outline circles
   
   # I couldn't get my stupid ifelse() statement to work. Instead, just pass in the specified break values 
   scale_shape_manual(values = c(21, 22), name = "Year")+
-  #scale_fill_discrete(name = "Month", values = hue_pal)+
+  scale_fill_manual(name = "Month", values = colPal[-1])+
   #scale_color_manual(name = "Month", values = centMonth$numMonth, breaks = c("2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"))+
   geom_point(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, col = as.factor(month)), pch = 8, alpha = 0.9, size = 5)+
+  scale_color_manual(values = colPal[-1])+
   geom_segment(data = df2, aes(x = NMDS1_start, y = NMDS2_start, xend = NMDS1_end, yend = NMDS2_end), arrow = arrow(length = unit(0.2, "inches")), linewidth = 0.7)+ # map segments for distance to centroid
+  
+
   
   ggtitle("Newfoundland")+
   annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust=1)+ # for all others
@@ -512,6 +518,7 @@ ggplot() +
         axis.ticks = element_blank(),
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14),
+        legend.position = "none",
         panel.border=element_rect(color="black", size=1), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
