@@ -420,77 +420,65 @@ plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 ########################################################################################################################
 ## Make NMDS of Newfoundland 2020 and 2021 data
 
-
-
-
-
-
-
-
-
+# Switch format of Newfoundland data so each row represents a sample
 nlMergeWide = nlMerge %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) %>% # replace NAs with 0
+  # Remove year 2020: it is too different from 2021 and 2022
   filter(yearStart != 2020)
-  
   
 # For NMDS calculations, must only include species data from dataframe
 # I will constantly be removing columns, adding columns etc. 
 # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
-beginNMDS = which(colnames(nlMergeWide)== "Acartia spp.")
-endNMDS = ncol(nlMergeWide)
+beginNMDS.nl = which(colnames(nlMergeWide)== "Acartia spp.")
+endNMDS.nl = ncol(nlMergeWide)
 
 # Do NMDS ordination but only include species data
-ord = metaMDS(sqrt(nlMergeWide[,c(beginNMDS:endNMDS)]), distance = "bray", autotransform=FALSE)
+ord.nl = metaMDS(sqrt(nlMergeWide[,c(beginNMDS.nl:endNMDS.nl)]), distance = "bray", autotransform=FALSE)
 
-# Get NMDS coordinates from plot
-ordCoords = as.data.frame(scores(ord, display="sites")) %>%
+# Get NMDS coordinates from plot. Add back in certain columns that might be important for labelling
+ordCoords.nl = as.data.frame(scores(ord.nl, display="sites")) %>%
   mutate(tidePhase = nlMergeWide$tidePhase) %>%
   mutate(facetFactor = nlMergeWide$facetFactor) %>%
   mutate(myLabel = nlMergeWide$myLabel) %>%
   mutate(month = nlMergeWide$monthStart) %>%
   mutate(year = as.factor(nlMergeWide$yearStart))
 
-ordStress = paste("2D Stress: ", format(round(ord$stress, digits=2), nsmall=2))
+# Calculate the 2D stress of the ordination. Round to 2 decimal places and make sure 2 decimal places show up is second is a zero
+ordStress.nl = paste("2D Stress: ", format(round(ord.nl$stress, digits=2), nsmall=2))
 
-
-# Compute the group centroids
-centMonth = aggregate(cbind(NMDS1, NMDS2)~month, data = ordCoords, FUN = mean) %>%  # centroid of the oceans
+# Compute the group centroids for each month. Regardless of year
+centMonth = aggregate(cbind(NMDS1, NMDS2)~month, data = ordCoords.nl, FUN = mean) %>%  # centroid of the oceans
+  # Add a column called "year" and make each entry equal "centroid". I will use this to filter out what to plot on the ggplot 
   mutate(year = "centroid") 
 
-ordCoordsJoin = ordCoords %>%
+# Combine the coordinates of the centroids with the coordinates for the NMDS
+# The centroids will basically be added as new rows of data at the bottom of the dataframe
+ordCoordsJoin = ordCoords.nl %>%
   full_join(centMonth)
 
+# I want to draw arrows as geom_segment that connects the centroid of each month
 # Add these centroids by merging with ordCoordsAll. Rename the centroids to 'oNMDS1' and 'oNMDS2' to represent NMDS coordinate centroids
-segs = merge(ordCoords, setNames(centMonth, c('month','oNMDS1','oNMDS2')),
+segs = merge(ordCoords.nl, setNames(centMonth, c('month','oNMDS1','oNMDS2')),
              by = 'month', sort = FALSE)
 
 
-
+# I am following these instructions and adapting to my own code:
+# https://stackoverflow.com/questions/68754148/how-do-i-draw-directed-arrows-based-on-one-ordered-list-in-r
 route = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
-centMonth$numMonth =  c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+centMonth$numMonth =  route
 
 
 library(tidyverse)
 
-df2 = tibble(start = route, end = route[c(2:length(route), 1)]) %>% 
+df2 = tibble(start = centMonth$month, end = route[c(2:length(centMonth$month), 1)]) %>% 
   filter(start != end) %>%
   left_join(centMonth, by = c("start" = "numMonth")) %>%
-  left_join(centMonth,  by = c("end" = "numMonth"), suffix = c("_start", "_end")) %>%
-  mutate(temp_coloring = if_else(start == 1, 1, 0)) %>%
-  mutate(coloring = if_else(temp_coloring == 1, cumsum(temp_coloring), NA_real_)) %>%
-  fill(coloring) %>%
-  select(-temp_coloring) %>%
-  mutate(coloring = as_factor(coloring))
+  left_join(centMonth,  by = c("end" = "numMonth"), suffix = c("_start", "_end")) 
 
-month = c(1:12)
+
 colPal = hue_pal()(12)
 
-colPalette = data.frame(month, colPal)
-
-ordCoordsJoin = ordCoordsJoin %>%
-  full_join(colPalette) %>%
-  mutate(monthAbb = month.abb[month])
 
 
 
