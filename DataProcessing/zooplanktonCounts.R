@@ -555,7 +555,11 @@ gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters"))
 
 nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
-  mutate(facetFactor = dataset,
+  # For Newfoundland data, I will only be running stats for month/year combos with enough data
+  # Only testing tide and station effects for September 2020 data and October 2021. 
+  # Just call the rest "Other" and ignore them for most of the stats/plots
+  mutate(facetFactor = ifelse(monthStart == 9 & yearStart == 2020, "Sept 2020", 
+                              ifelse(monthStart == 10 & yearStart == 2021, "Oct 2021", "Other")),
          region = "Newfoundland") %>%
   filter(flowcamCode != "NO MATCH")
 
