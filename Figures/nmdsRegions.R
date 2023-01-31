@@ -442,21 +442,26 @@ ordCoords.nl = as.data.frame(scores(ord.nl, display="sites")) %>%
   mutate(facetFactor = nlMergeWide$facetFactor) %>%
   mutate(myLabel = nlMergeWide$myLabel) %>%
   mutate(month = nlMergeWide$monthStart) %>%
-  mutate(year = as.factor(nlMergeWide$yearStart))
-
+  mutate(year = as.factor(nlMergeWide$yearStart)) 
 # Calculate the 2D stress of the ordination. Round to 2 decimal places and make sure 2 decimal places show up is second is a zero
 ordStress.nl = paste("2D Stress: ", format(round(ord.nl$stress, digits=2), nsmall=2))
 
-# Compute the group centroids for each month. Regardless of year
-centMonth = aggregate(cbind(NMDS1, NMDS2)~month, data = ordCoords.nl, FUN = mean) %>%  # centroid of the oceans
+# Compute the group centroids for each month of each year (i.e., centroid of July 2021 is different from centroid of July 2022)
+centMonth = aggregate(cbind(NMDS1, NMDS2)~month+year, data = ordCoords.nl, FUN = mean) %>%  # centroid of the oceans
   # Add a column called "year" and make each entry equal "centroid". I will use this to filter out what to plot on the ggplot 
   mutate(year = "centroid") %>%
-  mutate(monthAbb = month.abb[month])
+  mutate(monthAbb = month.abb[month]) %>%
+  # Add index that shows the order of data collection
+  mutate(orderCollect = 1:nrow(centMonth)) %>%
+  # Not great programming, but it's the fastest way to do this. The first 7 entries are from 2021, the rest are from 2022
+  # I need these to create labels for the NMDS
+  mutate(yearLabel = ifelse(row_number() <= 7, "2021", "2022")) %>%
+  mutate(monYear = paste(monthAbb, yearLabel))
 
 # Combine the coordinates of the centroids with the coordinates for the NMDS
 # The centroids will basically be added as new rows of data at the bottom of the dataframe
 ordCoordsJoin = ordCoords.nl %>%
-  full_join(centMonth)
+  full_join(centMonth) 
 
 # I want to draw arrows as geom_segment that connects the centroid of each month
 # I am following these instructions and adapting to my own code:
@@ -469,11 +474,13 @@ library(tidyverse)
 # I will be drawing segments, that go from a "start" coordinate to "end"
 # The "start" is the centroid position of the first month. It will "end" at the centroid of the second month
 # For the next segment, that "end" because the new start, and it will connect to the next centroid
-centroidSegs = tibble(start = centMonth$month, end = route[c(2:length(centMonth$month), 1)]) %>% 
+centroidSegs = tibble(start = centMonth$orderCollect, end = centMonth$orderCollect[c(2:length(centMonth$orderCollect), 1)]) %>% 
   filter(start != end) %>%
   # Join with the centroid data so it will gain the NMDS coordinate positions
-  left_join(centMonth, by = c("start" = "month")) %>%
-  left_join(centMonth,  by = c("end" = "month"), suffix = c("_start", "_end")) 
+  left_join(centMonth, by = c("start" = "orderCollect")) %>%
+  left_join(centMonth,  by = c("end" = "orderCollect"), suffix = c("_start", "_end")) %>%
+  # Remove the final row because I don't want the last sampling event to connect to the first
+  filter(row_number() = n()-1) 
 
 # Specify the colour palette that I will be using for 12 months of data
 # Note that I don't have any data for January (in either 2021 or 2022), so that will need to be removed when specifying the values
@@ -493,16 +500,16 @@ ggplot() +
   # Draw arrows between segments
   geom_segment(data = centroidSegs, aes(x = NMDS1_start, y = NMDS2_start, xend = NMDS1_end, yend = NMDS2_end), arrow = arrow(length = unit(0.2, "inches")), linewidth = 0.7)+
   # Add labels for each month of data and adjust transparency: may need to remove this
-  geom_label_repel(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, label= monthAbb), colour = "black", size = 5, alpha = 0.7)+ # Use pch=21 to get black outline circles
+  geom_label_repel(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, label= monYear), colour = "black", size = 5, alpha = 0.7)+ # Use pch=21 to get black outline circles
   ggtitle("Newfoundland")+
-  annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4, hjust=1)+ # for all others
+  annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=5.5, hjust=1)+ # for all others
   theme_bw()+
   theme(axis.text = element_blank(),
-        axis.title = element_text(size = 12), # don't want 
+        axis.title = element_text(size = 12),
         axis.ticks = element_blank(),
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14),
-        legend.position = "none",
+        legend.position = "none", # May add legend back in. TBD.
         panel.border=element_rect(color="black", size=1), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -510,6 +517,4 @@ ggplot() +
         plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"),
         plot.title = element_text(size=16))+
   guides(fill = guide_legend(override.aes = list(shape=c(21)))) # This is to get the legend to work properly. But I might remove the legend
-
-
 
