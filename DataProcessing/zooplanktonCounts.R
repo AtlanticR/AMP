@@ -464,6 +464,7 @@ pacJun21Adj =full_join(pacJun21, PacJun21Perc, by=c("sample" = "FlowCamSampleNam
 ########  Pacific March 2021 ########  
 
 # Join the dataframes of counts with the dataframe of the adjustments
+# NOTE TO SELF: COME BACK TO THIS. I DON'T THINK ALL SAMPLES WERE COMBINED
 pacMar21Adj =full_join(pacMar21, PacMar21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
 
