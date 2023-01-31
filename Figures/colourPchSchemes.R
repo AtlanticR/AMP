@@ -71,11 +71,14 @@ stationCol = c("Outer" = "#82C738",
              
              "Missing" = "white")
 
+# Andrea's colour wheel doesn't go up to 5 colours. Instead use hue_pal? idk.
+hue_pal()(5)
 # Newfoundland needs own colour scheme since there are 4 stations, not 3
-stationColNL = c("Outer" = "#C69739",
-                 "Mid-Outer" = "#29C651",
-                 "Mid-Inner" = "#3968C6",
-                 "Inner" = "#C639AE",
+stationColNL = c("Outer" = "#F8766D",
+                 "Mid-A" = "#A3A500",
+                 "Mid-B" = "#00BF7D",
+                 "Mid-C" = "#00B0F6",
+                 "Inner" = "#E76BF3",
                  "Missing" = "white")
 
 
