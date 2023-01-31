@@ -450,7 +450,8 @@ ordStress.nl = paste("2D Stress: ", format(round(ord.nl$stress, digits=2), nsmal
 # Compute the group centroids for each month. Regardless of year
 centMonth = aggregate(cbind(NMDS1, NMDS2)~month, data = ordCoords.nl, FUN = mean) %>%  # centroid of the oceans
   # Add a column called "year" and make each entry equal "centroid". I will use this to filter out what to plot on the ggplot 
-  mutate(year = "centroid") 
+  mutate(year = "centroid") %>%
+  mutate(monthAbb = month.abb[month])
 
 # Combine the coordinates of the centroids with the coordinates for the NMDS
 # The centroids will basically be added as new rows of data at the bottom of the dataframe
@@ -458,48 +459,43 @@ ordCoordsJoin = ordCoords.nl %>%
   full_join(centMonth)
 
 # I want to draw arrows as geom_segment that connects the centroid of each month
-# Add these centroids by merging with ordCoordsAll. Rename the centroids to 'oNMDS1' and 'oNMDS2' to represent NMDS coordinate centroids
-segs = merge(ordCoords.nl, setNames(centMonth, c('month','oNMDS1','oNMDS2')),
-             by = 'month', sort = FALSE)
-
-
 # I am following these instructions and adapting to my own code:
 # https://stackoverflow.com/questions/68754148/how-do-i-draw-directed-arrows-based-on-one-ordered-list-in-r
-route = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
-centMonth$numMonth =  route
 
-
+# Need to use tidyverse to get tibble(?) function
 library(tidyverse)
 
-df2 = tibble(start = centMonth$month, end = route[c(2:length(centMonth$month), 1)]) %>% 
+# I need to specify the "start" of my route as the first month in the df of centroids
+# I will be drawing segments, that go from a "start" coordinate to "end"
+# The "start" is the centroid position of the first month. It will "end" at the centroid of the second month
+# For the next segment, that "end" because the new start, and it will connect to the next centroid
+centroidSegs = tibble(start = centMonth$month, end = route[c(2:length(centMonth$month), 1)]) %>% 
   filter(start != end) %>%
-  left_join(centMonth, by = c("start" = "numMonth")) %>%
-  left_join(centMonth,  by = c("end" = "numMonth"), suffix = c("_start", "_end")) 
+  # Join with the centroid data so it will gain the NMDS coordinate positions
+  left_join(centMonth, by = c("start" = "month")) %>%
+  left_join(centMonth,  by = c("end" = "month"), suffix = c("_start", "_end")) 
 
-
+# Specify the colour palette that I will be using for 12 months of data
+# Note that I don't have any data for January (in either 2021 or 2022), so that will need to be removed when specifying the values
 colPal = hue_pal()(12)
 
-
-
-
+# Make the ggplot
 ggplot() + 
+  # Add the first set of points: actual NMDS data for each sample, but remove the centroid data. Symbol will be year, fill is month
   geom_point(data = ordCoordsJoin %>% filter(year != "centroid"), aes(x=NMDS1, y=NMDS2, fill = as.factor(month), pch = as.factor(year)), alpha = 0.9, size = 5)+ # Use pch=21 to get black outline circles
-  #geom_point(data = centMonth, aes(x=NMDS1, y=NMDS2, col = as.factor(numMonth)), pch = 8, alpha = 0.9, size = 5)+
-  geom_label_repel(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, label= monthAbb), colour = "black", size = 5)+ # Use pch=21 to get black outline circles
-  
-  # I couldn't get my stupid ifelse() statement to work. Instead, just pass in the specified break values 
   scale_shape_manual(values = c(21, 22), name = "Year")+
-  scale_fill_manual(name = "Month", values = colPal[-1])+
-  #scale_color_manual(name = "Month", values = centMonth$numMonth, breaks = c("2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"))+
+  # Set the colour scheme as previously specified, but remove the first value because there is no "January" data
+  scale_fill_manual(name = "Month", values = colPal[-1])+ 
+  # Add the centroids as asterisks
   geom_point(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, col = as.factor(month)), pch = 8, alpha = 0.9, size = 5)+
+  # Make the colours of the asterisks be the same as the NMDS points
   scale_color_manual(values = colPal[-1])+
-  geom_segment(data = df2, aes(x = NMDS1_start, y = NMDS2_start, xend = NMDS1_end, yend = NMDS2_end), arrow = arrow(length = unit(0.2, "inches")), linewidth = 0.7)+ # map segments for distance to centroid
-  
-
-  
+  # Draw arrows between segments
+  geom_segment(data = centroidSegs, aes(x = NMDS1_start, y = NMDS2_start, xend = NMDS1_end, yend = NMDS2_end), arrow = arrow(length = unit(0.2, "inches")), linewidth = 0.7)+
+  # Add labels for each month of data and adjust transparency: may need to remove this
+  geom_label_repel(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, label= monthAbb), colour = "black", size = 5, alpha = 0.7)+ # Use pch=21 to get black outline circles
   ggtitle("Newfoundland")+
-  annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust=1)+ # for all others
-  #annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4.5, hjust = -0.01)+ # for Maritimes (otherwise 2D stress gets blocked)
+  annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4, hjust=1)+ # for all others
   theme_bw()+
   theme(axis.text = element_blank(),
         axis.title = element_text(size = 12), # don't want 
@@ -513,14 +509,7 @@ ggplot() +
         plot.background = element_blank(),
         plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"),
         plot.title = element_text(size=16))+
-  guides(fill = guide_legend(override.aes = list(shape=c(21))))
-
-
-
-ggplot(ordCoordsJoin, aes(x = NMDS1, y = NMDS2), colour = factor(month), shape = factor(year))+
-  geom_point(size = 3)+
-  scale_colour_manual(values = hue_pal()(12))+
-  scale_shape_manual(values = c(21, 22, 8), guide = F)
+  guides(fill = guide_legend(override.aes = list(shape=c(21)))) # This is to get the legend to work properly. But I might remove the legend
 
 
 
