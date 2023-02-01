@@ -392,7 +392,7 @@ nlsep20.ycoord = c(4, 4, 4,
               1, 1, 1)
 
 nlsep20.myLabel = c("Inner", "Inner", "Inner", "Mid-C", "Mid-C", "Mid-C", "Mid-B", "Mid-B", "Missing", "Mid-A", "Mid-A", "Missing")
-nlsep20.tidePhase = c("Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising")
+nlsep20.tidePhase = c("Low", "Mid-Falling", "Mid-Rising", "Low", "Mid-Falling", "Mid-Rising", "Low", "Mid-Falling", "Mid-Rising", "Low", "Mid-Falling", "Mid-Rising")
 
 nlsep20.legDf = data.frame(nlsep20.xcoord, nlsep20.ycoord, nlsep20.myLabel, nlsep20.tidePhase)
 
@@ -400,7 +400,7 @@ nlsep20.ggLeg = ggplot()+
   geom_point(data = nlsep20.legDf, aes(x = as.factor(nlsep20.xcoord), y = as.factor(nlsep20.ycoord), pch = nlsep20.tidePhase, fill = nlsep20.myLabel), col = "black", size = 4)+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationColNL)+ 
-  scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("MF", "LT", "MR"), position = "top")+
+  scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("LT", "MF", "MR"), position = "top")+
   scale_y_discrete(name = "Station", breaks = c(4, 3, 2, 1), labels = c("In", "Mid-C", "Mid-B", "Mid-A"))+ 
   theme_minimal()+
   theme(
@@ -444,7 +444,7 @@ nloct21.ggLeg = ggplot()+
   geom_point(data = nloct21.legDf, aes(x = as.factor(nloct21.xcoord), y = as.factor(nloct21.ycoord), pch = nloct21.tidePhase, fill = nloct21.myLabel), col = "black", size = 4)+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationColNL)+ 
-  scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("HT", "MF", "LT"), position = "top")+
+  scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("LT", "MF", "HT"), position = "top")+
   scale_y_discrete(name = "Station", breaks = c(2, 1), labels = c("Mid-B", "Outer"))+ 
   theme_minimal()+
   theme(
@@ -469,43 +469,6 @@ nloct21.withLeg = grid.arrange(nlNMDSbays[[1]], nloct21.ggLeg, nrow=6, ncol = 4,
                                                  c(1,1,1, 2),
                                                  c(1,1,1, NA),
                                                  c(1,1,1, NA)))
-
-
-
-grid.arrange(nlNMDSbays[[2]], nlNMDSbays[[1]], nlsep20.ggLeg, nloct21.ggLeg, nrow=6, ncol = 4,
-             layout_matrix = rbind(c(1,1,1, NA), 
-                                   c(1,1,1, 3),
-                                   c(1,1,1, NA),
-                                   c(2,2,2, NA),
-                                   c(2,2,2, 4),
-                                   c(2,2,2, NA)))
-
-
-
-
-
-
-nlNMDSbays[[1]]
-
-
-x = nlMerge %>%
-  filter(yearStart == 2021) %>%
-  filter(monthStart == 10)
-
-
-
-
-unique(x$myLabel)
-unique(x$tidePhase)
-
-
-
-
-
-
-
-grid.arrange(nlNMDSbays[[2]], nlNMDSbays[[1]])
-
 
 
 ###############################################################################
@@ -563,7 +526,7 @@ grid.arrange(arg.withLeg, ch.withLeg, sob.withLeg, wh.withLeg)
 grid.arrange(coc.withLeg, mal.withLeg, stP.withLeg, ncol = 2)
 
 # Newfoundland. Make it the same size as other plots
-grid.arrange(nl.withLeg, ncol = 2, nrow = 2)
+grid.arrange(nlsep20.withLeg, nloct21.withLeg, ncol = 2, nrow = 2)
 
 # Pacific
 # Play around with where exactly the legend should go because idk lol
