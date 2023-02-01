@@ -381,27 +381,27 @@ stP.withLeg = grid.arrange(gulfNMDSbays[[3]], stP.ggLeg, nrow=6, ncol = 4,
 ###############################################################################
 ## NEWFOUNDLAND
 
-nl.xcoord = c(1, 2, 3,
+nlsep20.xcoord = c(1, 2, 3,
               1, 2, 3,
               1, 2, 3,
               1, 2, 3)
 
-nl.ycoord = c(4, 4, 4,
+nlsep20.ycoord = c(4, 4, 4,
               3, 3, 3,
               2, 2, 2,
               1, 1, 1)
 
-nl.myLabel = c("Inner", "Inner", "Inner", "Mid-Inner", "Mid-Inner", "Mid-Inner", "Mid-Outer", "Mid-Outer", "Missing", "Outer", "Outer", "Missing")
-nl.tidePhase = c("Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising")
+nlsep20.myLabel = c("Inner", "Inner", "Inner", "Mid-C", "Mid-C", "Mid-C", "Mid-B", "Mid-B", "Missing", "Mid-A", "Mid-A", "Missing")
+nlsep20.tidePhase = c("Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising", "Mid-Falling", "Low", "Mid-Rising")
 
-nl.legDf = data.frame(nl.xcoord, nl.ycoord, nl.myLabel, nl.tidePhase)
+nlsep20.legDf = data.frame(nlsep20.xcoord, nlsep20.ycoord, nlsep20.myLabel, nlsep20.tidePhase)
 
-nl.ggLeg = ggplot()+
-  geom_point(data = nl.legDf, aes(x = as.factor(nl.xcoord), y = as.factor(nl.ycoord), pch = nl.tidePhase, fill = nl.myLabel), col = "black", size = 4)+
+nlsep20.ggLeg = ggplot()+
+  geom_point(data = nlsep20.legDf, aes(x = as.factor(nlsep20.xcoord), y = as.factor(nlsep20.ycoord), pch = nlsep20.tidePhase, fill = nlsep20.myLabel), col = "black", size = 4)+
   scale_shape_manual(values = pchTide)+
   scale_fill_manual(values = stationColNL)+ 
   scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("MF", "LT", "MR"), position = "top")+
-  scale_y_discrete(name = "Station", breaks = c(4, 3, 2, 1), labels = c("In", "MI", "MO", "Out"))+ 
+  scale_y_discrete(name = "Station", breaks = c(4, 3, 2, 1), labels = c("In", "Mid-C", "Mid-B", "Mid-A"))+ 
   theme_minimal()+
   theme(
     axis.ticks = element_blank(),
@@ -416,13 +416,97 @@ nl.ggLeg = ggplot()+
     # If there is not enough space, plot_grid will make them too close together
     plot.margin=unit(c(0, 1, 0, 0),"cm"))
 
-nl.withLeg = grid.arrange(nlNMDSbays[[1]], nl.ggLeg, nrow=6, ncol = 4,
+nlsep20.withLeg = grid.arrange(nlNMDSbays[[2]], nlsep20.ggLeg, nrow=6, ncol = 4,
                            layout_matrix = rbind(c(1,1,1, NA), 
                                                  c(1,1,1, NA),
                                                  c(1,1,1, 2),
                                                  c(1,1,1, 2),
                                                  c(1,1,1, NA),
                                                  c(1,1,1, NA)))
+
+
+##### 
+# Now do this for the Oct 2021 data
+
+nloct21.xcoord = c(1, 2, 3,
+                   1, 2, 3)
+
+nloct21.ycoord = c(2, 2, 2,
+                   1, 1, 1)
+
+nloct21.myLabel = c("Mid-B", "Mid-B", "Mid-B", "Outer", "Missing", "Outer")
+nloct21.tidePhase = c("Low", "Mid-Falling", "High", "Low", "Mid-Falling", "High")
+
+
+nloct21.legDf = data.frame(nloct21.xcoord, nloct21.ycoord, nloct21.myLabel, nloct21.tidePhase)
+
+nloct21.ggLeg = ggplot()+
+  geom_point(data = nloct21.legDf, aes(x = as.factor(nloct21.xcoord), y = as.factor(nloct21.ycoord), pch = nloct21.tidePhase, fill = nloct21.myLabel), col = "black", size = 4)+
+  scale_shape_manual(values = pchTide)+
+  scale_fill_manual(values = stationColNL)+ 
+  scale_x_discrete(name = "Tide Phase", breaks = c(1, 2, 3), labels = c("HT", "MF", "LT"), position = "top")+
+  scale_y_discrete(name = "Station", breaks = c(2, 1), labels = c("Mid-B", "Outer"))+ 
+  theme_minimal()+
+  theme(
+    axis.ticks = element_blank(),
+    axis.text = element_text(colour = "black"),
+    axis.title = element_text(colour = "grey30"),
+    #axis.title = element_blank(),
+    legend.position = "none",
+    panel.background=element_rect(colour="grey30"),
+    panel.grid = element_blank(), 
+    plot.background = element_blank(),
+    # This affects the amount of space around each plot
+    # If there is not enough space, plot_grid will make them too close together
+    plot.margin=unit(c(0, 1, 0, 0),"cm"))
+
+
+
+nloct21.withLeg = grid.arrange(nlNMDSbays[[1]], nloct21.ggLeg, nrow=6, ncol = 4,
+                           layout_matrix = rbind(c(1,1,1, NA), 
+                                                 c(1,1,1, NA),
+                                                 c(1,1,1, 2),
+                                                 c(1,1,1, 2),
+                                                 c(1,1,1, NA),
+                                                 c(1,1,1, NA)))
+
+
+
+grid.arrange(nlNMDSbays[[2]], nlNMDSbays[[1]], nloct21.ggLeg, nlsep20.ggLeg, nrow=6, ncol = 4,
+             layout_matrix = rbind(c(1,1,1, NA), 
+                                   c(1,1,1, NA),
+                                   c(1,1,1, 3),
+                                   c(2,2,2, 4),
+                                   c(2,2,2, NA),
+                                   c(2,2,2, NA)))
+
+
+
+
+
+
+nlNMDSbays[[1]]
+
+
+x = nlMerge %>%
+  filter(yearStart == 2021) %>%
+  filter(monthStart == 10)
+
+
+
+
+unique(x$myLabel)
+unique(x$tidePhase)
+
+
+
+
+
+
+
+grid.arrange(nlNMDSbays[[2]], nlNMDSbays[[1]])
+
+
 
 ###############################################################################
 ###############################################################################
