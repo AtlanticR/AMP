@@ -409,22 +409,42 @@ nmdsPrep = function(mergeData, bayColours, breakVals) {
 # For Pacific, need to rearrange chronologically, so specify the order needed
 # waiver() is what you enter for breaks if you just want the default value
 marNMDS = nmdsPrep(marMerge, marColours, waiver())
-nlNMDS = nmdsPrep(nlMerge, nlColours, waiver())
 pacNMDS = nmdsPrep(pacMerge, pacColours, c("August 2020", "March 2021", "June 2021", "September 2021"))
 gulfNMDS = nmdsPrep(gulfMerge, gulfColours, waiver())
+# I actually don't want Newfoundland data to be displayed this way due to the sampling design.
+# NMDS ordinations are instead shown below.
+# nlNMDS = nmdsPrep(nlMerge, nlColours, waiver())
 
 # This works better than grid.arrange! It aligns all the plots with unequal legends
 plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 
 ########################################################################################################################
-## Make NMDS of Newfoundland 2020 and 2021 data
+########################################################################################################################
+## Make NMDS of Newfoundland 
+# EXPLANATION:
+# Newfoundland had a slightly different sampling design
+# They sampled a lot in Oct 2020. Then they sampled Jun 2021 --> July 2022, every month (except Jan 2022) with ~ 3 samples/month
+# They took many samples in Sept 2021 to study tide effects a bit more
+
+# Here, I am showing all data. Shape is year, colour represents months.
+# Below, I am making 2 NMDS ordinations: one with all data (2020, 2021, 2022)
+# Because 2020 data is quite distinct (and there's a large temporal sampling gap), I am making a second ordination of just 2021--> 2022 data
+# In the other NMDS of 2021 --> 2022 I am including the centroid of each sampling month, and connecting them with arrows.
+# This helps show how zooplankton composition changed over time
+
+# Note that in nmdsBay.R, I am creating two NMDS for NL data: one of Oct 2020 and the other of Sept 2021. For those, symbols are tide phases and colours are stations.
+
+########################################################################################################################
+# NL 2021 and 2022 only NMDS
+# This is the one that has the arrows connecting between sampling month centroids
 
 # Switch format of Newfoundland data so each row represents a sample
 nlMergeWide = nlMerge %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) %>% # replace NAs with 0
   # Remove year 2020: it is too different from 2021 and 2022
+  # DON'T run this command for the second NMDS below
   filter(yearStart != 2020)
   
 # For NMDS calculations, must only include species data from dataframe
@@ -510,6 +530,44 @@ ggplot() +
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14),
         legend.position = "none", # May add legend back in. TBD.
+        panel.border=element_rect(color="black", size=1), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        plot.margin=unit(c(0.3, 0.3, 0.3, 0.3),"cm"),
+        plot.title = element_text(size=16))+
+  guides(fill = guide_legend(override.aes = list(shape=c(21)))) # This is to get the legend to work properly. But I might remove the legend
+
+
+########################################################################################################################
+# NMDS of 2020, 2021 and 2022 data
+
+# This is not the best way to code it.
+# But, rerun everything above and don't include the filter(yearStart != 2020) part of the code
+
+ggplot() + 
+  # Add the first set of points: actual NMDS data for each sample, but remove the centroid data. Symbol will be year, fill is month
+  geom_point(data = ordCoords.nl, aes(x=NMDS1, y=NMDS2, fill = as.factor(month), pch = as.factor(year)), alpha = 0.9, size = 5)+ # Use pch=21 to get black outline circles
+  scale_shape_manual(values = c(21, 22, 23), name = "Year")+
+  # Set the colour scheme as previously specified, but remove the first value because there is no "January" data
+  scale_fill_manual(name = "Month", values = colPal[-1])+ 
+  # Add the centroids as asterisks
+  #geom_point(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, col = as.factor(month)), pch = 8, alpha = 0.9, size = 5)+
+  # Make the colours of the asterisks be the same as the NMDS points
+  #scale_color_manual(values = colPal[-1])+
+  # Draw arrows between segments
+  #geom_segment(data = centroidSegs, aes(x = NMDS1_start, y = NMDS2_start, xend = NMDS1_end, yend = NMDS2_end), arrow = arrow(length = unit(0.2, "inches")), linewidth = 0.7)+
+  # Add labels for each month of data and adjust transparency: may need to remove this
+  #geom_label_repel(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, label= monYear), colour = "black", size = 5, alpha = 0.7)+ # Use pch=21 to get black outline circles
+  ggtitle("Newfoundland")+
+  annotate("text", x = max(ordCoords.nl$NMDS1), y=max(ordCoords.nl$NMDS2), label = ordStress, size=5.5, hjust=1)+ # for all others
+  theme_bw()+
+  theme(axis.text = element_blank(),
+        axis.title = element_text(size = 12),
+        axis.ticks = element_blank(),
+        legend.text=element_text(size = 13),
+        legend.title = element_text(size = 14),
+        #legend.position = "none", # May add legend back in. TBD.
         panel.border=element_rect(color="black", size=1), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
