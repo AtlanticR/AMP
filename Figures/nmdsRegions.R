@@ -480,7 +480,7 @@ centroidSegs = tibble(start = centMonth$orderCollect, end = centMonth$orderColle
   left_join(centMonth, by = c("start" = "orderCollect")) %>%
   left_join(centMonth,  by = c("end" = "orderCollect"), suffix = c("_start", "_end")) %>%
   # Remove the final row because I don't want the last sampling event to connect to the first
-  filter(row_number() = n()-1) 
+  filter(row_number() <= n()-1) 
 
 # Specify the colour palette that I will be using for 12 months of data
 # Note that I don't have any data for January (in either 2021 or 2022), so that will need to be removed when specifying the values
