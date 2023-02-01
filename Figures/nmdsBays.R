@@ -135,8 +135,8 @@ nmdsBay = function(regionData, stationCol) {
 # Run the function by passing in the data and the colour scheme for the region
 marNMDSbays = nmdsBay(marMerge, stationCol)
 gulfNMDSbays = nmdsBay(gulfMerge, stationCol)
-# I'm only looking at Oct 2020 and Sept 2020 data. Remove all other data
-# Because of the way things get sorted (alphabetically), nlNMDSbays[[1]] will be Oct 2021 data. nlNMDSbays[[2]] is Sept 2021
+# I'm only looking at Oct 2021 and Sept 2020 data. Remove all other data
+# Because of the way things get sorted (alphabetically), nlNMDSbays[[1]] will be Oct 2021 data. nlNMDSbays[[2]] is Sept 2020
 # Be careful of this when arranging things in nmdsBaysWithLegend.R
 nlNMDSbays = nmdsBay(nlMerge %>% filter(facetFactor != "Other"), stationColNL) # remember that NL has different colour scheme
 
