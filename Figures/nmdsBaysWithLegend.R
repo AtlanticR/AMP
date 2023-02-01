@@ -381,6 +381,11 @@ stP.withLeg = grid.arrange(gulfNMDSbays[[3]], stP.ggLeg, nrow=6, ncol = 4,
 ###############################################################################
 ## NEWFOUNDLAND
 
+# Due to the sampling strategy, we are only examining station and tide effects for months where the are more samples:
+# September 2020 and October 2021
+
+# First make plot of September 2021
+
 nlsep20.xcoord = c(1, 2, 3,
               1, 2, 3,
               1, 2, 3,
@@ -425,8 +430,8 @@ nlsep20.withLeg = grid.arrange(nlNMDSbays[[2]], nlsep20.ggLeg, nrow=6, ncol = 4,
                                                  c(1,1,1, NA)))
 
 
-##### 
-# Now do this for the Oct 2021 data
+############################################################################### 
+# October 2021
 
 nloct21.xcoord = c(1, 2, 3,
                    1, 2, 3)
