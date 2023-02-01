@@ -133,7 +133,8 @@ nmdsBay = function(regionData, stationCol) {
 # Run the function by passing in the data and the colour scheme for the region
 marNMDSbays = nmdsBay(marMerge, stationCol)
 gulfNMDSbays = nmdsBay(gulfMerge, stationCol)
-nlNMDSbays = nmdsBay(nlMerge, stationColNL) # remember that NL has different colour scheme
+# I'm only looking at Oct 2020 and Sept 2020 data. Remove all other data
+nlNMDSbays = nmdsBay(nlMerge %>% filter(facetFactor != "Other"), stationColNL) # remember that NL has different colour scheme
 
 # Pacific: remove March data because it only has 2 data points and can't do NMDS on that
 pacNMDSbays = nmdsBay(pacMerge  %>% filter(facetFactor != "March 2021"), stationCol) # without removing outliers
