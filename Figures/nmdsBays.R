@@ -72,12 +72,13 @@ nmdsBay = function(regionData, stationCol) {
     # Note that round() includes UP TO 2 decimal places. Does not include 0s 
     ordStress = paste("Stress:", format(round(ord$stress, digits=2), nsmall=2))
     
-    # For Newfoundland, there is only one plot. So I do not want want a letter in brackets, e.g., (A) Southeast Arm, 2020
-    # For all others, create label so it's e.g., (A) Argyle. Default includes a space between each element, so set sep = "" to remove that
-    facetLabel = ifelse(bayData$facetFactor[1] == "Southeast Arm 2020", # only need to check first entry
-                        bayData$facetFactor, 
-                        paste("(", LETTERS[i], ") ", bayData$facetFactor, sep =""))
-    
+    # There is probably a better way to deal with this. But I need to adjust the Newfoundland ggtitles to be in chronological order, not alphabetical
+    # When sorted alphabetically, the facetFactor "Oct 2021" comes before "Sept 2020". Fix this.
+    facetLabel = ifelse(bayData$facetFactor[2] == "Sept 2020", "(A) Sept 2020", # if it's the Sept 2020 data, set the facetLabel as "(A) Sept 2020"
+                        ifelse(bayData$facetFactor[1] == "Oct 2021", "(B) Oct 2021", # if it's the Oct 2021 data, set the facetLabel as "(B) Oct 2021"
+                               # For all other data, NMDS ordinations will be split up alphabetically, and lettered A, B, C etc., followed by the bay name
+                               paste("(", LETTERS[i], ") ", bayData$facetFactor, sep ="")))  
+
     # Create the ggplot
     ggBay =
       ggplot() + 
@@ -134,6 +135,8 @@ nmdsBay = function(regionData, stationCol) {
 marNMDSbays = nmdsBay(marMerge, stationCol)
 gulfNMDSbays = nmdsBay(gulfMerge, stationCol)
 # I'm only looking at Oct 2020 and Sept 2020 data. Remove all other data
+# Because of the way things get sorted (alphabetically), nlNMDSbays[[1]] will be Oct 2021 data. nlNMDSbays[[2]] is Sept 2021
+# Be careful of this when arranging things in nmdsBaysWithLegend.R
 nlNMDSbays = nmdsBay(nlMerge %>% filter(facetFactor != "Other"), stationColNL) # remember that NL has different colour scheme
 
 # Pacific: remove March data because it only has 2 data points and can't do NMDS on that
