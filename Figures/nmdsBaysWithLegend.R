@@ -472,12 +472,12 @@ nloct21.withLeg = grid.arrange(nlNMDSbays[[1]], nloct21.ggLeg, nrow=6, ncol = 4,
 
 
 
-grid.arrange(nlNMDSbays[[2]], nlNMDSbays[[1]], nloct21.ggLeg, nlsep20.ggLeg, nrow=6, ncol = 4,
+grid.arrange(nlNMDSbays[[2]], nlNMDSbays[[1]], nlsep20.ggLeg, nloct21.ggLeg, nrow=6, ncol = 4,
              layout_matrix = rbind(c(1,1,1, NA), 
-                                   c(1,1,1, NA),
                                    c(1,1,1, 3),
-                                   c(2,2,2, 4),
+                                   c(1,1,1, NA),
                                    c(2,2,2, NA),
+                                   c(2,2,2, 4),
                                    c(2,2,2, NA)))
 
 
