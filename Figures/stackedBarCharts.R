@@ -106,8 +106,9 @@ stPetersProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="St. Peters"
 ggarrange(cocagneProcess, cocagneProcess, malpequeProcess, stPetersProcess, ncol = 1)
 
 # Newfoundland (only one bay)
-seArmProcess = stackedBarChart(nlMerge, "Southeast Arm")
-ggarrange(cocagneProcess, cocagneProcess, cocagneProcess, seArmProcess, ncol = 1)
+seArmSept2020 = stackedBarChart(nlMerge %>% subset(facetFactor == "Sept 2020"), "Sept 2020")
+seArmOct2021 = stackedBarChart(nlMerge %>% subset(facetFactor == "Oct 2021"), "Oct 2021")
+ggarrange(seArmSept2020, seArmOct2021, ncol = 1)
 
 
 # Pacific (only one bay, but separate by facetFactor instead)
@@ -192,4 +193,12 @@ ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
     plot.title = element_text(size = 15),
     strip.text.x = element_text(size = 13),
     strip.placement = "outside",
-  )
+  )+
+  guides(fill=guide_legend(ncol=2))
+
+
+
+
+
+
+
