@@ -28,7 +28,7 @@ stackedBarChart = function(bayData, plotTitle){
     summarize(countPerClass = sum(abund)) %>%
     mutate(rank = rank(-countPerClass),
            # Keep 5 most abundant classes, make the rest "Other"
-           classNew = ifelse(rank <=5, class, "Other"))
+           classNew = ifelse(rank <=7, class, "Other"))
 
   # Add this these new classes as a column in the original dataframe
   bayPlotDf = bayData %>%
@@ -92,13 +92,13 @@ stackedBarChart = function(bayData, plotTitle){
   # Make ggplot for a relative abundance chart
   relGGPlot =
     ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
-    geom_bar(stat = "identity", position = "fill", col = "black") +
+    geom_bar(stat = "identity", position = "fill", col = "black", linewidth = 0.05) +
     scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
     
     facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
     # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
     scale_x_discrete(name = "Site")+
-    scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
+    scale_fill_brewer(palette = "Set3", name = "Zooplankton Class")+
     ggtitle(plotTitle)+
     #theme_minimal(base_family = "Roboto Condensed") +
     theme_bw()+
@@ -115,7 +115,8 @@ stackedBarChart = function(bayData, plotTitle){
       plot.title = element_text(size = 15),
       strip.text.x = element_text(size = 13),
       strip.placement = "outside",
-    )
+    )+
+    guides(fill=guide_legend(ncol=2))
   
   
   #bothPlots = plot_grid(stackedGGPlot, relGGPlot, ncol = 1, align = "v", axis = "l")
@@ -182,12 +183,56 @@ spHighRisk = stackedBarChart(gulfMerge %>% subset(facetFactor == "St. Peters") %
 
 
 
+################################################################################
+################################################################################
+
+# Newfoundland
+# I think I want 
+
+nlMinus2020 = nlMerge %>%
+  filter(yearStart != 2020)
+
+bayOther = nlMinus2020 %>%
+  # Want counts per taxa (class) for the whole bay, not by tow
+  group_by(class) %>%
+  summarize(countPerClass = sum(abund)) %>%
+  mutate(rank = rank(-countPerClass),
+         # Keep 5 most abundant classes, make the rest "Other"
+         classNew = ifelse(rank <=11, class, "Other"))
+
+# Add this these new classes as a column in the original dataframe
+bayPlotDf = nlMinus2020 %>%
+  left_join(bayOther %>%
+              # Might be a better way, but I don't want to join the ENTIRE dataframe
+              select(classNew, class, countPerClass), by = c("class" = "class")) %>%
+  group_by(classNew, sampleCode, myLabel, tidePhase) %>%
+  # If you don't recompute counts, the "Other" class will have a bunch of black lines
+  # if you set the outline colour to black in geom_bar
+  summarise(sumCount = sum(abund))
 
 
-
-
-
-
-
-
-
+ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
+  geom_bar(stat = "identity", position = "fill", col = "black") +
+  scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
+  
+  #facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
+  # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
+  scale_x_discrete(name = "Site")+
+  scale_fill_brewer(palette = "Set3", name = "Zooplankton Class")+
+  #ggtitle(plotTitle)+
+  #theme_minimal(base_family = "Roboto Condensed") +
+  theme_bw()+
+  theme(
+    axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
+    #axis.text.x = element_blank(),
+    axis.text.y = element_text(size = 13),
+    axis.ticks.x = element_blank(),
+    axis.title = element_text(size = 13),
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size=13),
+    panel.grid.major.y = element_blank(),
+    panel.spacing = unit(0.2, "cm"), # changes spacing between facets
+    plot.title = element_text(size = 15),
+    strip.text.x = element_text(size = 13),
+    strip.placement = "outside",
+  )
