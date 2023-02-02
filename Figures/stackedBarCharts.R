@@ -49,46 +49,6 @@ stackedBarChart = function(bayData, plotTitle){
     mutate(tidePhase = replace(tidePhase, tidePhase == "Mid-Rising", "M-R")) %>%
     mutate(tidePhase = replace(tidePhase, tidePhase == "Mid-Falling", "M-F"))
   
-  # Make ggplot for a Stacked Bar Chart
-  # Write the y-axis label outside of ggplot so I don't get (as) lost in brackets
-  yLabelStacked = expression(paste("Abundance (ind ", m^{-3}, ")"))
-  
-  stackedGGPlot =
-    ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
-      geom_bar(stat="identity", color = "black")+
-          facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
-      #facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
-      scale_x_discrete(name = "Station")+
-      scale_y_continuous(labels = scales::comma, name = yLabelStacked) +
-      scale_fill_brewer(palette = "Accent", name = "Zooplankton Class")+
-      #theme_minimal(base_family = "Roboto Condensed") +
-      theme_bw()+
-      theme(
-        #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
-        axis.text.x = element_blank(),
-        axis.text.y = element_text(size = 11),
-        axis.ticks.x = element_blank(),
-        axis.title.x = element_blank(),
-        legend.title = element_text(size=13),
-        panel.grid.major.y = element_blank(),
-        panel.spacing = unit(0.2, "cm"), # changes spacing between facets
-        #plot.title = element_text(size = 15, face = "bold"),
-        strip.text.x = element_text(size = 13),
-        strip.placement = "outside",
-      )
-  
-  # For the relative abundance plots I DON'T want "Mid" tide data
-  # I just want to compare High/Low. So remove the mid-rising and mid-falling tides
-  # CHECK THIS: but I think "Mid" and "Inner" can be combined when looking at tide effect
-  # Since it's supposed to be most pronounced at the mouth of the bay ("Outer")
-  # Therefore, combine Mid/Inner location into one category
-  # bayPlotDf = bayPlotDf %>%
-  #   subset(tidePhase != "Mid-Rising" & tidePhase != "Mid-Falling") %>%
-  #   mutate(myLabel = replace(myLabel, myLabel == "Mid", "Mid/Inner")) %>%
-  #   mutate(myLabel = replace(myLabel, myLabel == "Inner", "Mid/Inner"))
-
-
-  
   # Make ggplot for a relative abundance chart
   relGGPlot =
     ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
@@ -117,9 +77,6 @@ stackedBarChart = function(bayData, plotTitle){
       strip.placement = "outside",
     )+
     guides(fill=guide_legend(ncol=2))
-  
-  
-  #bothPlots = plot_grid(stackedGGPlot, relGGPlot, ncol = 1, align = "v", axis = "l")
   
   return(relGGPlot)
   
