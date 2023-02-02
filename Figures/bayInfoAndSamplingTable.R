@@ -35,6 +35,9 @@ bayTable = allRegionsWide %>%
   
   ## Fix typos and make adjustments to the entries
   
+  # Because I have to sort and group entries by monthStart, and I don't want Argyle entries to show up separately. So just pretend that the samples in September (9) occurred in August (8)
+  mutate(monthStart = ifelse(fieldCampaign == "Argyle", 8, monthStart)) %>%
+  
   # Change equipment type for all St. Peters to "250/150". (Some were just "250" but it must be the same)
   mutate(equipmentType = ifelse(fieldCampaign == "St. Peters", "250/150", equipmentType)) %>%
   
@@ -67,14 +70,14 @@ bayTable = allRegionsWide %>%
   mutate(avgDepthStn = round(mean(depthWaterM), 2)) %>% 
   
   # In each bay, count the number of samples with this station and tide phase combination. Need to "group_by" everything else so I don't lose the columns
-  group_by(region, fieldCampaign, yearStart,dateRange, myLabel, tidePhase, avgDepthStn, productionType, target, equipmentType, netMesh, mySampleType) %>%
+  group_by(region, fieldCampaign, yearStart,dateRange, myLabel, tidePhase, avgDepthStn, productionType, target, equipmentType, netMesh, mySampleType, monthStart) %>%
   summarise(stnTideCount = n()) %>%
   
   ## Last steps! Select the columns I actually need and rename them.
   ungroup() %>% # I have to do this again or it will "add missing grouping variables" lol
-  select(region, fieldCampaign, yearStart, dateRange, productionType, target, mySampleType, equipmentType, netMesh, myLabel, avgDepthStn, tidePhase, stnTideCount) %>%
+  select(region, fieldCampaign, yearStart, dateRange, productionType, target, mySampleType, equipmentType, netMesh, myLabel, avgDepthStn, tidePhase, stnTideCount, monthStart) %>%
   
-  arrange(region, yearStart, fieldCampaign) %>%
+  arrange(region, yearStart, ifelse(region == "Maritimes" | region == "Gulf", fieldCampaign, monthStart)) %>%
   
   rename("Region" = region, 
          "Bay or field season" = fieldCampaign, 
