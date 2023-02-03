@@ -121,8 +121,7 @@ ggarrange(lemmens20Process, lemmensMar21Process, lemmensJun21Process, lemmensSep
 
 
 ################################################################################
-
-# Newfoundland
+### Newfoundland
 # I think I want 
 
 nlMinus2020 = nlMerge %>%
@@ -138,20 +137,36 @@ bayOther = nlMinus2020 %>%
 
 # Add this these new classes as a column in the original dataframe
 bayPlotDf = nlMinus2020 %>%
-  left_join(bayOther %>%
+  left_join(bayOther, by = c("class" = "class")) %>%
               # Might be a better way, but I don't want to join the ENTIRE dataframe
-              select(classNew, class, countPerClass), by = c("class" = "class")) %>%
-  group_by(classNew, sampleCode, myLabel, tidePhase) %>%
+             # select(classNew, class, countPerClass), by = c("class" = "class", "monthStart" = "monthStart", "yearStart" = "yearStart")) %>%
+  group_by(classNew, sampleCode, myLabel, tidePhase, monthStart, yearStart) %>%
   # If you don't recompute counts, the "Other" class will have a bunch of black lines
   # if you set the outline colour to black in geom_bar
   summarise(sumCount = sum(abund))
 
 
+monthFix = c(
+  `6` = "Jun",
+  `7` = "Jul",
+  `8` = "Aug",
+  `9` = "Sep",
+  `10` = "Oct",
+  `11` = "Nov",
+  `12` = "Dec",
+  `2` = "Feb",
+  `3` = "Mar",
+  `4` = "Apr",
+  `5` = "May"
+)
+
 ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
   geom_bar(stat = "identity", position = "fill", col = "black") +
   scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
+  # facet_wrap(~monthStart, scales = "free")+
   
-  #facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
+  facet_nested(. ~yearStart + monthStart, scales = "free_x", space = "free_x", labeller = labeller(monthStart = monthFix))+
+
   # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
   scale_x_discrete(name = "Site")+
   scale_fill_brewer(palette = "Set3", name = "Zooplankton Class")+
@@ -159,13 +174,13 @@ ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
   #theme_minimal(base_family = "Roboto Condensed") +
   theme_bw()+
   theme(
-    axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
-    #axis.text.x = element_blank(),
+    #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
+    axis.text.x = element_blank(),
     axis.text.y = element_text(size = 13),
     axis.ticks.x = element_blank(),
     axis.title = element_text(size = 13),
     legend.text = element_text(size = 12),
-    legend.title = element_text(size=13),
+    legend.title = element_text(size = 13),
     panel.grid.major.y = element_blank(),
     panel.spacing = unit(0.2, "cm"), # changes spacing between facets
     plot.title = element_text(size = 15),
