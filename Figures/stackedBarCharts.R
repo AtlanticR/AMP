@@ -120,28 +120,6 @@ lemmensSept21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "Septe
 ggarrange(lemmens20Process, lemmensMar21Process, lemmensJun21Process, lemmensSept21Process, ncol = 1)
 
 
-
-################################################################################
-## For analysis later
-# Some of these will show more of an effect than others
-
-
-# High Risk Sites!!!
-soberHighRisk = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island") %>%
-                                                      subset(myLabel == "Outer"))
-
-soberHighRiskInner = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island") %>%
-                                  subset(myLabel == "Inner"))
-
-whHighRisk = stackedBarChart(marMerge %>% subset(facetFactor == "Whitehead") %>%
-                                            subset(myLabel == "Mid"))
-
-spHighRisk = stackedBarChart(gulfMerge %>% subset(facetFactor == "St. Peters") %>%
-                               subset(myLabel == "Mid"))
-
-
-
-################################################################################
 ################################################################################
 
 # Newfoundland
