@@ -150,19 +150,7 @@ bayPlotDf = nlMinus2020 %>%
 
 # Dealing with months is tough. Use the numbers to facet them, so they are displayed in the correct order
 # But make a list here of what each number refers to so the labels can be changed
-monthFix = c(
-  `6` = "Jun",
-  `7` = "Jul",
-  `8` = "Aug",
-  `9` = "Sep",
-  `10` = "Oct",
-  `11` = "Nov",
-  `12` = "Dec",
-  `2` = "Feb",
-  `3` = "Mar",
-  `4` = "Apr",
-  `5` = "May"
-)
+monthFix = c(`6` = "Jun", `7` = "Jul", `8` = "Aug", `9` = "Sep", `10` = "Oct", `11` = "Nov", `12` = "Dec", `2` = "Feb", `3` = "Mar", `4` = "Apr", `5` = "May")
 
 ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
   geom_bar(stat = "identity", position = "fill", col = "black") +
