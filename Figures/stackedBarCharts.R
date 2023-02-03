@@ -108,7 +108,7 @@ ggarrange(cocagneProcess, cocagneProcess, malpequeProcess, stPetersProcess, ncol
 # Newfoundland (only one bay)
 seArmSept2020 = stackedBarChart(nlMerge %>% subset(facetFactor == "Sept 2020"), "Sept 2020")
 seArmOct2021 = stackedBarChart(nlMerge %>% subset(facetFactor == "Oct 2021"), "Oct 2021")
-ggarrange(seArmSept2020, seArmOct2021, ncol = 1)
+ggarrange(seArmSept2020, seArmOct2021, seArmOct2021, seArmOct2021, ncol = 1)
 
 
 # Pacific (only one bay, but separate by facetFactor instead)
@@ -122,11 +122,14 @@ ggarrange(lemmens20Process, lemmensMar21Process, lemmensJun21Process, lemmensSep
 
 ################################################################################
 ### Newfoundland
-# I think I want 
+# I want one large rel abundance chart that shows monthly sampling in order from Jun 2021 --> Jul 2022 
 
+# For now, I am removing 2020 data since it is so "different". Also it only has one time period (Sept)
 nlMinus2020 = nlMerge %>%
   filter(yearStart != 2020)
 
+# Find the 7 most abundant taxa. Keep those names
+# Call the rest of them "other"
 bayOther = nlMinus2020 %>%
   # Want counts per taxa (class) for the whole bay, not by tow
   group_by(class) %>%
@@ -145,7 +148,8 @@ bayPlotDf = nlMinus2020 %>%
   # if you set the outline colour to black in geom_bar
   summarise(sumCount = sum(abund))
 
-
+# Dealing with months is tough. Use the numbers to facet them, so they are displayed in the correct order
+# But make a list here of what each number refers to so the labels can be changed
 monthFix = c(
   `6` = "Jun",
   `7` = "Jul",
@@ -163,15 +167,11 @@ monthFix = c(
 ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
   geom_bar(stat = "identity", position = "fill", col = "black") +
   scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
-  # facet_wrap(~monthStart, scales = "free")+
-  
-  facet_nested(. ~yearStart + monthStart, scales = "free_x", space = "free_x", labeller = labeller(monthStart = monthFix))+
 
-  # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
+  # Have the top panel be year, then the next subpanel is months. Use labeller to adjust month names  
+  facet_nested(. ~yearStart + monthStart, scales = "free_x", space = "free_x", labeller = labeller(monthStart = monthFix))+
   scale_x_discrete(name = "Site")+
   scale_fill_brewer(palette = "Set3", name = "Zooplankton Class")+
-  #ggtitle(plotTitle)+
-  #theme_minimal(base_family = "Roboto Condensed") +
   theme_bw()+
   theme(
     #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
@@ -187,7 +187,7 @@ ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
     strip.text.x = element_text(size = 13),
     strip.placement = "outside",
   )+
-  guides(fill=guide_legend(ncol=2))
+  guides(fill=guide_legend(ncol=2)) # Break the legend into 2 columns
 
 
 
