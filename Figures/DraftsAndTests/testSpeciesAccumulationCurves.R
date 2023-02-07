@@ -19,6 +19,30 @@ plot(alg_spec_accum_result)
 rand.num = sample(1:1000, size = 25)
 
 
+data(dune)
+
+
+n.runs = 999
+result = matrix(NA, nrow = n.runs, ncol = max(length(sp.curve$species)))
+
+for (i in 1:999){
+  
+  sp.curve = specaccum(dune, "random")
+  result[i,] = sp.curve$richness
+  
+}
+
+mean.sp.curve = apply(result, 2, mean)
+
+result
+
+plot(mean.sp.curve, type = "l")
+
+
+
+
+
+
 # Extract the resampling data used in the above algorithm
 spec_resamp_data <- data.frame(
   data_set = "observed", 
