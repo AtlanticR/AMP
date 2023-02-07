@@ -171,6 +171,29 @@ lines(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(arg
 # It is odd to me that is not the default (it scales the x-axis to "Sites" which is confusing)
 plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), xvar = "individuals")
 
+x = as.matrix(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)])
+
+plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method= "random", weights = argyle$waterVolume))
+
+
+sp1 = specaccum(x)
+sp2 = specaccum(x, "random", weights = argyle$waterVolume)
+plot(sp2)
+
+mod1 = fitspecaccum(x, "lomolino")
+
+mod1 = fitspecaccum(sp1, "lomolino")
+
+plot(sp1)
+plot(mod1, add = T, col = 2, lwd = 2)
+
+
+mods = fitspecaccum(sp2, "arrh")
+plot(mods, col = "hotpink")
+boxplot(sp2, col = "yellow", border = "blue", lty = 1, cex = 0.3, add = T)
+
+sapply(mods$models, AIC)
+
 
 
 ###########################################################################################################################
