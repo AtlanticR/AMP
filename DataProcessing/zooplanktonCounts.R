@@ -23,6 +23,11 @@
 # within each sample
 # These will be used as the data for statistical analyses/making graphs, etc.
 
+# Some taxonomy rules to remember outside of R:
+# Family (and higher): capitalized only (not italicized)
+# Genus: capitalized and italicized
+# Species: italicized only (not capitalized), but follows genus
+
 ## ADDITIONAL INFO:
 # Created by Stephen Finnis 2022
 # Data files are not public
