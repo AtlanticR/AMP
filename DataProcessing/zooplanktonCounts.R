@@ -163,14 +163,14 @@ speciesDF = function(xlDataFull, xlDataShort) {
     mutate(originalNames = class) %>%
     # Convert counts to numeric
     mutate(count = as.numeric(count)) %>%
+    # Merge values to the spreadsheet that has the edited taxa names
     left_join(taxaFixes) %>%
-  
     # Need to sum the values to remove the duplicates
     # Note: this also removes the Particles and originalName columns
     group_by(sample, newName) %>%
     summarize(count = sum(count)) %>%
-      filter(count >0) %>%
-      filter(newName != "Remove")
+      filter(count >0) %>% # Remove ones with a count of 0
+      filter(newName != "Remove") # Remove non-zoo particles e.g., "Debris", "Bubbles", etc.
 
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
