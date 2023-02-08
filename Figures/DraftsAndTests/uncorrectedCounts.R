@@ -33,6 +33,8 @@
 source("DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
 source("DataProcessing/metadataProcessing.R") # get metadata
 
+taxaFixes = read.csv("../AMPDataFiles/taxaCorrections.csv")
+
 ################################################################################
 ## GET THE DATA FILE NAMES
 # First, get the names of the dataset folders to search through. 
@@ -154,15 +156,18 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # Keep the original class names with no adjustments
     mutate(originalNames = class) %>%
     # Convert counts to numeric
-    mutate(count = as.numeric(count)) 
+    mutate(count = as.numeric(count)) %>%
+    left_join(taxaFixes)
 
   
   siteDf = siteDf %>%
     
 
     # Note: this also removes the Particles and originalName columns
-    group_by(sample,originalNames, class) %>%
-    summarize(count = sum(count))
+    group_by(sample, newName) %>%
+    summarize(count = sum(count)) %>%
+    filter(count >0) %>%
+    filter(newName != "Remove")
   
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
@@ -178,10 +183,10 @@ gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
 # This is the one in a different format
-nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) %>% 
+nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) #%>% 
   # Also, there was one file (AAMP_NL_S01_41_20200916PM_250) that had one extra blank line.
   # This was above "===END METADATA STATISTICS===". Remove this or else there will be a blank class with a count of zero
-  subset(class != "")
+  #subset(class != "")
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 nl22 = speciesDF(dirFull[[6]], dirShort[[6]])
 pac20 = speciesDF(dirFull[[7]], dirShort[[7]])
