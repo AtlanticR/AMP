@@ -53,7 +53,7 @@ inextPrep = function(bayData, colourScheme, plotLetter){
 
 # First, just extract only the taxa info:
 # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
-bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp."): ncol(bayData)]
+bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp. (civ-vi)"): ncol(bayData)]
 
 # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
 bayTaxa[bayTaxa>0] = 1
@@ -162,18 +162,18 @@ seInextResults = seArm2020Inext[[2]]
 # But I will be using sample-based rarefaction where it's just presence-absence. So... it's not a huge issue?
 
 # Make plots of both sample-based and individual-based
-plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method= "exact")) # sample-based
+plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method= "exact")) # sample-based
 
 # Plot individual-based rarefaction over top. Data need to be rounded. (individual-based should be higher)
-lines(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), lty = 4)
+lines(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method = "rarefaction"), lty = 4)
 
 # I think it would make sense if individual-based rarefaction was instead plotted with xvar = "individuals" as default
 # It is odd to me that is not the default (it scales the x-axis to "Sites" which is confusing)
-plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method = "rarefaction"), xvar = "individuals")
+plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method = "rarefaction"), xvar = "individuals")
 
-x = as.matrix(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)])
+x = as.matrix(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi) (civ-vi)"): ncol(argyle)])
 
-plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]), method= "random", weights = argyle$waterVolume))
+plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi) (civ-vi)"): ncol(argyle)]), method= "random", weights = argyle$waterVolume))
 
 
 sp1 = specaccum(x)
@@ -204,7 +204,7 @@ inextCSRF = function(bayData, colourScheme, plotLetter){
   
   # First, just extract only the taxa info:
   # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
-  bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp."): ncol(bayData)]
+  bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp. (civ-vi)"): ncol(bayData)]
   
   # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
   bayTaxa[bayTaxa>0] = 1
@@ -266,8 +266,8 @@ argLT = argyle %>%
   subset(tidePhase == "Low")
 
 
-argHTtaxa = argHT[,which(colnames(argHT)== "Acartia spp."): ncol(argHT)]
-argLTtaxa = argLT[,which(colnames(argLT)== "Acartia spp."): ncol(argLT)]
+argHTtaxa = argHT[,which(colnames(argHT)== "Acartia spp. (civ-vi)"): ncol(argHT)]
+argLTtaxa = argLT[,which(colnames(argLT)== "Acartia spp. (civ-vi)"): ncol(argLT)]
 
 argHTtaxa[argHTtaxa>0] = 1
 argLTtaxa[argLTtaxa>0] = 1
@@ -288,7 +288,7 @@ ggiNEXT(hi, facet.var = "Order.q", type = 1)
 ### Using the iNEXT4steps methods i.e., Chao et al. (2020)
 # Recall that iNEXT.4steps is not in CRAN yet!!
 
-argTaxa = argyle[,which(colnames(argyle)== "Acartia spp."): ncol(argyle)]
+argTaxa = argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]
 
 # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
 argTaxa[argTaxa>0] = 1
