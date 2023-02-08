@@ -58,13 +58,13 @@ options(scipen = 999)
 ### DISPERSION
 # vegdist turns the data into dissimilarities. Bray-Curtis is the default
 # Need to also square root transform
-# It's  a bit clunky, but data in the species matrix always starts with 'Acartia spp." until the last column (ncol)
+# It's  a bit clunky, but data in the species matrix always starts with 'Acartia spp. (civ-vi)" until the last column (ncol)
 # There are two ways to define the centroid: "centroid" or "spatial median"
 # See PRIMER manual for brief explanation of the differences. Manual recommends "centroid" in most cases
 # However, betadisper function notes error in using type = centroid.
 # See warning here: https://rdrr.io/cran/vegan/man/betadisper.html#:~:text=betadisper%20is%20a%20multivariate%20analogue,means%20of%20assessing%20beta%20diversity.
 # I am switching this to type = "median" because of this
-oceanDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean), type = "median")
+oceanDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)])), as.factor(allRegionsWide$ocean), type = "median")
 
 # This will get you ANOVA results (i.e., are there differences in dispersion) but with non-permuted significance
 anova(oceanDisp) 
@@ -101,7 +101,7 @@ ggplot(disOcean, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # First selects only the species data (i.e., starting at Acartia until the end)
-adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
+adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)])~
           as.factor(allRegionsWide$ocean), method="bray", sqrt.dist = F, perm = 9999)
 
 # No need for pairwise tests since only 2 groups at this scale
@@ -109,7 +109,7 @@ adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):nc
 
 ### SIMPER 
 # Use SIMPER to find out which species contribute most to the differences 
-simOcean = simper(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]), 
+simOcean = simper(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)]), 
                                       group=allRegionsWide$ocean)
 
 # View the SIMPER results                  
@@ -122,7 +122,7 @@ summary(simOcean)
 # There are 4 factors (in this study): Maritimes, Gulf, Newfoundland, Pacific
 
 ### DISPERSION
-regDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), type = "median")
+regDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), type = "median")
 pairRegDisp = permutest(regDisp, pairwise = T, permutations = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
@@ -164,11 +164,11 @@ ggplot(disRegion, aes(x = group, y = distances, fill=group))+
 ### PERMANOVA
 
 # Test 2 different adonis methods to make sure they're all the same. They are!!
-adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])~
+adonis2(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)])~
   as.factor(allRegionsWide$region), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Make sure I get same results using vegdist. I do!
-regPNresults = adonis2(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]))~
+regPNresults = adonis2(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)]))~
           as.factor(allRegionsWide$region), sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between each region
@@ -176,11 +176,11 @@ regPNresults = adonis2(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWid
 # Could take the square root of the F-value to get t-values (see PERMANOVA/PRIMER guide)
 # Note to get 4 decimal places for P-value, need to set perm = 9999. Function help says "nperm" which is wrong
 # set seed to get reproducible p-values
-regPairwisePN = pairwise.adonis2(vegdist(sqrt(allRegionsWide[12:ncol(allRegionsWide)]))~as.factor(region), data = allRegionsWide, perm=9999, set.seed(13))
+regPairwisePN = pairwise.adonis2(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)]))~as.factor(region), data = allRegionsWide, perm=9999, set.seed(13))
 
 
 ### SIMPER
-simRegion = simper(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)]), 
+simRegion = simper(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)]), 
                   group=allRegionsWide$region)
 summary(simRegion)
 
@@ -212,7 +212,7 @@ pacPN = pacMerge %>%
 ## MARITIMES
 
 ### DISPERSION
-marDisp = betadisper(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])), as.factor(marPN$facetFactor), type = "median")
+marDisp = betadisper(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp. (civ-vi)"):ncol(marPN)])), as.factor(marPN$facetFactor), type = "median")
 pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999, set.seed(11))
 
 # Look at pairRegDisp for F-values, permuted p-values
@@ -246,14 +246,14 @@ ggplot(disMar, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
-marPNresults= adonis2(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)])~
+marPNresults= adonis2(sqrt(marPN[,which(colnames(marPN)== "Acartia spp. (civ-vi)"):ncol(marPN)])~
                as.factor(marPN$facetFactor), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-marPairwisePN = pairwise.adonis2(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]))~as.factor(facetFactor), data = marPN, perm =9999, set.seed(13))
+marPairwisePN = pairwise.adonis2(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp. (civ-vi)"):ncol(marPN)]))~as.factor(facetFactor), data = marPN, perm =9999, set.seed(13))
 
 ### SIMPER
-simMar = simper(sqrt(marPN[,which(colnames(marPN)== "Acartia spp."):ncol(marPN)]), 
+simMar = simper(sqrt(marPN[,which(colnames(marPN)== "Acartia spp. (civ-vi)"):ncol(marPN)]), 
                    group=marPN$facetFactor, permutations = 9999)
 summary(simMar)
 
@@ -262,7 +262,7 @@ summary(simMar)
 ## GULF
 
 ### DISPERSION
-gulfDisp = betadisper(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])), as.factor(gulfPN$facetFactor), type = "median")
+gulfDisp = betadisper(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp. (civ-vi)"):ncol(gulfPN)])), as.factor(gulfPN$facetFactor), type = "median")
 pairGulfDisp = permutest(gulfDisp, pairwise = T, permutations = 9999, perm = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
@@ -293,14 +293,14 @@ ggplot(disGulf, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
-gulfPNresults = adonis2(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)])~
+gulfPNresults = adonis2(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp. (civ-vi)"):ncol(gulfPN)])~
           as.factor(gulfPN$facetFactor), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-gulfPairwisePN = pairwise.adonis2(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]))~as.factor(facetFactor), data = gulfPN, perm =9999, set.seed(13))
+gulfPairwisePN = pairwise.adonis2(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp. (civ-vi)"):ncol(gulfPN)]))~as.factor(facetFactor), data = gulfPN, perm =9999, set.seed(13))
 
 ### SIMPER
-simGulf = simper(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp."):ncol(gulfPN)]), 
+simGulf = simper(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp. (civ-vi)"):ncol(gulfPN)]), 
                 group=gulfPN$facetFactor)
 summary(simGulf)
 
@@ -317,7 +317,7 @@ pacPNred = pacPN %>%
   filter(sampleCode != c("AMMP_PA_S04Pooled_202103LT_250UM"))
 
 ### DISPERSION
-pacDisp = betadisper(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])), as.factor(pacPNred$facetFactor), type = "median")
+pacDisp = betadisper(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp. (civ-vi)"):ncol(pacPNred)])), as.factor(pacPNred$facetFactor), type = "median")
 pairPacDisp = permutest(pacDisp, pairwise = T, permutations = 9999, set.seed(13))
 
 # Look at pairRegDisp for F-values, permuted p-values
@@ -347,16 +347,16 @@ ggplot(disPac, aes(x = group, y = distances, fill=group))+
 
 ### PERMANOVA
 # Are there differences between bays (facetFactor)
-pacPNresults = adonis2(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)])~
+pacPNresults = adonis2(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp. (civ-vi)"):ncol(pacPNred)])~
           as.factor(pacPNred$facetFactor), method="bray", sqrt.dist = F, perm = 9999, set.seed(13))
 
 # Pairwise comparisons between bays
-pacPairwisePN = pairwise.adonis2(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp."):ncol(pacPNred)]))~as.factor(facetFactor), data = pacPNred, perm = 9999, set.seed(13))
+pacPairwisePN = pairwise.adonis2(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp. (civ-vi)"):ncol(pacPNred)]))~as.factor(facetFactor), data = pacPNred, perm = 9999, set.seed(13))
 
 ### SIMPER
 # Here I am using pacPN not pacPNred because I want to know which species make the March 2021 data different
 # I can see visually they are different
-simPac = simper(sqrt(pacPN[,which(colnames(pacPN)== "Acartia spp."):ncol(pacPN)]), 
+simPac = simper(sqrt(pacPN[,which(colnames(pacPN)== "Acartia spp. (civ-vi)"):ncol(pacPN)]), 
                  group=pacPN$facetFactor)
 summary(simPac)
 
@@ -374,7 +374,7 @@ summary(simPac)
 
 #### NMDS of SIMPER
 # ggplot() + 
-#   geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region, size = allRegionsWide$`Acartia spp.`), pch = 21, alpha= 0.9)+
+#   geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region, size = allRegionsWide$`Acartia spp. (civ-vi)`), pch = 21, alpha= 0.9)+
 #   # Don't need to define colours. These just show up as default ggplot colours for 4 elements
 #   #scale_fill_manual(name = "Region")+ 
 #   scale_size(range=c(0.1, 20), name="Acartia")+
@@ -410,7 +410,7 @@ summary(simPac)
 # library("funfuns")
 # 
 # # With the function from funfuns package
-# pairwise.adonis(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp."):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), sim.method="bray")
+# pairwise.adonis(sqrt(vegdist(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), sim.method="bray")
 # 
 # # This is another way to do the pairwise comparisons for BETADISPER, although they do not come with t-values
 # # See here for more info: https://rdrr.io/rforge/vegan/man/permutest.betadisper.html
