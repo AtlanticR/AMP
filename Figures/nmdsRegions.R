@@ -47,7 +47,7 @@ allRegionsWide = allRegions %>%
 # For NMDS calculations, must only include species data from dataframe
 # I will constantly be removing columns, adding columns etc. 
 # Instead define as the index where there's Acartia species (first species colum in dataframe) to the end (final column)
-beginNMDSAll = which(colnames(allRegionsWide)== "Acartia spp.")
+beginNMDSAll = which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)")
 endNMDSAll = ncol(allRegionsWide)
 
 # Do NMDS ordination but only include species data
@@ -181,7 +181,7 @@ atlOnly = allRegionsWide %>%
   filter(ocean == "Atlantic") 
 
 # Set the start/stop column indices for NMDS to run on
-beginNMDSAtl = which(colnames(atlOnly)== "Acartia spp.")
+beginNMDSAtl = which(colnames(atlOnly)== "Acartia spp. (civ-vi)")
 endNMDSAtl = ncol(atlOnly)
 
 # Do NMDS ordination
@@ -222,15 +222,15 @@ ggMaritimes = ggplot()+
 
 # Newfoundland
 # Add extra padding to top of 
-ggNewfoundland = ggplot()+
-  geom_point(data = ordCoordsAtl %>% filter(region == "Newfoundland"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 24, size = 6)+
-  scale_fill_manual(values = c("#00BFC4"), name = "Newfoundland", labels = "Southeast Arm  ")+
-  coord_cartesian(xlim = c(-1, 1), ylim = c(-1,1))+ 
-  theme_bw()+
-  theme(legend.key.size = unit(0.2, "cm"),
-        legend.margin=margin(c(0,0, 30,0)), # top, right, bottom, left. Add extra space to "bottom" margin to make legend move up
-        legend.text=element_text(size = 12),
-        legend.title = element_text(size = 14))
+# ggNewfoundland = ggplot()+
+#   geom_point(data = ordCoordsAtl %>% filter(region == "Newfoundland"), aes(x = NMDS1, y = NMDS2, fill = facetFactor), pch = 24, size = 6)+
+#   scale_fill_manual(values = c("#00BFC4"), name = "Newfoundland", labels = "Southeast Arm  ")+
+#   coord_cartesian(xlim = c(-1, 1), ylim = c(-1,1))+ 
+#   theme_bw()+
+#   theme(legend.key.size = unit(0.2, "cm"),
+#         legend.margin=margin(c(0,0, 30,0)), # top, right, bottom, left. Add extra space to "bottom" margin to make legend move up
+#         legend.text=element_text(size = 12),
+#         legend.title = element_text(size = 14))
 
 # Now make a plot of everything (without the legend)
 ggAtlanticOnly = ggplot()+
@@ -253,17 +253,17 @@ ggAtlanticOnly = ggplot()+
         plot.title = element_text(size=18))
 
 # Get (just) the legends
-gulfLegend = as_grob(get_legend(ggGulf))
-marLegend = as_grob(get_legend(ggMaritimes))
-nlLegend = as_grob(get_legend(ggNewfoundland))
-
-# Plot it all together
-grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
-             layout_matrix = rbind(c(1,1,1,NA), 
-                                   c(1,1,1,2),
-                                   c(1,1,1,3),
-                                   c(1,1,1,4),
-                                   c(1,1,1,NA)))
+# gulfLegend = as_grob(get_legend(ggGulf))
+# marLegend = as_grob(get_legend(ggMaritimes))
+# nlLegend = as_grob(get_legend(ggNewfoundland))
+# 
+# # Plot it all together
+# grid.arrange(ggAtlanticOnly, gulfLegend, marLegend, nlLegend, nrow=2, ncol = 2,
+#              layout_matrix = rbind(c(1,1,1,NA), 
+#                                    c(1,1,1,2),
+#                                    c(1,1,1,3),
+#                                    c(1,1,1,4),
+#                                    c(1,1,1,NA)))
 
 #################################################################################
 # Actually I think what I want more than Maritimes, Gulf and Newfoundland is just Maritimes & Gulf
@@ -275,7 +275,7 @@ gulfMarOnly = allRegionsWide %>%
   filter(region == "Maritimes" | region == "Gulf") 
 
 # Set the start/stop column indices for NMDS to run on
-beginNMDSGulfMar = which(colnames(gulfMarOnly)== "Acartia spp.")
+beginNMDSGulfMar = which(colnames(gulfMarOnly)== "Acartia spp. (civ-vi)")
 endNMDSGulfMar = ncol(gulfMarOnly)
 
 # Do NMDS ordination
@@ -345,7 +345,7 @@ nmdsPrep = function(mergeData, bayColours, breakVals) {
   # For NMDS calculations, must only include species data from dataframe
   # I will constantly be removing columns, adding columns etc. 
   # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
-  beginNMDS = which(colnames(mergeData)== "Acartia spp.")
+  beginNMDS = which(colnames(mergeData)== "Acartia spp. (civ-vi)")
   endNMDS = ncol(mergeData)
   
   # Do NMDS ordination but only include species data
@@ -416,7 +416,7 @@ gulfNMDS = nmdsPrep(gulfMerge, gulfColours, waiver())
 # nlNMDS = nmdsPrep(nlMerge, nlColours, waiver())
 
 # This works better than grid.arrange! It aligns all the plots with unequal legends
-plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
+# plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 
 ########################################################################################################################
@@ -450,7 +450,7 @@ nlMergeWide = nlMerge %>%
 # For NMDS calculations, must only include species data from dataframe
 # I will constantly be removing columns, adding columns etc. 
 # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
-beginNMDS.nl = which(colnames(nlMergeWide)== "Acartia spp.")
+beginNMDS.nl = which(colnames(nlMergeWide)== "Acartia spp. (civ-vi)")
 endNMDS.nl = ncol(nlMergeWide)
 
 # Do NMDS ordination but only include species data
@@ -522,7 +522,7 @@ ggplot() +
   # Add labels for each month of data and adjust transparency: may need to remove this
   geom_label_repel(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, label= monYear), colour = "black", size = 5, alpha = 0.7)+ # Use pch=21 to get black outline circles
   ggtitle("Newfoundland")+
-  annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=5.5, hjust=1)+ # for all others
+  annotate("text", x = max(ordCoords.nl$NMDS1), y=max(ordCoords.nl$NMDS2), label = ordStress.nl, size=5.5, hjust=1)+ # for all others
   theme_bw()+
   theme(axis.text = element_blank(),
         axis.title = element_text(size = 12),
