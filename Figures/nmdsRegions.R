@@ -560,7 +560,7 @@ ggplot() +
   # Add labels for each month of data and adjust transparency: may need to remove this
   #geom_label_repel(data = ordCoordsJoin %>% filter(year == "centroid"), aes(x=NMDS1, y=NMDS2, label= monYear), colour = "black", size = 5, alpha = 0.7)+ # Use pch=21 to get black outline circles
   ggtitle("Newfoundland")+
-  annotate("text", x = max(ordCoords.nl$NMDS1), y=max(ordCoords.nl$NMDS2), label = ordStress, size=5.5, hjust=1)+ # for all others
+  annotate("text", x = max(ordCoords.nl$NMDS1), y=max(ordCoords.nl$NMDS2), label = ordStress.nl, size=5.5, hjust=1)+ # for all others
   theme_bw()+
   theme(axis.text = element_blank(),
         axis.title = element_text(size = 12),
