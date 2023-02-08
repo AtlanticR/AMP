@@ -55,7 +55,7 @@ nmdsBay = function(regionData, stationCol) {
     # For NMDS calculations, must only include species data from dataframe
     # I will constantly be removing columns, adding columns etc. 
     # Instead define as the index where there's Acartia species (first species column in dataframe) to the end (final column)
-    beginNMDS = which(colnames(bayData)== "Acartia spp.")
+    beginNMDS = which(colnames(bayData)== "Acartia spp. (civ-vi)")
     endNMDS = ncol(bayData)
     
     # Do NMDS ordination but only include species data
