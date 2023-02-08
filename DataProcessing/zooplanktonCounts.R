@@ -418,7 +418,8 @@ gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
   mutate(facetFactor = facilityName,
          region = "Gulf",
          ocean = "Atlantic") %>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters"))
+  mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters")) %>%
+  rename(class = newName)
 
 nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
   # For Newfoundland data, I will only be running stats for month/year combos with enough data
@@ -427,7 +428,8 @@ nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
   mutate(facetFactor = ifelse(monthStart == 9 & yearStart == 2020, "Sept 2020", 
                               ifelse(monthStart == 10 & yearStart == 2021, "Oct 2021", "Other")),
          region = "Newfoundland") %>%
-  filter(flowcamCode != "NO MATCH")
+  filter(flowcamCode != "NO MATCH") %>%
+  rename(class = newName)
 
   #        ocean = "Atlantic") %>%
   # mutate(facetFactor = replace(facetFactor, facetFactor == "Newfoundland 2020", "Southeast Arm 2020"))
@@ -438,7 +440,8 @@ marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
          ocean = "Atlantic") %>%
   # I think I want to change the name of Sober Island
   mutate(facetFactor = replace(facetFactor, facetFactor == "Sober Island Oyster", "Sober Island")) %>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "WhiteHead", "Whitehead"))
+  mutate(facetFactor = replace(facetFactor, facetFactor == "WhiteHead", "Whitehead")) %>%
+  rename(class = newName)
 
 pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   mutate(facetFactor = dataset,
@@ -447,7 +450,8 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific August 2020", "August 2020"))%>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific June 2021", "June 2021"))%>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific March 2021", "March 2021"))%>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "September 2021"))
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "September 2021")) %>%
+  rename(class = newName)
 
 
 ################################################################################
