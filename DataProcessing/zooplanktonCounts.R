@@ -38,6 +38,9 @@
 source("DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
 source("DataProcessing/metadataProcessing.R") # get metadata
 
+# Read in spreadsheet with adjustments to taxa names
+taxaFixes = read.csv("../AMPDataFiles/taxaCorrections.csv")
+
 ################################################################################
 ## GET THE DATA FILE NAMES
 # First, get the names of the dataset folders to search through. 
@@ -160,157 +163,14 @@ speciesDF = function(xlDataFull, xlDataShort) {
     mutate(originalNames = class) %>%
     # Convert counts to numeric
     mutate(count = as.numeric(count)) %>%
-    # Remove all underscores and replace them with spaces
-    mutate(class = us_to_space(class)) %>%
-    # Make entire string lowercase
-    mutate(class = str_to_lower(class)) %>%
-    # Then capitalize the first letter
-    mutate(class = str_to_sentence(class)) %>%
-    # Remove instances of multiple spaces between words
-    mutate(class = str_squish(class)) %>%
-    mutate(class = str_replace(class, "spp", "spp.")) %>%
-    # Remove whitespace from end of word
-    mutate(class = str_trim(class, side = c("right"))) 
-    
-  # Remove unwanted classes
-  # These do not contain relevant zooplankton data
-  # Explanations of these terms are in "Zooplankton Samples" xlsx for each site (in the "Data and Classes" sheet)
+    left_join(taxaFixes) %>%
   
-  # These are the things to remove
-  excludeList = c("Benthic", "Bubbles", "Clumped zooplankton", "Clumped zooplankton/debris", "Clumped zooplanlton/debris", "Clumped zooplankton debris", 
-                   "Cut images", "Debris", "Debris of zooplankton", "Debris or zooplankton", "Diatom", "Duplicate images", "Extra taxa", "Fragments of zooplankton",
-                  "Leftover", "Leftovers")
-
-  typoFixes = list(
-    # cypris, actinula, nauplii/nauplius, metanauplius, calyptopsis, furcilia are all larval stages
-    
-    
-    "Ascidiaceae larva" = "Ascidiacea larvae",
-    "Aglantha digitale medusa" = "Aglantha spp. medusa", # some to higher level than others
-    "Calanoid" = "Calanoida (unid)", 
-    "Calananoida (unid)" = "Calanoida (unid)",
-    "Calanoid civ-vi" = "Calanoida (unid)",
-    "Calanoid cv-vi" = "Calanoida (unid)",
-    "Centropages spp. civ-vi" = "Centropages spp.",
-    "Chaetognatha" = "Chaetognatha (juvenile or not specified)", # stage not always specified
-    "Chaetognatha juvenile" = "Chaetognatha (juvenile or not specified)",
-    
-    "Cirripedia cypris" = "Cirripedia cypris/nauplii", 
-    "Cirripedia cypris nauplii" = "Cirripedia cypris/nauplii",
-    "Cirripedia nauplii" = "Cirripedia cypris/nauplii",
-    "Cirripedia nauplius" = "Cirripedia cypris/nauplii",
-    
-    "Cnidaria actinula" = "Cnidaria actinula/larvae",
-    "Cnidaria actinula larvae" = "Cnidaria actinula/larvae",
-    "Cnidaria larvae" = "Cnidaria actinula/larvae",
-    
-    "Ctenophora larva" = "Ctenophora larvae",
-    "Cyclopoida spp." = "Cyclopoida",
-    "Cyclopoida epibenthic" = "Cyclopoida", # epibenthic not a stage
-    
-    "Cumacea juvenileadult" = "Cumacea juvenile adult",
-    "Decapoda brachyura zoea larvae larvae" = "Decapoda brachyura zoea",
-    "Decapoda nonbrachyura zoea" = "Decapoda non-brachyura zoea",
-    "Decapoda nonbrachyura zoea larvae" = "Decapoda non-brachyura zoea",
-    "Decpoda brachyura zoea" = "Decapoda brachyura zoea",
-    
-    # But actually I want to get reid of the 'larvae' part!!
-    "Decapoda brachyura zoea larvae" = "Decapoda brachyura zoea",
-    "Decapoda non-brachyura zoea larvae" = "Decapoda non-brachyura zoea",
-    
-    # Larval stages of euphausiacea are nauplius, metanauplius, calyptopis, furcilia
-    "Euphausiacea calyptopis" = "Euphausiacea larvae (calyptosis/furcilia/nauplii)",
-    "Euphausiacea furcillia" = "Euphausiacea larvae (calyptosis/furcilia/nauplii)",
-    "Euphausiacea furcilia" = "Euphausiacea larvae (calyptosis/furcilia/nauplii)",
-    "Euphausiacea nauplii" = "Euphausiacea larvae (calyptosis/furcilia/nauplii)",
-    
-    # They were not consistent with these. Combine into Gastropoda/Limacina
-    "Gastropoda larvae/lamacina spp." = "Gastropoda/Limacina",
-    "Gastropoda limacina spp. larvaeadult" = "Gastropoda/Limacina",
-    "Gastropoda larvae" = "Gastropoda/Limacina",
-    "Gastropoda limacina spp." = "Gastropoda/Limacina",
-    "Gastropoda limacina spp. larvae adult" = "Gastropoda/Limacina",
-    
-    "Hydrozoa juvenile medusa" = "Hydrozoa juvenile/medusa",
-    "Hydrozoa medusa" = "Hydrozoa juvenile/medusa",
-    
-    # Could not differentiate between trochophore and egg in some cases
-    "Invertebrate trochophore larvae" = "Invertebrate egg/trochophore", 
-    "Invertebrate trochophore/larvae" = "Invertebrate egg/trochophore",
-    "Invertebrate egg" = "Invertebrate egg/trochophore",
-    "Invertebrate trochophore" = "Invertebrate egg/trochophore",
-    "Invertebrate egg trochophore" = "Invertebrate egg/trochophore",
-    
-    "Isopoda" = "Isopoda larvae or not specified",
-    "Isopoda larvae" = "Isopoda larvae or not specified",
-    
-    "Monstrilloida" = "Monstrillidae", # Monstrilloida is an order with single family Monstrillidae
-    "Monstrillidae spp." = "Monstrillidae",
-    
-    "Mysidacea juvenileadult" = "Mysidacea",
-    "Mysidacea juvenile adult" = "Mysidacea",
-    
-    " Osteichthyes egg" = "Osteichthyes egg",
-    "Osteichthys egg" = "Osteichthyes egg",
-    "Osteichthys eggs" = "Osteichthyes egg",
-    "Osteichthys larvae" = "Osteichthyes larvae",
-    "Osteichthyes eggs" = " Osteichthyes egg",
-    "Ostheichthys eggs" = "Osteichthyes egg",
-    "Ostracoda spp." = "Ostracoda",
-    "Platyhelmenthes nemertea larva" = "Platyhelmenthes nemertea larvae",
-    "Platyhelmenthes nemertrea larvae" = "Platyhelmenthes nemertea larvae",
-    "Platyhelminthes nemertea larvae" = "Platyhelmenthes nemertea larvae",
-    
-    "Podon pleopis spp." = "Podon spp./Pleopsis spp.",
-    "Podon/pleopis spp." = "Podon spp./Pleopsis spp.",
-    "Temopteris spp. juvenile" = "Temopteris spp.",
-    
-    "Unid zooplankton" = "Zooplankton (unid)",
-    "Unidentified calanoida" = "Calanoida (unid)",
-    "Unidentified copepoda" = "Copepoda (unid)",
-    "Unidentified zooplankton" = "Zooplankton (unid)",
-    # "Zooplankton" = "Zooplankton (unid)", # CAREFUL WITH THIS ONE. DOUBLE CHECK.
-    "Zooplankton (unid))" = "Zooplankton (unid)")
-  
-  siteDf = siteDf %>%
-    
-    # Remove stage information: Might have to adjust this based on the type of analysis!!!
-    # For most biodiversity stuff (not size fraction things) I do not want the "spp." stuff
-    # Stages are either written as ci-something or civ-something. .* implies "every character after that"
-    mutate(class = str_replace(class, "ci-.*", "")) %>%
-    mutate(class = str_replace(class, "civ-.*", "")) %>%
-    mutate(class = str_replace(class, "cv-.*", "")) %>%
-    mutate(class = str_replace(class, "cvi-.*", "")) %>%   
-    
-    
-    subset(!grepl("[0-9]", class)) %>% # remove the "Class 1-9" data
-    subset(!(class %in% excludeList)) %>%
-    
-    # Quentin's recommendation of how to fix species typos
-    # Ask what "!!!" means
-    # This replaces my old way which was: (every change was a new line)
-    # mutate(class = replace(class, class == "Calananoida (unid)", "Calanoida (unid)")) %>%
-    mutate(class = recode(class, !!!typoFixes)) %>%
-    
-    # Removing these classes will mean there is trailing whitespace again. Remove this
-    mutate(class = str_trim(class, side = c("right"))) %>%
-    
-    # I'm not sure why these ones aren't "caught". But manually change a few extras.
-    mutate(class = replace(class, class == " Osteichthyes egg", "Osteichthyes egg")) %>%
-    mutate(class = replace(class, class == "Calanoida", "Calanoida (unid)")) %>%
-    mutate(class = replace(class, class == "Calanoida ", "Calanoida (unid)")) %>%
-    mutate(class = replace(class, class == "Calanoid ", "Calanoida (unid)")) %>%
-    mutate(class = replace(class, class == "Calanoid", "Calanoida (unid)")) %>%
-    mutate(class = replace(class, class == "Centropages", "Centropages spp.")) %>%
-    mutate(class = replace(class, class == "Cyclopoida epibenthic", "Cyclopoida")) %>%
-    mutate(class = replace(class, class == "Metridia spp. ciii-vi", "Metridia spp.")) %>%
-    mutate(class = replace(class, class == "Monstrilloida", "Monstrillidae")) %>%
-    
-    # Because stage information was removed, there now are duplicates (e.g., Calanus ci-iii and ci-iv are both just "Calanus")
     # Need to sum the values to remove the duplicates
     # Note: this also removes the Particles and originalName columns
-    group_by(sample, class) %>%
-    summarize(count = sum(count))
+    group_by(sample, newName) %>%
+    summarize(count = sum(count)) %>%
+      filter(count >0) %>%
+      filter(newName != "Remove")
 
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
@@ -326,10 +186,10 @@ gulf20 = speciesDF(dirFull[[1]], dirShort[[1]])
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
 # This is the one in a different format
-nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) %>% 
+nl20 = speciesDF(dirFull[[4]], dirShort[[4]])# %>% 
   # Also, there was one file (AAMP_NL_S01_41_20200916PM_250) that had one extra blank line.
   # This was above "===END METADATA STATISTICS===". Remove this or else there will be a blank class with a count of zero
-  subset(class != "")
+  #subset(class != "")
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 nl22 = speciesDF(dirFull[[6]], dirShort[[6]])
 pac20 = speciesDF(dirFull[[7]], dirShort[[7]])
