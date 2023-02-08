@@ -216,18 +216,18 @@ pacSep21$dataset = "Pacific September 2021"
 
 # Get of each species in whole dataset
 taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  group_by(class) %>%
+  group_by(newName) %>%
   summarize(countPerClass = sum(count))
 
 # Get counts BY DATASET 
 taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  group_by(class, dataset) %>%
+  group_by(newName, dataset) %>%
   summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
 
 # Get counts BY SAMPLE 
 taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  group_by(class, dataset, sample) %>%
+  group_by(newName, dataset, sample) %>%
   summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
 
@@ -404,7 +404,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     # Make depthWaterM numeric
     mutate(depthWaterM = as.numeric(depthWaterM)) %>%
     # Group the stations so 5mm species are added to the regular counts 
-    group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
+    group_by(flowcamCode, newName, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
     # This is needed to combine the 250 fraction with the 5mm fraction
     summarize(abund = sum(abund))
 }
