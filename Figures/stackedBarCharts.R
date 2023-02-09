@@ -136,7 +136,7 @@ bayOther = nlMinus2020 %>%
   summarize(countPerClass = sum(abund)) %>%
   mutate(rank = rank(-countPerClass),
          # Keep 5 most abundant classes, make the rest "Other"
-         classNew = ifelse(rank <=7, class, "Other"))
+         classNew = ifelse(rank <=9, class, "Other"))
 
 # Add this these new classes as a column in the original dataframe
 bayPlotDf = nlMinus2020 %>%
