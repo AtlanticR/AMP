@@ -1,6 +1,6 @@
 
 
-x = as.matrix(stPeters[,which(colnames(argyle)== "Acartia spp."): ncol(stPeters)])
+x = as.matrix(stPeters[,which(colnames(stPeters)== "Acartia spp. (civ-vi)"): ncol(stPeters)])
 
 
 
@@ -13,35 +13,48 @@ x = as.matrix(stPeters[,which(colnames(argyle)== "Acartia spp."): ncol(stPeters)
 
 # Calculate and plot species accumulcation curve for the 11 sampling events
 # The CIs are based on random permutations of observed samples
-alg_spec_accum_result <- round(x) %>% vegan::specaccum(., "random", permutations = 999, weights = rand.num)
+alg_spec_accum_result <- x %>% vegan::specaccum(., "random", permutations = 999, weights = rand.num, gamma = "jack1")
 plot(alg_spec_accum_result)
 
-rand.num = sample(1:1000, size = 25)
+sp1 <- x %>% vegan::specaccum(., "random", gamma = "jack1")
 
+library(vegan)
+data(BCI)
+specaccum(comm = BCI, method = "random", gamma = "chao") 
+
+specpool(BCI)
+
+mod1 <- fitspecaccum(sp1, "lomolino")
+
+plot(sp1)
+plot(mod1, col = 2, lwd = 2)
+lines(sp1, col = 1)
+
+alg_spec_accum_result$perm
+
+specpool(x)
 
 data(dune)
 
+specaccum(dune, "random", gamma = "jack1")
 
-n.runs = 999
-result = matrix(NA, nrow = n.runs, ncol = max(length(sp.curve$species)))
+install.packages("BiodiversityR")
+library(BiodiversityR)
 
-for (i in 1:999){
-  
-  sp.curve = specaccum(dune, "random")
-  result[i,] = sp.curve$richness
-  
-}
+test = reshape::melt(hi) 
+test$ind = c(1:26)
 
-mean.sp.curve = apply(result, 2, mean)
-
-result
-
-plot(mean.sp.curve, type = "l")
+ggplot()+
+  geom_line(data = test, aes(x = ind, y = value, col = variable))
 
 
+sp1 <- x %>% vegan::specaccum(., "random", gamma = "jack1")
 
+hi = data.frame(replicate(100, specaccum(x, "random")$richness))
 
+matplot(hi, type = "l")
 
+matplot(test, type = "l")
 
 # Extract the resampling data used in the above algorithm
 spec_resamp_data <- data.frame(
@@ -52,13 +65,13 @@ spec_resamp_data <- data.frame(
 
 
 # Fit species accumulation model
-spec_accum_mod_1 <- x %>% vegan::fitspecaccum(model = "arrhenius")
+spec_accum_mod_1 <- x %>% vegan::fitspecaccum(model = "logis")
 
 
 # create a "predicted" data set from the model to extrapolate out 
 # beyond the number of samples collected
 sim_spec_data <- data.frame()
-for(i in 1:30){
+for(i in 1:50){
   d_tmp <- data.frame(
     data_set = "predicted",
     sampling_effort = i,
@@ -81,3 +94,28 @@ data_plot %>%
                geom = "ribbon", alpha = 0.25) +
   stat_summary(fun.data = median_hilow, geom = "line", 
                size = 1) 
+
+
+
+
+mod <- c("arrhenius", "gleason", "gitay", "lomolino", "asymp", "gompertz", 
+         "michaelis-menten", "logis", "weibull")
+extraps <- matrix(NA, 100, length(mod))
+colnames(extraps) <- mod
+for(i in 1:nrow(extraps)) {
+  ## use the same accumulation for all nls models 
+  m <- specaccum(BCI[sample(50,25),], "exact") 
+  for(p in mod) { 
+    ## need try because some nls models can fail
+    tmp <-  try(predict(fitspecaccum(m, p), newdata=50))
+    if(!inherits(tmp, "try-error")) extraps[i,p] <- tmp
+  } 
+}
+
+
+x = predict(fitspecaccum(BCI, "mich", "random"), newdata=c(1:100))
+
+
+
+
+
