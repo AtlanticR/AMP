@@ -164,7 +164,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
     
 
     # Note: this also removes the Particles and originalName columns
-    group_by(sample, newName) %>%
+    group_by(sample, newName, originalNames) %>%
     summarize(count = sum(count)) %>%
     filter(count >0) %>%
     filter(newName != "Remove")
