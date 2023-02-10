@@ -396,13 +396,14 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
     mutate(abund = adjCount / waterVolume * 4) %>%
     # Remove unnecessary columns
-    select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount)) %>%
+    # select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount)) %>%
     # Make depthWaterM numeric
     mutate(depthWaterM = as.numeric(depthWaterM)) %>%
     # Group the stations so 5mm species are added to the regular counts 
-    group_by(flowcamCode, class, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
+    group_by(flowcamCode, newName, PercSampleCleaned, PercZooIdentified, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
     # This is needed to combine the 250 fraction with the 5mm fraction
-    summarize(abund = sum(abund))
+   # summarize(abund = sum(abund))
+    summarize(count = sum(count))
 }
 
 
