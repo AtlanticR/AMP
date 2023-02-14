@@ -164,11 +164,13 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # Convert counts to numeric
     mutate(count = as.numeric(count)) %>%
     # Merge values to the spreadsheet that has the edited taxa names
-    left_join(taxaFixes) %>%
+    full_join(taxaFixes) %>%
+  
+
     # Need to sum the values to remove the duplicates
     # Note: this also removes the Particles and originalName columns
     group_by(sample, newName) %>%
-    summarize(count = sum(count)) %>%
+    dplyr::summarize(count = sum(count)) %>%
       filter(count >0) %>% # Remove ones with a count of 0
       filter(newName != "Remove") # Remove non-zoo particles e.g., "Debris", "Bubbles", etc.
 
@@ -217,18 +219,18 @@ pacSep21$dataset = "Pacific September 2021"
 # Get of each species in whole dataset
 taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
   group_by(newName) %>%
-  summarize(countPerClass = sum(count))
+  dplyr::summarize(countPerClass = sum(count))
 
 # Get counts BY DATASET 
 taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
   group_by(newName, dataset) %>%
-  summarize(countPerClass = sum(count)) %>%
+  dplyr::summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
 
 # Get counts BY SAMPLE 
 taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
   group_by(newName, dataset, sample) %>%
-  summarize(countPerClass = sum(count)) %>%
+  dplyr::summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
 
 # write.csv(taxaCountsBay, "taxaCountsBay2.csv")
@@ -386,7 +388,7 @@ pacMetaRed = reducedMeta(pacMeta) %>%
   # by NOT including "sampleCode" in the grouping, the waterVolumes per flowcamCode can be summed
   group_by(flowcamCode, myLabel, yearStart, monthStart, dayStart, facilityName, tidePhase, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>%
   # Adjust the water volume that is the sum of the water volume from tow of both samples
-  summarize(waterVolume = sum(as.numeric(waterVolume)),
+  dplyr::summarize(waterVolume = sum(as.numeric(waterVolume)),
             depthWaterM = mean(as.numeric(depthWaterM))) %>% # Need to add depthWaterM. Take the average from both tows
   # NOTE: This is not technically correct. But I use 'sampleCode' in future functions/scripts. 
   # I want to keep this as a column name. Therefore create a sampleCode column and set it equal to flowcamCode
@@ -406,7 +408,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     # Group the stations so 5mm species are added to the regular counts 
     group_by(flowcamCode, newName, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
     # This is needed to combine the 250 fraction with the 5mm fraction
-    summarize(abund = sum(abund))
+    dplyr::summarize(abund = sum(abund))
 }
 
 
