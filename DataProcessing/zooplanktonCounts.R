@@ -256,7 +256,7 @@ nl21ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_202
          PercZooIdentified = 1,
          adjCount = count,
          dataset = "Newfoundland 2021",
-         sample = str_replace(sample, "_5mm", "_250"))
+         sample = str_replace(sample, "_5mm", "_250")) # Need to replace last bit of the sample ID so 250 um and 5mm fractions add together properly
 
 nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_2022.xlsx")) %>%
   # For everything except the first row: if a value is NA, put 0. If it's not, put 1.
@@ -267,9 +267,9 @@ nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_202
          newName = "Chaetognatha (juvenile or n.s.)") %>%
   rename(sample = "FlowCam Sample Name") %>%
   # Only select the flowcam names (sample) and the counts
-  select(sample, count) %>%
+  select(sample, newName, count) %>%
   mutate(PercSampleCleaned = 1,
-         percZooIdentified = 1,
+         PercZooIdentified = 1,
          adjCount = count,
          dataset = "Newfoundland 2022")
 
@@ -341,12 +341,13 @@ nl21Adj =full_join(nl21, Nl21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   mutate(sample = str_replace(sample, "_5mm", "_250")) %>%
-  rbind(nl21ChaetData)
+  rbind(nl21ChaetData) # Now add the hand-counted chaeotognath data
 
 ########  Newfoundland 2022 ########
 
 nl22Adj =full_join(nl22, Nl22Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
+  rbind(nl22ChaetData)
 
 
 ########  Pacific 2020 ########  
@@ -473,8 +474,6 @@ nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
   filter(flowcamCode != "NO MATCH") %>%
   rename(class = newName)
 
-  #        ocean = "Atlantic") %>%
-  # mutate(facetFactor = replace(facetFactor, facetFactor == "Newfoundland 2020", "Southeast Arm 2020"))
 
 marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
   mutate(facetFactor = facilityName,
@@ -494,22 +493,4 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific March 2021", "March 2021"))%>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "September 2021")) %>%
   rename(class = newName)
-
-
-################################################################################
-################################################################################
-
-test = nl21Adj %>%
-  filter(sample == "21_06_09_NL_S1_Z17_1009_250")
-
-
-test2 = nlMerge %>%
-  filter(sampleCode == "21_06_09_NL_S01_Z17_1009_250")
-  
-  
-  
-  
-  
-  
-  
 
