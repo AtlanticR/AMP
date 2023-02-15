@@ -82,67 +82,16 @@ segs = merge(ordCoordsAll, setNames(centOcean, c('ocean','oNMDS1','oNMDS2')),
 segs2 = merge(segs, setNames(centRegion, c('region', 'rNMDS1', 'rNMDS2')),
               by = "region", sort = FALSE)
 
-# Create plot for Atlantic
-ggAtlantic = ggplot()+
-  geom_point(data = ordCoordsAll %>% filter(ocean == "Atlantic"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 21, size = 5)+
-  scale_fill_manual(values = atlColour, name = "Atlantic Ocean")+
-  theme_bw()+
-  theme(legend.key.size = unit(0.2, "cm"),
-        legend.text=element_text(size = 13),
-        legend.title = element_text(size = 14))
+# Dealing with months is tough. Use the numbers set the fill, so they are displayed in the correct order
+# But make a list here of what each number refers to so the labels can be changed
+monthFix = c(`6` = "Jun", `7` = "Jul", `8` = "Aug", `9` = "Sep", `10` = "Oct", `11` = "Nov", `12` = "Dec", `2` = "Feb", `3` = "Mar", `4` = "Apr", `5` = "May")
 
-# Create plot for Pacific
-ggPacific = ggplot()+
-  geom_point(data = ordCoordsAll %>% filter(ocean == "Pacific"), aes(x = NMDS1, y = NMDS2, fill = region), pch = 22, size = 5)+
-  scale_fill_manual(values = pacColourOne, name = "Pacific Ocean")+
-  theme_bw()+
-  theme(legend.key.size = unit(0.2, "cm"),
-        legend.text=element_text(size = 13),
-        legend.title = element_text(size = 14))
+# Specify the colour palette that I will be using for 12 months of data
+# Note that I don't have any data for January (in either 2021 or 2022), so that will need to be removed when specifying the values
+colPal = hue_pal()(12)
 
-
-# Get the legend and then turn it into a grob
-pacLegend = as_grob(get_legend(ggPacific))
-atlLegend = as_grob(get_legend(ggAtlantic))
-
-# Create plot with both data and no legend
-ggBoth = 
-  ggplot() + 
-  #geom_segment(data = segs, mapping = aes(x = NMDS1, xend = oNMDS1, y = NMDS2, yend = oNMDS2), col = "grey49")+ # map segments for ocean
-  geom_segment(data = segs2, mapping = aes(x = NMDS1, xend = rNMDS1, y = NMDS2, yend = rNMDS2), col = "grey49")+ # map segments for regions
-  #geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$ocean, fill = allRegionsWide$region), alpha= 0.9, size = 6)+
-  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$region, fill = as.factor(month)), size = 6)+
-  
-  # Don't need to define colours. These just show up as default ggplot colours for 4 elements
-  scale_shape_manual(values = regionArray, name = "Region")+ 
-  annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=4, hjust=1)+
-  ggtitle("Atlantic and Pacific")+
-  theme_bw()+
-  theme(axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        #legend.position = "none",
-        panel.border=element_rect(color="black", size=1), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(),
-        plot.background = element_blank(),
-        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
-        plot.title = element_text(size=18))+
-  guides(fill = guide_legend(override.aes = list(shape=21)))
-
-# Put everything together
-# This gets me PRETTY CLOSE to the Figure that I want, except that the legend items aren't totally lined up
-# Will just fix this in PowerPoint (for now...)
-grid.arrange(ggBoth, pacLegend, atlLegend, nrow=2, ncol = 2,
-             layout_matrix = rbind(c(1,1,1,NA), 
-                                   c(1,1,1,2),
-                                   c(1,1,1,3),
-                                   c(1,1,1,NA)))
-
-#################################################################################
-# NMDS of regions but "Ocean" is not specified as a heading for legend items
-# Instead, each region is a different colour AND symbol
-
-ggplot() + 
+# NMDS where each region is a different colour and symbol
+ggRegs = ggplot() + 
   #geom_segment(data = segs, mapping = aes(x = NMDS1, xend = oNMDS1, y = NMDS2, yend = oNMDS2), col = "grey49")+ # map segments for ocean
   geom_segment(data = segs2, mapping = aes(x = NMDS1, xend = rNMDS1, y = NMDS2, yend = rNMDS2), col = "grey49")+ # map segments for regions
   geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, fill = allRegionsWide$region, pch = allRegionsWide$region), alpha= 0.9, size = 6)+
@@ -160,8 +109,40 @@ ggplot() +
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
-        plot.margin=unit(c(0.1, 0.1, 0.1, 0.1),"cm"),
+        # Margin written top, right, bottom, left
+        # Increase the spacing on the right so this plot and the next have more space in between
+        plot.margin=unit(c(0.1, 1, 0.1, 0.1),"cm"),
         plot.title = element_text(size=18))
+
+# NMDS where each region is a different symbol and each month is a different colour
+# Each month as a different colour
+ggRegMonths = ggplot() + 
+  geom_point(data = ordCoordsAll, aes(x=NMDS1, y=NMDS2, pch = allRegionsWide$region, fill = as.factor(month)), size = 6)+
+  # Don't need to define colours. These just show up as default ggplot colours for 4 elements
+  scale_shape_manual(values = regionArray, name = "Region")+ 
+  scale_fill_manual(name = "Month", values = colPal[-1], labels = monthFix)+
+  annotate("text", x = max(ordCoordsAll$NMDS1), y=max(ordCoordsAll$NMDS2), label = ordStressAll, size=4.5, hjust=1)+
+  # ggtitle("Atlantic and Pacific")+
+  theme_bw()+
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        #legend.position = "none",
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 14),
+        panel.border=element_rect(color="black", size=1), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        # Margin written top, right, bottom, left
+        # Increase the spacing on the left so this plot and the next have more space in between
+        # Make sure margin adjustments are equal in both plots, so one isn't distorted more than the other
+        plot.margin=unit(c(0.1, 0.1, 0.1, 1),"cm"),
+        plot.title = element_text(size=18))+
+  guides(fill = guide_legend(override.aes = list(shape=21)))
+
+grid.arrange(ggRegs, ggRegMonths, ncol = 2)
+
+
 
 #################################################################################
 #################################################################################
@@ -501,10 +482,6 @@ centroidSegs = tibble(start = centMonth$orderCollect, end = centMonth$orderColle
   left_join(centMonth,  by = c("end" = "orderCollect"), suffix = c("_start", "_end")) %>%
   # Remove the final row because I don't want the last sampling event to connect to the first
   filter(row_number() <= n()-1) 
-
-# Specify the colour palette that I will be using for 12 months of data
-# Note that I don't have any data for January (in either 2021 or 2022), so that will need to be removed when specifying the values
-colPal = hue_pal()(12)
 
 # Make the ggplot
 ggplot() + 
