@@ -138,7 +138,9 @@ gulfNMDSbays = nmdsBay(gulfMerge, stationCol)
 # I'm only looking at Oct 2021 and Sept 2020 data. Remove all other data
 # Because of the way things get sorted (alphabetically), nlNMDSbays[[1]] will be Oct 2021 data. nlNMDSbays[[2]] is Sept 2020
 # Be careful of this when arranging things in nmdsBaysWithLegend.R
-nlNMDSbays = nmdsBay(nlMerge %>% filter(facetFactor != "Other"), stationColNL) # remember that NL has different colour scheme
+# Must filter out the necessary data to get Sept 2020 and Oct 2021
+nlNMDSbays = nmdsBay(nlMerge %>%
+                       filter((yearStart == 2020 & monthStart == 9) | (yearStart == 2021 & monthStart == 10)), stationColNL)
 
 # Pacific: remove March data because it only has 2 data points and can't do NMDS on that
 pacNMDSbays = nmdsBay(pacMerge  %>% filter(facetFactor != "March 2021"), stationCol) # without removing outliers
