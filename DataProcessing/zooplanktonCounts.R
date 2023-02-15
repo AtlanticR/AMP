@@ -236,6 +236,45 @@ taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun2
 # write.csv(taxaCountsBay, "taxaCountsBay2.csv")
 
 ################################################################################
+################################################################################
+### Add  hand-counted Chaetognath data for 2021 and 2022
+
+# Chaetognath data for Newfoundland 2021 and 2022 were hand counted
+# Some were also run through the FlowCam, but many broke. So these hand-counted values need 
+# to be added to the 5mm counts of each file
+nl21ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_2021.xlsx")) %>%
+  # For everything except the first row: if a value is NA, put 0. If it's not, put 1.
+  # This is because chaetognath lengths were recorded. But I am only interested in counts. So if there is any text, it's a count of 1
+  mutate(across(-1, ~ifelse(!is.na(.), 1, 0))) %>%
+  # tally up how many counts there were per sample
+  mutate(count = rowSums(.[-1]),
+         newName = "Chaetognatha (juvenile or n.s.)") %>%
+  rename(sample = "FlowCam Sample Name") %>%
+  # Only select the flowcam names (sample) and the counts
+  select(sample, newName, count) %>%
+  mutate(PercSampleCleaned = 1,
+         PercZooIdentified = 1,
+         adjCount = count,
+         dataset = "Newfoundland 2021",
+         sample = str_replace(sample, "_5mm", "_250"))
+
+nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_2022.xlsx")) %>%
+  # For everything except the first row: if a value is NA, put 0. If it's not, put 1.
+  # This is because chaetognath lengths were recorded. But I am only interested in counts. So if there is any text, it's a count of 1
+  mutate(across(-1, ~ifelse(!is.na(.), 1, 0))) %>%
+  # tally up how many counts there were per sample
+  mutate(count = rowSums(.[-1]),
+         newName = "Chaetognatha (juvenile or n.s.)") %>%
+  rename(sample = "FlowCam Sample Name") %>%
+  # Only select the flowcam names (sample) and the counts
+  select(sample, count) %>%
+  mutate(PercSampleCleaned = 1,
+         percZooIdentified = 1,
+         adjCount = count,
+         dataset = "Newfoundland 2022")
+
+################################################################################
+################################################################################
 ## Make adjustments to the zooplankton counts
 # The counts in the data spreadsheets do NOT represent counts from the entire sample
 # The sample was divided into 10 portions (usually) and then a portion was "cleaned" (separated into different components)
@@ -301,7 +340,8 @@ nl21Adj =full_join(nl21, Nl21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
-  mutate(sample = str_replace(sample, "_5mm", "_250"))
+  mutate(sample = str_replace(sample, "_5mm", "_250")) %>%
+  rbind(nl21ChaetData)
 
 ########  Newfoundland 2022 ########
 
@@ -458,6 +498,18 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
 
 ################################################################################
 ################################################################################
-################################################################################
 
+test = nl21Adj %>%
+  filter(sample == "21_06_09_NL_S1_Z17_1009_250")
+
+
+test2 = nlMerge %>%
+  filter(sampleCode == "21_06_09_NL_S01_Z17_1009_250")
+  
+  
+  
+  
+  
+  
+  
 
