@@ -169,7 +169,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
 
     # Need to sum the values to remove the duplicates
     # Note: this also removes the Particles and originalName columns
-    group_by(sample, newName) %>%
+    group_by(sample, newName, originalNames) %>%
     dplyr::summarize(count = sum(count)) %>%
       filter(count >0) %>% # Remove ones with a count of 0
       filter(newName != "Remove") # Remove non-zoo particles e.g., "Debris", "Bubbles", etc.
@@ -218,12 +218,12 @@ pacSep21$dataset = "Pacific September 2021"
 
 # Get of each species in whole dataset
 taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  group_by(newName) %>%
+  group_by(originalNames) %>%
   dplyr::summarize(countPerClass = sum(count))
 
 # Get counts BY DATASET 
 taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  group_by(newName, dataset) %>%
+  group_by(originalNames, dataset) %>%
   dplyr::summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
 
