@@ -17,8 +17,6 @@ source("DataProcessing/zooplanktonCounts.R")
 # This sets the colours schemes and symbology for bays, regions, etc
 source("Figures/colourPchSchemes.R")
 
-# Test new PAT
-
 #################################################################################
 #################################################################################
 ## Create NMDS for all data
@@ -42,8 +40,9 @@ allRegions = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
 # Convert it to wide format
 allRegionsWide = allRegions %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
-
+  mutate_all(~replace(., is.na(.), 0))  # replace NAs with 0 
+  
+  
 # For NMDS calculations, must only include species data from dataframe
 # I will constantly be removing columns, adding columns etc. 
 # Instead define as the index where there's Acartia species (first species colum in dataframe) to the end (final column)
