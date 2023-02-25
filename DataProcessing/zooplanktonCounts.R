@@ -256,6 +256,9 @@ nl21ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_202
          PercZooIdentified = 1,
          adjCount = count,
          dataset = "Newfoundland 2021",
+         originalNames = "Chaetognatha (juvenile or n.s.)",
+         isCopepod = "",
+         copepodType = "",
          sample = str_replace(sample, "_5mm", "_250")) # Need to replace last bit of the sample ID so 250 um and 5mm fractions add together properly
 
 nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_2022.xlsx")) %>%
@@ -271,6 +274,9 @@ nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_202
   mutate(PercSampleCleaned = 1,
          PercZooIdentified = 1,
          adjCount = count,
+         originalNames = "Chaetognatha (juvenile or n.s.)",
+         isCopepod = "",
+         copepodType = "",
          dataset = "Newfoundland 2022")
 
 ################################################################################
