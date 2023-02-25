@@ -9,31 +9,31 @@ taxaCountsBay = rbind(gulfMerge, marMerge, nlMerge, pacMerge) %>%
   group_by(class, dataset, facetFactor) %>%
   summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0)%>%
-  filter(class == "Acartia spp." | 
-           class == "Calanoida (unid)"|
-      class == "Calanus spp." | 
-      class == "Centropages spp." | 
-      class == "Chiridus spp." | 
+  filter(class == "Acartia spp." |  # calanoida
+           class == "Calanoida (unid)"| 
+      class == "Calanus spp." |  # calanoida
+      class == "Centropages spp." | # calanoida
+      class == "Chiridus spp." | # calanoida. should be chiridius
       class == "Copepoda nauplii" | 
-      class == "Corycaeidae" |
-  class == "Cyclopoida" | 
-  class == "Eurytemora spp." | 
-  class == "Euterpina acutifrons" |
+      class == "Corycaeidae" | # cyclopoida!
+  class == "Cyclopoida" | # 
+  class == "Eurytemora spp." | # calanoida
+  class == "Euterpina acutifrons" | # harpacticoida
   class == "Harpacticoida" |
-  class == "Heterorhabdus spp." |
-  class == "Labidocera spp." |
-  class == "Metridia spp." |
-  class == "Microcalanus spp." |
-  class == "Microsetella spp." |
-  class == "Monstrillidae" |
-  class == "Oithona spp." |
-  class == "Oncaeidae" |
-  class == "Paracalanus spp." |
-  class == "Pseudocalanus spp." |
-  class == "Pseudodiaptomus spp." |
-  class == "Temora spp." |
-  class == "Temoridae spp." |
-  class == "Tortanus spp.")
+  class == "Heterorhabdus spp." | # calanoida
+  class == "Labidocera spp." | # calanoida
+  class == "Metridia spp." | # calanoida
+  class == "Microcalanus spp." | # calanoida
+  class == "Microsetella spp." | # harpacticoida
+  class == "Monstrillidae" | # oops also it's own type: Monstroilloida
+  class == "Oithona spp." | # cyclopoida
+  class == "Oncaeidae" | # cyclopoida
+  class == "Paracalanus spp." | # calanoida
+  class == "Pseudocalanus spp." | # calanoida
+  class == "Pseudodiaptomus spp." | # calanoida
+  class == "Temora spp." | # calanoida
+  class == "Temoridae spp." | # calanoida
+  class == "Tortanus spp.") # calanoida
   
 # write.csv(taxaCountsBay, "copepodsByBay.csv")
   
