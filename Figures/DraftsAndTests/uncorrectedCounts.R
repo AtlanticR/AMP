@@ -164,7 +164,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
     
 
     # Note: this also removes the Particles and originalName columns
-    group_by(sample, newName, originalNames) %>%
+    group_by(sample, newName, class) %>%
     summarize(count = sum(count)) %>%
     filter(count >0) %>%
     filter(newName != "Remove")
@@ -212,20 +212,20 @@ pacMar21$dataset = "Pacific March 2021"
 pacSep21$dataset = "Pacific September 2021"
 
 # Get of each species in whole dataset
-taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  group_by(originalNames) %>%
-  summarize(countPerClass = sum(count))
-
-# Get counts BY DATASET 
-taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  group_by(originalNames, dataset) %>%
-  summarize(countPerClass = sum(count)) %>%
-  filter(countPerClass > 0) # remove any zeroes
-
-# Get counts BY SAMPLE 
-taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  group_by(originalNames, dataset, sample) %>%
-  summarize(countPerClass = sum(count)) 
+# taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
+#   group_by(originalNames) %>%
+#   dplyr::summarize(countPerClass = sum(count))
+# 
+# # Get counts BY DATASET 
+# taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
+#   group_by(originalNames, dataset) %>%
+#   dplyr::summarize(countPerClass = sum(count)) %>%
+#   filter(countPerClass > 0) # remove any zeroes
+# 
+# # Get counts BY SAMPLE 
+# taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
+#   dplyr::group_by(originalNames, dataset, sample) %>%
+#   summarize(countPerClass = sum(count)) 
 
 # write.csv(taxaCountsBay, "taxaCountsBay2.csv")
 
