@@ -133,7 +133,7 @@ nlMinus2020 = nlMerge %>%
 bayOther = nlMinus2020 %>%
   # Want counts per taxa (class) for the whole bay, not by tow
   group_by(class) %>%
-  summarize(countPerClass = sum(abund)) %>%
+  dplyr::summarize(countPerClass = sum(abund)) %>%
   mutate(rank = rank(-countPerClass),
          # Keep 5 most abundant classes, make the rest "Other"
          classNew = ifelse(rank <=9, class, "Other"))
@@ -146,7 +146,7 @@ bayPlotDf = nlMinus2020 %>%
   group_by(classNew, sampleCode, myLabel, tidePhase, monthStart, yearStart) %>%
   # If you don't recompute counts, the "Other" class will have a bunch of black lines
   # if you set the outline colour to black in geom_bar
-  summarise(sumCount = sum(abund))
+  dplyr::summarise(sumCount = sum(abund))
 
 # Dealing with months is tough. Use the numbers to facet them, so they are displayed in the correct order
 # But make a list here of what each number refers to so the labels can be changed
