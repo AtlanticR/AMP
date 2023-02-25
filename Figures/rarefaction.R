@@ -23,6 +23,14 @@
 # I am not actually conducting comparisons between bays. Just providing info for each bay (i.e, number of samples required, etc)
 # Therefore, I am not "rarefying by sample coverage" etc. or plotting the curves on the same graph for each bay. 
 
+
+# Important papers to read for taxonomic combining:
+# https://www.journals.uchicago.edu/doi/full/10.1899/0887-3593%282007%2926%5B286%3AATEOTC%5D2.0.CO%3B2#_i36
+# https://www.journals.uchicago.edu/doi/full/10.1086/680962
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6550328/
+# https://onlinelibrary.wiley.com/doi/full/10.1111/fwb.13031
+
+
 ###########################################################################################################################
 # SETUP
 
@@ -67,10 +75,10 @@ baySums = as.vector(colSums(bayTaxa))
 baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
 
 # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
-bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
+bay.inext = iNEXT(baySumsList, q = c(0), datatype = "incidence_freq")
 
 # Plot the graph of diversity vs sampling units
-bay.gg = ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
+bay.gg = ggiNEXT(bay.inext)+
     scale_colour_manual(values=colourScheme) +
     scale_fill_manual(values=colourScheme)+
     xlab("Number of zooplankton tows")+
@@ -95,7 +103,7 @@ asy.df = data.frame(bay.inext$AsyEst) %>%
   mutate(bay = bayData$facetFactor[1], .before = Diversity)
 
 
-return(list(bay.gg, asy.df))
+return(list(bay.gg, asy.df, baySumsList, asy.df))
 
 }
 
@@ -109,6 +117,9 @@ whiteheadInext = inextPrep(whitehead, marColours[[4]], "(D) Whitehead")
 plot_grid(argInext[[1]], countryInext[[1]], soberInext[[1]], whiteheadInext[[1]], align = "v", ncol = 1)
 # Get the dataframe of asymptotic estimator results
 marInextResults = bind_rows(argInext[[2]], countryInext[[2]], soberInext[[2]], whiteheadInext[[2]])
+
+plot_grid(inextPrep(whitehead, marColours[[4]], "Whitehead")[[1]], inextPrep(stPeters, gulfColours[[3]], "St. Peters")[[1]], ncol = 1)
+
 
 
 # Gulf
@@ -128,7 +139,7 @@ pacJun2021Inext = inextPrep(pacJun2021, pacColours[[3]], "(C) June 2021")
 pacSept2021Inext = inextPrep(pacSept2021, pacColours[[4]], "(D) September 2021")
 
 # For now, add one extra plot so all the graphs look the same for each region
-plot_grid(pacAug2020Inext[[1]], pacJun2021Inext[[1]], pacSept2021Inext[[1]], pacSept2021Inext[[1]], align = "v", ncol = 1)
+plot_grid(pacAug2020Inext[[1]], pacJun2021Inext[[1]], pacSept2021Inext[[1]], align = "v", ncol = 1)
 pacInextResults = bind_rows(pacAug2020Inext[[2]], pacJun2021Inext[[2]], pacSept2021Inext[[2]])
 
 # Newfoundland
@@ -140,6 +151,70 @@ seInextResults = seArm2020Inext[[2]]
 # write.csv(gulfInextResults, "gulfInextResults.csv")
 # write.csv(pacInextResults, "pacInextResults.csv")
 # write.csv(seInextResults, "seInextResults.csv")
+
+# Argyle
+argInext[[4]]$Estimator[1] # asymptotic diversity ie Chao2
+argInext[[4]]$Estimator[1]* 0.95 # 95% of that
+estimateD(argInext[[3]], q = 0, datatype = "incidence_freq")$qD # does sampling 2x the # of samples hit the 95% mark?
+
+
+# Country Harbour
+countryInext[[4]]$Estimator[1]
+countryInext[[4]]$Estimator[1] * 0.95
+estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq")$qD
+
+# Try and get close to 34.16797
+estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq", level = 6)$qD
+estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq", level = 7)$qD
+
+# Sober Island
+soberInext[[4]]$Estimator[1]
+soberInext[[4]]$Estimator[1] * 0.95
+estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq")$qD
+
+# Whitehead
+whiteheadInext[[4]]$Estimator[1]
+whiteheadInext[[4]]$Estimator[1] * 0.95
+estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq")$qD
+
+# Try and get close to 29.0605
+estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 6)$qD # 6 is closer
+estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 7)$qD
+
+
+# Cocagne
+cocagneInext[[4]]$Estimator[1]
+cocagneInext[[4]]$Estimator[1] * 0.95
+estimateD(cocagneInext[[3]], q = 0, datatype = "incidence_freq")$qD
+
+# Malpeque
+malpequeInext[[4]]$Estimator[1]
+malpequeInext[[4]]$Estimator[1] * 0.95
+estimateD(malpequeInext[[3]], q = 0, datatype = "incidence_freq", level = 3)$qD
+
+# St Peters
+stPetersInext[[4]]$Estimator[1]
+stPetersInext[[4]]$Estimator[1] * 0.95
+estimateD(stPetersInext[[3]], q = 0, datatype = "incidence_freq")$qD
+
+# Get to 37.8575
+estimateD(stPetersInext[[3]], q = 0, datatype = "incidence_freq", level = 20)$qD
+estimateD(stPetersInext[[3]], q = 0, datatype = "incidence_freq", level = 21)$qD
+
+# Pacific Aug 2020
+pacAug2020Inext[[4]]$Estimator[1]
+pacAug2020Inext[[4]]$Estimator[1] * 0.95
+
+# Pacific Jun 2021
+pacJun2021Inext[[4]]$Estimator[1]
+pacJun2021Inext[[4]]$Estimator[1] * 0.95
+
+# Try to get to 39.349
+estimateD(pacJun2021Inext[[3]], q = 0, datatype = "incidence_freq", level = 14)$qD
+
+# Pacific Sept 2021
+pacSept2021Inext[[4]]$Estimator[1]
+pacSept2021Inext[[4]]$Estimator[1] * 0.95
 
 
 
@@ -312,3 +387,10 @@ arg4Steps$summary # gives summary data
 arg4Steps$figure # gives all the figures together
 
 # Note: There are ways to get the figures separate. But that is for another day!!
+
+cocagneInext[[1]]
+
+estimateD(cocagneInext[[3]], q = 0, datatype = "incidence_freq")
+
+
+estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 1000)
