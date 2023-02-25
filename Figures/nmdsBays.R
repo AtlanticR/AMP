@@ -40,8 +40,9 @@ nmdsBay = function(regionData, stationCol) {
   # values_from: The column whose values will be used as cell values
   regionData = regionData %>% 
     pivot_wider(names_from = class, values_from = abund) %>%
-    mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
-  
+    mutate_all(~replace(., is.na(.), 0))  # replace NAs with 0
+    
+    
   # Initialize a list to store multiple ggplots
   ggList = list()
   
@@ -131,6 +132,7 @@ nmdsBay = function(regionData, stationCol) {
   return(ggList)
   
 }
+
 
 # Run the function by passing in the data and the colour scheme for the region
 marNMDSbays = nmdsBay(marMerge, stationCol)
