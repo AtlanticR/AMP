@@ -241,4 +241,14 @@ numGroups = 2
 numObs = 4
 factorial(numGroups*numObs)/(factorial(numGroups)*(factorial(numObs)^numGroups))
 
+searm2021 = allRegionsWide %>%
+  filter(yearStart == 2021 & monthStart == 10)
+
+whitePerm = adonis2(sqrt(whitehead[,which(colnames(whitehead)== "Acartia spp. (civ-vi)"):ncol(whitehead)])~myLabel, data = whitehead, method = "bray", permutations = 9999)
+
+test = searm2021 %>%
+  filter(tidePhase != "Mid-Falling")
+
+searm2021Perm = adonis2(sqrt(searm2021[,which(colnames(searm2021)== "Acartia spp. (civ-vi)"):ncol(searm2021)])~myLabel*tidePhase, data = searm2021, method = "bray", permutations = 9999)
+searm2021Perm = adonis2(sqrt(test[,which(colnames(test)== "Acartia spp. (civ-vi)"):ncol(test)])~myLabel*tidePhase, data = test, method = "bray", permutations = 9999)
 
