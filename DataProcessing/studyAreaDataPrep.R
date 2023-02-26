@@ -300,10 +300,24 @@ pacPunctualUTM = st_transform(pacPunctualWGS, CRS("+proj=utm +zone=9 +datum=WGS8
 
 ## NEWFOUNDLAND
 
+# There were 10 samples collected but not analyzed (due to budget concerns)
+
+rm.nl.samples = c("21_06_09_NL_S01_Z33_1147_250",
+                  "21_07_07_NL_S01_Z33_1248_250",
+                  "21_08_12_NL_S01_Z33_1351_250",
+                  "21_09_08_NL_S01_Z33_1131_250",
+                  "21_10_05_NL_S01_Z33_0832_250",
+                  "21_10_05_NL_S01_Z33_1345_250",
+                  "21_10_06_NL_S01_Z33_0823_250",
+                  "21_10_06_NL_S01_Z33_1426_250",
+                  "21_10_07_NL_S01_Z33_0847_250",
+                  "21_10_07_NL_S01_Z33_1439_250")
+
 # All were punctual stations
 # Need to remove the ones with NAs (these have no data, don't worry about them)
 nlPunctualWGS = st_as_sf(nlMeta, coords = c("longitude", "latitude"), crs = 4326)
-nlPunctualUTM = st_transform(nlPunctualWGS, CRS("+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+nlPunctualUTM = st_transform(nlPunctualWGS, CRS("+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")) %>%
+  filter(!sampleCode %in% rm.nl.samples) # exclude these samples
 
 ################################################################################
 # Get the coordinate locations for each bay to be added to inset maps
