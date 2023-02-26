@@ -301,7 +301,6 @@ pacPunctualUTM = st_transform(pacPunctualWGS, CRS("+proj=utm +zone=9 +datum=WGS8
 ## NEWFOUNDLAND
 
 # There were 10 samples collected but not analyzed (due to budget concerns)
-
 rm.nl.samples = c("21_06_09_NL_S01_Z33_1147_250",
                   "21_07_07_NL_S01_Z33_1248_250",
                   "21_08_12_NL_S01_Z33_1351_250",
