@@ -63,6 +63,16 @@ calan_distribute = allRegions %>%
   ungroup() %>%
   filter(class != "Calanoida (ci-cvi)") # Now get rid of it
 
+# Are there any samples that do not contain any Calanoids? 
+# Because I am trying to distribute Calanoida. It would be bad if I tried to distribute "Calanoida (ci-cvi)" among the remaining Calanoida
+test = calan_distribute %>%
+  group_by(sampleCode) %>%
+  summarize(has_Calanoida = any(copepodType == "Calanoida")) %>%
+  filter(!has_Calanoida) %>%
+  select(sampleCode)
+
+
+
 
 #### Divide up the Cyclopoida among the genera
 
@@ -72,13 +82,87 @@ cyclSamAbund = allRegions %>%
   summarize(cycl_abund = sum(abund))
 
 
+
+
+
 cycl_distribute = calan_distribute %>%
   group_by(sampleCode, copepodType) %>%
   mutate(relAbundCycl = ifelse(copepodType == "Cyclopoida", abundPlusCal/sum(abundPlusCal[copepodType == "Cyclopoida"]), NA_real_)) %>%
   full_join(cyclSamAbund) %>%
   mutate(abundPlusCycl = ifelse(copepodType == "Cyclopoida" & !is.na(cycl_abund), abundPlusCal + relAbundCycl*cycl_abund, abundPlusCal)) %>%
   ungroup() %>%
-  filter(class != "Calanoida (ci-cvi)") # Now get rid of it
+  filter(class != "Cyclopoida (ci-cvi)") # Now get rid of it
+
+# Find the samples that do not contain genera of cyclopoida
+# yes, there are 30
+test = cycl_distribute %>%
+  group_by(sampleCode) %>%
+  summarize(has_Cyclopoida = any(copepodType == "Cyclopoida")) %>%
+  filter(!has_Cyclopoida) %>%
+  group_by(sampleCode) 
+
+# Find the ones that DO contain Cyclopoida (ci-vi or n.s.)
+# there are 38
+test2 = cycl_distribute %>%
+  group_by(sampleCode) %>%
+  summarize(has_Cyclciviorns = any(class == "Cyclopoida (ci-vi or n.s.)")) %>%
+  filter(has_Cyclciviorns == TRUE)
+
+# The ones that are concerning DO have cylopoida ci-vi, but do not have cyclopoida
+
+test3 = full_join(test, test2)
+
+
+# Here are my problem taxa
+# 20_09_01_Gulf_S04_Z38_1434_250 # St. Peters
+# 20_09_03_Gulf_S04_Z40_0942_250 # St. Peters
+# AMMP_PA_S04_W01_20200830LT_236UM # Pac Aug 2020
+
+
+hi = allRegionsWide %>%
+  filter(facetFactor == "St. Peters")
+
+hi = cycl_distribute %>%
+  filter(facetFactor == "St. Peters") %>%
+  filter(copepodType == "Cyclopoida" | 
+           (sampleCode == "20_09_01_Gulf_S04_Z38_1434_250" & class == "Cyclopoida (ci-vi or n.s.)"))
+
+
+hello = cycl_distribute %>%
+  filter(facetFactor == "August 2020") %>%
+  filter(copepodType == "Cyclopoida" | 
+           (sampleCode == "AMMP_PA_S04_W01_20200830LT_236UM" & class == "Cyclopoida (ci-vi or n.s.)"))
+
+
+
+###### HARPACTICOIDS
+
+test = cycl_distribute %>%
+  group_by(sampleCode) %>%
+  summarize(has_harp = any(copepodType == "Harpacticoida")) %>%
+  filter(has_harp) %>%
+  group_by(sampleCode) 
+
+# Find the ones that DO contain Cyclopoida (ci-vi or n.s.)
+# there are 38
+test2 = cycl_distribute %>%
+  group_by(sampleCode) %>%
+  summarize(has_harpcivi = any(class == "Harpacticoida (ci-vi)")) %>%
+  filter(has_harpcivi == TRUE)
+
+test3 = full_join(test, test2)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Get just the copepod abundances for each sample
@@ -98,7 +182,6 @@ cop_distribute = cycl_distribute %>%
   mutate(abundPlusCop = ifelse(isCopepod == "Yes" & !is.na(copep_abund), abundPlusCycl + relAbundCop*copep_abund, abundPlusCycl)) %>%
   ungroup() %>%
   filter(class != "Copepoda") # Now get rid of it
-
 
 
 #### Get the Zooplankton (unid) abundances for each sample
@@ -272,14 +355,15 @@ nl3 = nl %>%
   filter(monthStart == 09 & yearStart == 2020)
 
 
+nlNMDSbays = nmdsBay(nl3, stationColNL)
 
-nmdsBay(nl2, stationColNL)
+nlNMDSbays = as.grob(nlNMDSbays)
 
 pac3 = pac2 %>%
   filter(facetFactor == "June 2021")
 
 pacNMDSbays = nmdsBay(pac2, stationCol)
-pacNMDSbays[[2]]
+pacNMDSbays[[3]]
 
 
 
