@@ -170,6 +170,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
     # Need to sum the values to remove the duplicates
     # Note: this also removes the Particles and originalName columns
     group_by(sample, newName, originalNames, isCopepod, copepodType) %>%
+    # group_by(sample, newName, originalNames) %>%
     dplyr::summarize(count = sum(count)) %>%
       filter(count >0) %>% # Remove ones with a count of 0
       filter(newName != "Remove") # Remove non-zoo particles e.g., "Debris", "Bubbles", etc.
@@ -454,6 +455,8 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     mutate(depthWaterM = as.numeric(depthWaterM)) %>%
     # Group the stations so 5mm species are added to the regular counts 
     group_by(flowcamCode, newName, isCopepod, copepodType, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
+    # group_by(flowcamCode, newName, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
+    
     # This is needed to combine the 250 fraction with the 5mm fraction
     dplyr::summarize(abund = sum(abund))
 }
@@ -499,4 +502,5 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific March 2021", "March 2021"))%>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "September 2021")) %>%
   rename(class = newName)
+
 
