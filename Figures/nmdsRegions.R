@@ -13,7 +13,9 @@
 ## Read in other scripts
 
 # This has all the plankton data with counts for each file
-source("DataProcessing/zooplanktonCounts.R")
+# source("DataProcessing/zooplanktonCounts.R")
+
+source("DataProcessing/dividePlankton.R")
 # This sets the colours schemes and symbology for bays, regions, etc
 source("Figures/colourPchSchemes.R")
 
@@ -101,6 +103,7 @@ ggRegs = ggplot() +
   theme_bw()+
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
         axis.title = element_text(size = 12),
         legend.text=element_text(size = 13),
         legend.title = element_text(size = 14),
@@ -139,7 +142,7 @@ ggRegMonths = ggplot() +
         plot.title = element_text(size=18))+
   guides(fill = guide_legend(override.aes = list(shape=21)))
 
-grid.arrange(ggRegs, ggRegMonths, ncol = 2)
+ggarrange(ggRegs, ggRegMonths, ncol = 1)
 
 
 
@@ -384,13 +387,16 @@ nmdsPrep = function(mergeData, bayColours, breakVals) {
   
 }
 
+pacA = pac %>%
+  filter(facetFactor == "March 2021") 
+
 # Last argument is the "breaks" which changes the order of the legend items
 # The default is alphabetical order, which is correct for all but Pacific!
 # For Pacific, need to rearrange chronologically, so specify the order needed
 # waiver() is what you enter for breaks if you just want the default value
-marNMDS = nmdsPrep(marMerge, marColours, waiver())
-pacNMDS = nmdsPrep(pacMerge, pacColours, c("August 2020", "March 2021", "June 2021", "September 2021"))
-gulfNMDS = nmdsPrep(gulfMerge, gulfColours, waiver())
+marNMDS = nmdsPrep(mar, marColours, waiver())
+pacNMDS = nmdsPrep(pac, pacColours, c("August 2020", "March 2021", "June 2021", "September 2021"))
+gulfNMDS = nmdsPrep(gulf, gulfColours, waiver())
 # I actually don't want Newfoundland data to be displayed this way due to the sampling design.
 # NMDS ordinations are instead shown below.
 # nlNMDS = nmdsPrep(nlMerge, nlColours, waiver())
