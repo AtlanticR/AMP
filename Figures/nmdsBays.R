@@ -17,7 +17,7 @@
 ## Set-up
 
 # This has all the plankton data with counts for each file
-source("DataProcessing/zooplanktonCounts.R")
+source("DataProcessing/dividePlankton.R")
 # This sets the colours schemes and symbology for bays, regions, etc
 source("Figures/colourPchSchemes.R")
 
@@ -135,21 +135,24 @@ nmdsBay = function(regionData, stationCol) {
 
 
 # Run the function by passing in the data and the colour scheme for the region
-marNMDSbays = nmdsBay(marMerge, stationCol)
-gulfNMDSbays = nmdsBay(gulfMerge, stationCol)
+set.seed(73)
+marNMDSbays = nmdsBay(mar, stationCol)
+set.seed(73)
+gulfNMDSbays = nmdsBay(gulf, stationCol)
+gulfNMDSbays
 # I'm only looking at Oct 2021 and Sept 2020 data. Remove all other data
 # Because of the way things get sorted (alphabetically), nlNMDSbays[[1]] will be Oct 2021 data. nlNMDSbays[[2]] is Sept 2020
 # Be careful of this when arranging things in nmdsBaysWithLegend.R
 # Must filter out the necessary data to get Sept 2020 and Oct 2021
-nlNMDSbays = nmdsBay(nlMerge %>%
+nlNMDSbays = nmdsBay(nl %>%
                        filter((yearStart == 2020 & monthStart == 9) | (yearStart == 2021 & monthStart == 10)), stationColNL)
 
 # Pacific: remove March data because it only has 2 data points and can't do NMDS on that
-pacNMDSbays = nmdsBay(pacMerge  %>% filter(facetFactor != "March 2021"), stationCol) # without removing outliers
+pacNMDSbays = nmdsBay(pac  %>% filter(facetFactor != "March 2021"), stationCol) # without removing outliers
 
 # May also need to remove the two "outliers" (from Pacific June 2021) because otherwise distorts individual NMDS
 # However, after fixing typos in November, this may not be needed anymore
-nmdsBay(pacMerge %>% filter(facetFactor != "March 2021") %>%
+nmdsBay(pac %>% filter(facetFactor != "March 2021") %>%
           filter(sampleCode != c("AMMP_PA_S04W15_20210610HT_250um"))%>%
           filter(sampleCode != c("AMMP_PA_S04W01_20210611HT_250um")), pacColours)
 
