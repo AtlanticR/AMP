@@ -145,7 +145,6 @@ ggRegMonths = ggplot() +
 ggarrange(ggRegs, ggRegMonths, ncol = 1)
 
 
-
 #################################################################################
 #################################################################################
 ## Now do the same thing for Atlantic ocean
@@ -236,8 +235,8 @@ ggAtlanticOnly = ggplot()+
         plot.title = element_text(size=18))
 
 # Get (just) the legends
-# gulfLegend = as_grob(get_legend(ggGulf))
-# marLegend = as_grob(get_legend(ggMaritimes))
+gulfLegend = as_grob(get_legend(ggGulf))
+marLegend = as_grob(get_legend(ggMaritimes))
 # nlLegend = as_grob(get_legend(ggNewfoundland))
 # 
 # # Plot it all together
@@ -387,8 +386,6 @@ nmdsPrep = function(mergeData, bayColours, breakVals) {
   
 }
 
-pacA = pac %>%
-  filter(facetFactor == "March 2021") 
 
 # Last argument is the "breaks" which changes the order of the legend items
 # The default is alphabetical order, which is correct for all but Pacific!
