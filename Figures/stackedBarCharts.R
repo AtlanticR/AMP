@@ -89,7 +89,7 @@ stackedBarChart = function(bayData, plotTitle){
 # Need to type variable name to get plot to show up
 
 # Maritimes
-argyleProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Argyle"), "(A) Argyle")
+argyleProcess = stackedBarChart(mar %>% subset(facetFactor == "Argyle"), "(A) Argyle")
 cHarbourProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Country Harbour"), "(B) Country Harbour")
 soberProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island"), "(C) Sober Island")
 whiteheadProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Whitehead"), "(D) Whitehead")
@@ -100,7 +100,7 @@ ggarrange(argyleProcess, cHarbourProcess, soberProcess, whiteheadProcess, ncol =
 # Gulf
 cocagneProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Cocagne"), "(A) Cocagne")
 malpequeProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Malpeque"), "(B) Malpeque")
-stPetersProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="St. Peters"), "(C) St. Peters")
+stPetersProcess = stackedBarChart(gulf %>% subset(facetFactor=="St. Peters"), "(C) St. Peters")
 
 # Will add dummy grobs to fill the extra space. Want all plots for all regions to be approx. same size
 ggarrange(cocagneProcess, cocagneProcess, malpequeProcess, stPetersProcess, ncol = 1)
