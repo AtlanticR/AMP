@@ -30,7 +30,7 @@ allRegions = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
 # e.g., if there were Calanoida that need to be distributed, but there are no taxa to distribute these to. This would cause problems
 samples_noCalanoida = allRegions %>%
   group_by(sampleCode) %>%
-  summarize(has_Calanoida = any(copepodType == "Calanoida")) %>%
+  summarize(has_Calanoida = any(copepodType == "Calanoida child")) %>%
   filter(!has_Calanoida) %>%
   select(sampleCode)
 # Size of data frame is 0! I'm all good to distribute these!
@@ -40,7 +40,7 @@ samples_noCalanoida = allRegions %>%
 # This is what needs to be redistributed among each of the Calanoid subtypes
 # Result will be a dataframe for all regions, with 1 column of sample name with other column as calanoid abund in that sample
 calSamAbund = allRegions %>%
-  filter(class == "Calanoida (ci-cvi)") %>%
+  filter(class == "Calanoida parent") %>%
   group_by(sampleCode) %>%
   summarize(calan_abund = sum(abund))
 
@@ -48,11 +48,11 @@ calSamAbund = allRegions %>%
 # Do this by relative abundance within each sample
 calan_distribute = allRegions %>%
   group_by(sampleCode, copepodType) %>%
-  mutate(relAbundCal = ifelse(copepodType == "Calanoida", abund/sum(abund[copepodType == "Calanoida"]), NA_real_)) %>%
+  mutate(relAbundCal = ifelse(copepodType == "Calanoida child", abund/sum(abund[copepodType == "Calanoida child"]), NA_real_)) %>%
   full_join(calSamAbund) %>%
-  mutate(abundPlusCal = ifelse(copepodType == "Calanoida" & !is.na(calan_abund), abund + relAbundCal*calan_abund, abund)) %>%
+  mutate(abundPlusCal = ifelse(copepodType == "Calanoida child" & !is.na(calan_abund), abund + relAbundCal*calan_abund, abund)) %>%
   ungroup() %>%
-  filter(class != "Calanoida (ci-cvi)") # Now get rid of it
+  filter(class != "Calanoida parent") # Now get rid of it
 
 
 ####################################################################################################################################
@@ -63,15 +63,15 @@ calan_distribute = allRegions %>%
 # Find the samples that do not contain genera of Cyclopoida
 samples_noCyclchildren = calan_distribute %>%
   group_by(sampleCode) %>%
-  summarize(has_CyclChildren = any(copepodType == "Cyclopoida"))
+  summarize(has_CyclChildren = any(copepodType == "Cyclopoida child"))
 
-# Find the ones that DO contain Cyclopoida (ci-vi or n.s.)
+# Find the ones that DO contain Cyclopoida
 # there are 38
 sample_CyclParent = calan_distribute %>%
   group_by(sampleCode) %>%
-  summarize(has_CyclParent = any(class == "Cyclopoida (ci-vi or n.s.)"))
+  summarize(has_CyclParent = any(class == "Cyclopoida parent"))
 
-# The ones that are concerning DO have cylopoida ci-vi, but do not have cyclopoida
+# The ones that are concerning DO have cylopoida parent, but do not have cyclopoida children
 # The bad ones: has_CyclChildren == FALSE but also has_CyclParent == TRUE
 cyclProblems = full_join(samples_noCyclchildren, sample_CyclParent) %>%
   filter(has_CyclParent == TRUE & has_CyclChildren == FALSE)
@@ -84,27 +84,27 @@ cyclProblems = full_join(samples_noCyclchildren, sample_CyclParent) %>%
 # See what the other Cyclopoida children are in St. Peters samples
 stPcyclProbs = calan_distribute %>%
   filter(facetFactor == "St. Peters") %>%
-  filter(copepodType == "Cyclopoida" | 
-           (sampleCode == "20_09_01_Gulf_S04_Z38_1434_250" & class == "Cyclopoida (ci-vi or n.s.)"))
+  filter(copepodType == "Cyclopoida child" | 
+           (sampleCode == "20_09_01_Gulf_S04_Z38_1434_250" & class == "Cyclopoida parent"))
 # They are ALL Othiona spp.. Therefore I will convert Cyclopoida to Othiona (later step below)
 
 # Find what the other Cyclopoida children are for the Pacific sample
 pacCycl = calan_distribute %>%
   filter(facetFactor == "August 2020") %>%
-  filter(copepodType == "Cyclopoida" | 
-           (sampleCode == "AMMP_PA_S04_W01_20200830LT_236UM" & class == "Cyclopoida (ci-vi or n.s.)"))
+  filter(copepodType == "Cyclopoida child" | 
+           (sampleCode == "AMMP_PA_S04_W01_20200830LT_236UM" & class == "Cyclopoida parent"))
 
 # It turns out there are 3 types of Cyclopoida in the Pac August 2020 dataset: Corycaeidae, Othiona spp. and Oncaeidae
 # So, we should find the relative abundance of each, and then redistribute the Cyclopoida among those
 relPacCycl = calan_distribute %>%
-  filter(facetFactor == "August 2020" & copepodType == "Cyclopoida") %>%
+  filter(facetFactor == "August 2020" & copepodType == "Cyclopoida child") %>%
   group_by(class) %>%
   summarize(abundPerClass = sum(abundPlusCal)) %>%
   mutate(relAbundPacCyl = abundPerClass / sum(abundPerClass))
 
 # Redistribute the Cyclopoida parent among the children
 pacCyclReplace = pacCycl %>%
-  filter(sampleCode == "AMMP_PA_S04_W01_20200830LT_236UM" & class == "Cyclopoida (ci-vi or n.s.)") %>%
+  filter(sampleCode == "AMMP_PA_S04_W01_20200830LT_236UM" & class == "Cyclopoida parent") %>%
   bind_rows(slice(., rep(1,2))) %>%
   mutate(class = relPacCycl$class) %>%
   mutate(abundPlusCal = abundPlusCal*relPacCycl$relAbundPacCyl)
@@ -118,8 +118,8 @@ pacCyclReplace = pacCycl %>%
 # For Pacific, remove that cyclopoida entry, and then add the new rows just discovered, where things have been redistributed
 
 calan_distAdj = calan_distribute %>%
-  mutate(class = ifelse(sampleCode == "20_09_01_Gulf_S04_Z38_1434_250" & class == "Cyclopoida (ci-vi or n.s.)", "Othiona spp. (civ-vi)", class)) %>%
-  filter(sampleCode != "AMMP_PA_S04_W01_20200830LT_236UM" | class != "Cyclopoida (ci-vi or n.s.)") %>% # remove the Cyclopoida from that one sample
+  mutate(class = ifelse(sampleCode == "20_09_01_Gulf_S04_Z38_1434_250" & class == "Cyclopoida parent", "Othiona spp.", class)) %>%
+  filter(sampleCode != "AMMP_PA_S04_W01_20200830LT_236UM" | class != "Cyclopoida parent") %>% # remove the Cyclopoida from that one sample
   bind_rows(pacCyclReplace) # Now add the rows that had the redistributed Cyclopoida
 
 
@@ -127,18 +127,18 @@ calan_distAdj = calan_distribute %>%
 ### OK NOW REDISTRUBTE
 
 cyclSamAbund = allRegions %>%
-  filter(class == "Cyclopoida (ci-vi or n.s.)") %>%
+  filter(class == "Cyclopoida parent") %>%
   group_by(sampleCode) %>%
   summarize(cycl_abund = sum(abund))
 
 
 cycl_distribute = calan_distAdj %>%
   group_by(sampleCode, copepodType) %>%
-  mutate(relAbundCycl = ifelse(copepodType == "Cyclopoida", abundPlusCal/sum(abundPlusCal[copepodType == "Cyclopoida"]), NA_real_)) %>%
+  mutate(relAbundCycl = ifelse(copepodType == "Cyclopoida child", abundPlusCal/sum(abundPlusCal[copepodType == "Cyclopoida child"]), NA_real_)) %>%
   full_join(cyclSamAbund) %>%
-  mutate(abundPlusCycl = ifelse(copepodType == "Cyclopoida" & !is.na(cycl_abund), abundPlusCal + relAbundCycl*cycl_abund, abundPlusCal)) %>%
+  mutate(abundPlusCycl = ifelse(copepodType == "Cyclopoida child" & !is.na(cycl_abund), abundPlusCal + relAbundCycl*cycl_abund, abundPlusCal)) %>%
   ungroup() %>%
-  filter(class != "Cyclopoida (ci-cvi)") # Now get rid of it
+  filter(class != "Cyclopoida parent") # Now get rid of it
 
 
 
@@ -149,7 +149,7 @@ cycl_distribute = calan_distAdj %>%
 # This is what needs to be redistributed among each of the Calanoid subtypes
 # Result will be a dataframe for all regions, with 1 column of sample name with other column as calanoid abund in that sample
 copSamAbund = allRegions %>%
-  filter(class == "Copepoda") %>%
+  filter(class == "Copepoda parent") %>%
   group_by(sampleCode) %>%
   summarize(copep_abund = sum(abund))
 
@@ -161,7 +161,7 @@ cop_distribute = cycl_distribute %>%
   full_join(copSamAbund) %>%
   mutate(abundPlusCop = ifelse(isCopepod == "Yes" & !is.na(copep_abund), abundPlusCycl + relAbundCop*copep_abund, abundPlusCycl)) %>%
   ungroup() %>%
-  filter(class != "Copepoda") # Now get rid of it
+  filter(class != "Copepoda parent") # Now get rid of it
 
 
 #### Get the Zooplankton (unid) abundances for each sample
@@ -181,11 +181,22 @@ zoo_distribute = cop_distribute %>%
   # Add the zooplankton abundances to each taxa. But only do this if there were actually unidentified zooplankton in each sample!
   mutate(abundPlusZoo = ifelse(!is.na(zooUnid_abund), abundPlusCop + relAbundZoo*zooUnid_abund, abundPlusCop)) %>%
   ungroup() %>%
-  filter(class != "Zooplankton (unid)") # Now get rid of it
+  filter(class != "Zooplankton (unid)") %>% # Now get rid of it 
+  # Remove epibenthic taxa. These should not be part of the analysis
+  # For the following, I have marked in the taxa sheet to "Remove" them:
+  # Caprellidae
+  # Cyclopoida_epibenthic_Civ-vi from Maritimes 2021
+  # Harpacticoida
+  # For the next two, I knew they were benthic from looking at the taxa list prepared by the taxonomists (in the "Data & Classes" tab of the Flowcam spreadsheets)
+  # Amphipoda from Gulf 2020 (from taxa list) and
+  # Isopoda Gulf 2020
+  filter(!(class ==  "Amphipoda" & region == "Gulf" & yearStart == 2020)) %>%
+  filter(!(class == "Isopoda" & region == "Gulf" & yearStart == 2020))
 
-
+# All of this added a lot of extra columns. I need to remove these. 
 rem.cols = c("isCopepod", "copepodType", "relAbundCal", "relAbundCycl", "relAbundCop", "relAbundZoo", "abund", "calan_abund", "cycl_abund", "copep_abund", "zooUnid_abund",
              "abundPlusCal", "abundPlusCycl", "abundPlusCop")
+
 
 
 mar = zoo_distribute %>%
