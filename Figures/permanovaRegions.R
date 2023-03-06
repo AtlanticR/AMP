@@ -141,8 +141,9 @@ disRegion = data.frame(group = regDisp$group, distances = regDisp$distances)
 
 # ggplot boxplot of distance to centroid for each group
 ggplot(disRegion, aes(x = group, y = distances))+
-  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
   geom_jitter(aes(col = group), width = 0.2)+
+  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
+
   # Add significance for each group separately. Need to offset some comparisons so they show up better
   # May need to check significance since p-values were obtained from permutation (not sure how geom_signif calculates them)
   geom_signif(comparisons = list(c("Gulf", "Maritimes")),
@@ -230,8 +231,9 @@ disMar = data.frame(group = marDisp$group, distances = marDisp$distances)
 
 # ggplot boxplot of distance to centroid for each group
 ggplot(disMar, aes(x = group, y = distances))+
-  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
   geom_jitter(aes(col = group), width = 0.2)+
+  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
+  
   scale_fill_manual(values = marColours)+
   scale_color_manual(values = marColours)+
   # No groups are significantly different
@@ -282,8 +284,8 @@ disGulf = data.frame(group = gulfDisp$group, distances = gulfDisp$distances)
 
 # ggplot boxplot of distance to centroid for each group
 ggplot(disGulf, aes(x = group, y = distances))+
-  geom_boxplot(aes(fill = group), col = "black", alpha = 0.65, outlier.shape = NA)+
   geom_jitter(aes(col = group), width = 0.2)+
+  geom_boxplot(aes(fill = group), col = "black", alpha = 0.65, outlier.shape = NA)+
   scale_color_manual(values = gulfColours)+
   scale_fill_manual(values = gulfColours)+
   ### WATCH OUT FOR THIS SIGNIFICANCE LEVEL
@@ -341,8 +343,8 @@ disPac = data.frame(group = pacDisp$group, distances = pacDisp$distances)
 
 # ggplot boxplot of distance to centroid for each group
 ggplot(disPac, aes(x = group, y = distances))+
-  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
   geom_jitter(aes(col = group), width = 0.2)+
+  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
   scale_color_manual(values = pacColours)+
   scale_fill_manual(values = pacColours)+
   geom_signif(comparisons = list(c("August 2020", "June 2021")),
