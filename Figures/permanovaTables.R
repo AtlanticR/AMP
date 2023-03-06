@@ -50,7 +50,9 @@ dispCreateTable = function(permDispResults){
   dispPairwiseStats = dispPairwiseStats %>%
     tibble::rownames_to_column(var = "Comparison") %>%
     # I think I'm supposed to be taking the absolute value?? But maybe not!
-    mutate(tstat = abs(tstat)) %>%
+    # EDIT: DO NOT MAKE DISPERSION T-STATISTIC NEGATIVE 
+    # SEE HERE FOR MY QUESTION: https://stats.stackexchange.com/questions/605558/are-negative-t-values-important-for-pairwise-betadisper-results
+    #mutate(tstat = abs(tstat)) %>%
     mutate(across(c(tstat), round, 3))
   
   # Combine the ANOVA-like table with the pairwise comparison values
@@ -86,6 +88,11 @@ sept2021DispTable = rbind(dispCreateTable(sept2021TideDispResults),
                           dispCreateTable(sept2021StnDispResults))
 
 # Write them out as csvs
+write.csv(regDispTable, "regionsDisp.csv")
+write.csv(marDispTable, "marDisp.csv")
+write.csv(gulfDispTable, "gulfDisp.csv")
+write.csv(pacDispTable, "pacDisp.csv")
+
 # write.csv(argDispTable, "argDispTable.csv")
 # write.csv(stPDispTable, "stPDispTable.csv")
 # write.csv(aug2020DispTable, "aug2020DispTable.csv")
