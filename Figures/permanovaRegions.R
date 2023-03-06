@@ -122,8 +122,12 @@ summary(simOcean)
 # There are 4 factors (in this study): Maritimes, Gulf, Newfoundland, Pacific
 
 ### DISPERSION
+# Note: For this one especially, the significance changes depending on which number you enter into set.seed
+# It mostly just creates differences between 0.001 or 0.01
+# So, use Tswift's lucky #13 for consistency
+set.seed(13)
 regDisp = betadisper(vegdist(sqrt(allRegionsWide[,which(colnames(allRegionsWide)== "Acartia spp. (civ-vi)"):ncol(allRegionsWide)])), as.factor(allRegionsWide$region), type = "median")
-pairRegDisp = permutest(regDisp, pairwise = T, permutations = 9999, set.seed(13))
+pairRegDisp = permutest(regDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairRegDisp
@@ -136,20 +140,17 @@ plot(regDisp)
 disRegion = data.frame(group = regDisp$group, distances = regDisp$distances)
 
 # ggplot boxplot of distance to centroid for each group
-ggplot(disRegion, aes(x = group, y = distances, fill=group))+
-  geom_boxplot()+
+ggplot(disRegion, aes(x = group, y = distances))+
+  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
+  geom_jitter(aes(col = group), width = 0.2)+
   # Add significance for each group separately. Need to offset some comparisons so they show up better
   # May need to check significance since p-values were obtained from permutation (not sure how geom_signif calculates them)
   geom_signif(comparisons = list(c("Gulf", "Maritimes")),
-              map_signif_level = T, y_position = 0.8)+
+              map_signif_level = T, y_position = 0.7, annotations = "**")+
   geom_signif(comparisons = list(c("Gulf", "Newfoundland")),
-              map_signif_level = T, y_position = 0.9)+
-  geom_signif(comparisons = list(c("Maritimes", "Newfoundland")),
-              map_signif_level = T, y_position = 1.0)+
-  geom_signif(comparisons = list(c("Maritimes", "Pacific")),
-              map_signif_level = T, y_position = 1.1)+
-  geom_signif(comparisons = list(c("Newfoundland", "Pacific")),
-              map_signif_level = T, y_position = 1.2)+
+              map_signif_level = T, y_position = 0.8, annotations = "***")+
+  geom_signif(comparisons = list(c("Gulf", "Pacific")),
+              map_signif_level = T, y_position = 0.9, annotations = "**")+
   xlab("Region")+
   ylab("Distance to centroid")+
   theme_bw()+
@@ -191,19 +192,20 @@ summary(simRegion)
 # First need to break up the data
 # I had the regions in a for loop so now I have to create them all here 
 # LOOK INTO MOVING THIS AND MAKING IT CONSISTENT BETWEEN ALL SCRIPTS
-marPN = marMerge %>%
+marPN = mar %>%
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
-gulfPN = gulfMerge %>%
+gulfPN = gulf %>%
+  filter(facetFactor != "Malpeque") %>% # Do not do tests with Malpeque since n = 3
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
-nlPN = nlMerge %>%
+nlPN = nl %>%
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
-pacPN = pacMerge %>%
+pacPN = pac %>%
   pivot_wider(names_from = class, values_from = abund) %>%
   mutate_all(~replace(., is.na(.), 0)) # replace NAs with 0
 
@@ -212,8 +214,9 @@ pacPN = pacMerge %>%
 ## MARITIMES
 
 ### DISPERSION
+set.seed(13)
 marDisp = betadisper(vegdist(sqrt(marPN[,which(colnames(marPN)== "Acartia spp. (civ-vi)"):ncol(marPN)])), as.factor(marPN$facetFactor), type = "median")
-pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999, set.seed(11))
+pairMarDisp = permutest(marDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairMarDisp
@@ -226,15 +229,17 @@ boxplot(marDisp, xlab = NULL)
 disMar = data.frame(group = marDisp$group, distances = marDisp$distances)
 
 # ggplot boxplot of distance to centroid for each group
-ggplot(disMar, aes(x = group, y = distances, fill=group))+
-  geom_boxplot()+
+ggplot(disMar, aes(x = group, y = distances))+
+  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
+  geom_jitter(aes(col = group), width = 0.2)+
   scale_fill_manual(values = marColours)+
+  scale_color_manual(values = marColours)+
   # No groups are significantly different
   xlab("Bay")+
   ylab("Distance to centroid")+
   # AHH There is actually one significant pairwise comparison
-  geom_signif(comparisons = list(c("Sober Island", "Whitehead")),
-              map_signif_level = T)+
+  # geom_signif(comparisons = list(c("Sober Island", "Whitehead")),
+  #             map_signif_level = T)+
   theme_bw()+
   theme(axis.text = element_text(size = 11),
         # setting the margin adds space between tick labels and titles
@@ -262,11 +267,12 @@ summary(simMar)
 ## GULF
 
 ### DISPERSION
+set.seed(13)
 gulfDisp = betadisper(vegdist(sqrt(gulfPN[,which(colnames(gulfPN)== "Acartia spp. (civ-vi)"):ncol(gulfPN)])), as.factor(gulfPN$facetFactor), type = "median")
-pairGulfDisp = permutest(gulfDisp, pairwise = T, permutations = 9999, perm = 9999, set.seed(13))
+pairGulfDisp = permutest(gulfDisp, pairwise = T, permutations = 9999, perm = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
-pairGulfDisp
+
 pairGulfDisp$statistic
 
 boxplot(gulfDisp, xlab = NULL)
@@ -275,12 +281,14 @@ boxplot(gulfDisp, xlab = NULL)
 disGulf = data.frame(group = gulfDisp$group, distances = gulfDisp$distances)
 
 # ggplot boxplot of distance to centroid for each group
-ggplot(disGulf, aes(x = group, y = distances, fill=group))+
-  geom_boxplot()+
+ggplot(disGulf, aes(x = group, y = distances))+
+  geom_boxplot(aes(fill = group), col = "black", alpha = 0.65, outlier.shape = NA)+
+  geom_jitter(aes(col = group), width = 0.2)+
+  scale_color_manual(values = gulfColours)+
   scale_fill_manual(values = gulfColours)+
   ### WATCH OUT FOR THIS SIGNIFICANCE LEVEL
-  geom_signif(comparisons = list(c("Malpeque", "St. Peters")),
-              map_signif_level = T)+
+  # geom_signif(comparisons = list(c("Malpeque", "St. Peters")),
+  #             map_signif_level = T)+
   xlab("Bay")+
   ylab("Distance to centroid")+
   theme_bw()+
@@ -317,8 +325,9 @@ pacPNred = pacPN %>%
   filter(sampleCode != c("AMMP_PA_S04Pooled_202103LT_250UM"))
 
 ### DISPERSION
+set.seed(13)
 pacDisp = betadisper(vegdist(sqrt(pacPNred[,which(colnames(pacPNred)== "Acartia spp. (civ-vi)"):ncol(pacPNred)])), as.factor(pacPNred$facetFactor), type = "median")
-pairPacDisp = permutest(pacDisp, pairwise = T, permutations = 9999, set.seed(13))
+pairPacDisp = permutest(pacDisp, pairwise = T, permutations = 9999)
 
 # Look at pairRegDisp for F-values, permuted p-values
 pairPacDisp
@@ -331,9 +340,15 @@ boxplot(pacDisp, xlab = NULL)
 disPac = data.frame(group = pacDisp$group, distances = pacDisp$distances)
 
 # ggplot boxplot of distance to centroid for each group
-ggplot(disPac, aes(x = group, y = distances, fill=group))+
-  geom_boxplot()+
+ggplot(disPac, aes(x = group, y = distances))+
+  geom_boxplot(aes(fill = group), col = "black", alpha = 0.55, outlier.shape = NA)+
+  geom_jitter(aes(col = group), width = 0.2)+
+  scale_color_manual(values = pacColours)+
   scale_fill_manual(values = pacColours)+
+  geom_signif(comparisons = list(c("August 2020", "June 2021")),
+               map_signif_level = T)+
+  geom_signif(comparisons = list(c("September 2021", "June 2021")),
+              map_signif_level = T, y_position = 0.475)+
   xlab("Field Season")+
   ylab("Distance to centroid")+
   theme_bw()+
