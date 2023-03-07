@@ -19,6 +19,9 @@ library("ggh4x")
 # 3. Relative abundance chart of this info (ggplot object)
 
 stackedBarChart = function(bayData, plotTitle){
+
+  bayData = bayData %>%
+    mutate(class = ifelse(class == "Acartia spp. (civ-vi)", "Acartia spp.", class))
   
   # Find the __ most abundant taxa. Label all others as "Other"
   # Otherwise there are too many legend items
@@ -57,7 +60,7 @@ stackedBarChart = function(bayData, plotTitle){
     
     facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
     # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
-    scale_x_discrete(name = "Site")+
+    scale_x_discrete(name = "Sample")+
     scale_fill_brewer(palette = "Set3", name = "Zooplankton Class")+
     ggtitle(plotTitle)+
     #theme_minimal(base_family = "Roboto Condensed") +
@@ -90,32 +93,32 @@ stackedBarChart = function(bayData, plotTitle){
 
 # Maritimes
 argyleProcess = stackedBarChart(mar %>% subset(facetFactor == "Argyle"), "(A) Argyle")
-cHarbourProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Country Harbour"), "(B) Country Harbour")
-soberProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Sober Island"), "(C) Sober Island")
-whiteheadProcess = stackedBarChart(marMerge %>% subset(facetFactor == "Whitehead"), "(D) Whitehead")
+cHarbourProcess = stackedBarChart(mar %>% subset(facetFactor == "Country Harbour"), "(B) Country Harbour")
+soberProcess = stackedBarChart(mar %>% subset(facetFactor == "Sober Island"), "(C) Sober Island")
+whiteheadProcess = stackedBarChart(mar %>% subset(facetFactor == "Whitehead"), "(D) Whitehead")
 
 ggarrange(argyleProcess, cHarbourProcess, soberProcess, whiteheadProcess, ncol = 1)
 
 
 # Gulf
-cocagneProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Cocagne"), "(A) Cocagne")
-malpequeProcess = stackedBarChart(gulfMerge %>% subset(facetFactor=="Malpeque"), "(B) Malpeque")
+cocagneProcess = stackedBarChart(gulf %>% subset(facetFactor=="Cocagne"), "(A) Cocagne")
+malpequeProcess = stackedBarChart(gulf %>% subset(facetFactor=="Malpeque"), "(B) Malpeque")
 stPetersProcess = stackedBarChart(gulf %>% subset(facetFactor=="St. Peters"), "(C) St. Peters")
 
 # Will add dummy grobs to fill the extra space. Want all plots for all regions to be approx. same size
 ggarrange(cocagneProcess, cocagneProcess, malpequeProcess, stPetersProcess, ncol = 1)
 
 # Newfoundland (only one bay)
-seArmSept2020 = stackedBarChart(nlMerge %>% subset(facetFactor == "Sept 2020"), "Sept 2020")
-seArmOct2021 = stackedBarChart(nlMerge %>% subset(facetFactor == "Oct 2021"), "Oct 2021")
+seArmSept2020 = stackedBarChart(nl %>% subset(facetFactor == "Sept 2020"), "Sept 2020")
+seArmOct2021 = stackedBarChart(nl %>% subset(facetFactor == "Oct 2021"), "Oct 2021")
 ggarrange(seArmSept2020, seArmOct2021, seArmOct2021, seArmOct2021, ncol = 1)
 
 
 # Pacific (only one bay, but separate by facetFactor instead)
-lemmens20Process = stackedBarChart(pacMerge %>% subset(facetFactor == "August 2020"), "(A) August 2020")
-lemmensMar21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "March 2021"), "(B) March 2021")
-lemmensJun21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "June 2021"), "(C) June 2021")
-lemmensSept21Process = stackedBarChart(pacMerge %>% subset(facetFactor == "September 2021"), "(D) September 2021")
+lemmens20Process = stackedBarChart(pac %>% subset(facetFactor == "August 2020"), "(A) August 2020")
+lemmensMar21Process = stackedBarChart(pac %>% subset(facetFactor == "March 2021"), "(B) March 2021")
+lemmensJun21Process = stackedBarChart(pac %>% subset(facetFactor == "June 2021"), "(C) June 2021")
+lemmensSept21Process = stackedBarChart(pac %>% subset(facetFactor == "September 2021"), "(D) September 2021")
 
 ggarrange(lemmens20Process, lemmensMar21Process, lemmensJun21Process, lemmensSept21Process, ncol = 1)
 
@@ -126,7 +129,8 @@ ggarrange(lemmens20Process, lemmensMar21Process, lemmensJun21Process, lemmensSep
 
 # For now, I am removing 2020 data since it is so "different". Also it only has one time period (Sept)
 nlMinus2020 = nlMerge %>%
-  filter(yearStart != 2020)
+  filter(yearStart != 2020) %>%
+  mutate(class = ifelse(class == "Acartia spp. (civ-vi)", "Acartia spp.", class))
 
 # Find the 7 most abundant taxa. Keep those names
 # Call the rest of them "other"
@@ -158,7 +162,7 @@ ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
 
   # Have the top panel be year, then the next subpanel is months. Use labeller to adjust month names  
   facet_nested(. ~yearStart + monthStart, scales = "free_x", space = "free_x", labeller = labeller(monthStart = monthFix))+
-  scale_x_discrete(name = "Site")+
+  scale_x_discrete(name = "Sample")+
   scale_fill_brewer(palette = "Set3", name = "Zooplankton Class")+
   theme_bw()+
   theme(
