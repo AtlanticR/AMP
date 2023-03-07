@@ -14,7 +14,7 @@
 
 # Read in the processed zooplankton counts
 # This will provide the dataframes with counts for each REGION (it's not broken up by bay yet)
-source("DataProcessing/zooplanktonCounts.R") 
+# source("DataProcessing/zooplanktonCounts.R") 
 
 ################################################################################
 
@@ -43,26 +43,26 @@ breakupBayBay = function(regionData, bayName) {
 # But that is a task for another day!
 
 ## MARITIMES
-argyle = breakupBayBay(marMerge, "Argyle")
-country = breakupBayBay(marMerge, "Country Harbour")
-sober = breakupBayBay(marMerge, "Sober Island")
-whitehead = breakupBayBay(marMerge, "Whitehead")
+argyle = breakupBayBay(mar, "Argyle")
+country = breakupBayBay(mar, "Country Harbour")
+sober = breakupBayBay(mar, "Sober Island")
+whitehead = breakupBayBay(mar, "Whitehead")
 
 
 ## GULF
-cocagne = breakupBayBay(gulfMerge, "Cocagne")
-malpeque = breakupBayBay(gulfMerge, "Malpeque")
-stPeters = breakupBayBay(gulfMerge, "St. Peters")
+cocagne = breakupBayBay(gulf, "Cocagne")
+malpeque = breakupBayBay(gulf, "Malpeque")
+stPeters = breakupBayBay(gulf, "St. Peters")
 
 ## PACIFIC
 # I have to be very careful with these names since there are similar variable names
 # created in zooplanktonCounts.R
 # Here, I will use the full year in the name
-pacAug2020 = breakupBayBay(pacMerge, "August 2020")
-pacMar2021 = breakupBayBay(pacMerge, "March 2021")
-pacJun2021 = breakupBayBay(pacMerge, "June 2021")
-pacSept2021 = breakupBayBay(pacMerge, "September 2021")
+pacAug2020 = breakupBayBay(pac, "August 2020")
+pacMar2021 = breakupBayBay(pac, "March 2021")
+pacJun2021 = breakupBayBay(pac, "June 2021")
+pacSept2021 = breakupBayBay(pac, "September 2021")
 
 ## NEWFOUNDLAND
 # There's only one bay and time period (so far) but it still needs to have the layout adjusted
-seArm2020 = breakupBayBay(nlMerge, "Southeast Arm 2020")
+seArm2021 = breakupBayBay(nl, "Oct 2021")
