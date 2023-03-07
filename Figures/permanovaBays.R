@@ -67,6 +67,24 @@ argTideDispResults = permutest(argTideDisp, pairwise = T, permutations = 9999)
 set.seed(13)
 argStnDispResults = permutest(argStnDisp, pairwise = T, permutations = 9999)
 
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disArgdf = data.frame(group = argTideDisp$group, distances = argTideDisp$distances, type = "Tide") %>%
+  rbind(data.frame(group = argStnDisp$group, distances = argStnDisp$distances, type = "Station"))
+
+ggplot(disArgdf, aes(x = group, y = distances), fill = "white")+
+  facet_wrap(.~type, scales = "free")+
+  geom_boxplot(col = "black", outlier.shape = NA)+
+  geom_jitter(width = 0.2)+
+  #xlab("Region")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        axis.title.x = element_blank(), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        strip.text.x = element_text(size = 13),
+        legend.position = "none")
+
+
 ## PERMANVOA
 set.seed(13)
 argPerm = adonis2(vegdist(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp. (civ-vi)"):ncol(argMinusMR)])) ~ tidePhase*myLabel, data = argMinusMR, permutations = 9999)
@@ -106,22 +124,46 @@ adonis2(sqrt(whitehead[,which(colnames(whitehead)== "Acartia spp. (civ-vi)"):nco
 
 # Run the test
 # Needs to be done separately for each test
-stPTideDisp = betadisper(vegdist(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp. (civ-vi)"):ncol(stPeters)])), as.factor(stPeters$tidePhase), type = "median")
-stPStnDisp = betadisper(vegdist(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp. (civ-vi)"):ncol(stPeters)])), as.factor(stPeters$myLabel), type = "median")
+
+stPMinusMF = stPeters %>%
+  filter(tidePhase != "Mid-Falling")
+
+
+stPTideDisp = betadisper(vegdist(sqrt(stPMinusMF[,which(colnames(stPMinusMF)== "Acartia spp. (civ-vi)"):ncol(stPMinusMF)])), as.factor(stPMinusMF$tidePhase), type = "median")
+stPStnDisp = betadisper(vegdist(sqrt(stPMinusMF[,which(colnames(stPMinusMF)== "Acartia spp. (civ-vi)"):ncol(stPMinusMF)])), as.factor(stPMinusMF$myLabel), type = "median")
 
 set.seed(13)
 stPTideDispResults = permutest(stPTideDisp, pairwise = T, permutations = 9999)
 set.seed(13)
 stPStnDispResults = permutest(stPStnDisp, pairwise = T, permutations = 9999)
 
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disStPdf = data.frame(group = stPTideDisp$group, distances = stPTideDisp$distances, type = "Tide") %>%
+  rbind(data.frame(group = stPStnDisp$group, distances = stPStnDisp$distances, type = "Station"))
+
+ggplot(disStPdf, aes(x = group, y = distances), fill = "white")+
+  facet_wrap(.~type, scales = "free")+
+  geom_boxplot(col = "black", outlier.shape = NA)+
+  geom_jitter(width = 0.2)+
+  #xlab("Region")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        axis.title.x = element_blank(), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        strip.text.x = element_text(size = 13),
+        legend.position = "none")
+
+
+
 
 ## PERMANOVA
 set.seed(13)
-stPperm = adonis2(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp. (civ-vi)"):ncol(stPeters)])~tidePhase*myLabel, data = stPeters, method = "bray", permutations = 9999)
+stPperm = adonis2(sqrt(stPMinusMF[,which(colnames(stPMinusMF)== "Acartia spp. (civ-vi)"):ncol(stPMinusMF)])~tidePhase*myLabel, data = stPMinusMF, method = "bray", permutations = 9999)
 
 ## PAIRWISE PERMANOVA
 # Only station effects were significant, so run pairwise permanova for that
-stPStnPairwise = pairwise.adonis2(vegdist(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp. (civ-vi)"):ncol(stPeters)]))~as.factor(myLabel), data = stPeters, perm=9999, set.seed(13))
+stPStnPairwise = pairwise.adonis2(vegdist(sqrt(stPMinusMF[,which(colnames(stPMinusMF)== "Acartia spp. (civ-vi)"):ncol(stPMinusMF)]))~as.factor(myLabel), data = stPMinusMF, perm=9999, set.seed(13))
 
 ## SIMPER
 # Only between stations. Will later cut out comparisons that aren't significant
@@ -131,9 +173,46 @@ simStPStn = simper(sqrt(stPeters[,which(colnames(stPeters)== "Acartia spp. (civ-
 ################################################################################
 ### Newfoundland
 
-# I DON'T THINK I SHOULD DO THIS
-# "No residual component"
-# adonis2(sqrt(seArm2020[,which(colnames(seArm2020)== "Acartia spp. (civ-vi)"):ncol(seArm2020)])~tidePhase*myLabel, data = seArm2020, method = "bray", permutations = 9999)
+nl21minusMf = seArm2021 %>%
+  filter(tidePhase != "Mid-Falling")
+
+nl21TideDisp = betadisper(vegdist(sqrt(nl21minusMf[,which(colnames(nl21minusMf)== "Acartia spp. (civ-vi)"):ncol(nl21minusMf)])), as.factor(nl21minusMf$tidePhase), type = "median")
+nl21StnDisp = betadisper(vegdist(sqrt(nl21minusMf[,which(colnames(nl21minusMf)== "Acartia spp. (civ-vi)"):ncol(nl21minusMf)])), as.factor(nl21minusMf$myLabel), type = "median")
+
+set.seed(13)
+nl21TideDispResults = permutest(nl21TideDisp, pairwise = T, permutations = 9999)
+set.seed(13)
+nl21StnDispResults = permutest(nl21StnDisp, pairwise = T, permutations = 9999)
+
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disnl21df = data.frame(group = nl21TideDisp$group, distances = nl21TideDisp$distances, type = "Tide") %>%
+  rbind(data.frame(group = nl21StnDisp$group, distances = nl21StnDisp$distances, type = "Station"))
+
+ggplot(disnl21df, aes(x = group, y = distances), fill = "white")+
+  facet_wrap(.~type, scales = "free")+
+  geom_boxplot(col = "black", outlier.shape = NA)+
+  geom_jitter(width = 0.2)+
+  #xlab("Region")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        axis.title.x = element_blank(), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        strip.text.x = element_text(size = 13),
+        legend.position = "none")
+
+
+## PERMANOVA
+set.seed(13)
+nl21perm = adonis2(sqrt(nl21minusMf[,which(colnames(nl21minusMf)== "Acartia spp. (civ-vi)"):ncol(nl21minusMf)])~tidePhase*myLabel, data = nl21minusMf, method = "bray", permutations = 9999)
+
+## PAIRWISE PERMANOVA: Don't need to do since only 2 groups
+
+## SIMPER
+# Only between stations. Will later cut out comparisons that aren't significant
+simnl21Stn = simper(sqrt(nl21minusMf[,which(colnames(nl21minusMf)== "Acartia spp. (civ-vi)"):ncol(nl21minusMf)]), 
+                   group=nl21minusMf$myLabel, permutations = 9999)
+
 
 ################################################################################
 ################################################################################
@@ -150,6 +229,24 @@ set.seed(13)
 aug2020TideDispResults = permutest(aug2020TideDisp, pairwise = T, permutations = 9999)
 set.seed(13)
 aug2020StnDispResults = permutest(aug2020StnDisp, pairwise = T, permutations = 9999)
+
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disAug20df = data.frame(group = aug2020TideDisp$group, distances = aug2020TideDisp$distances, type = "Tide") %>%
+  rbind(data.frame(group = aug2020StnDisp$group, distances = aug2020StnDisp$distances, type = "Station"))
+
+ggplot(disAug20df, aes(x = group, y = distances), fill = "white")+
+  facet_wrap(.~type, scales = "free")+
+  geom_boxplot(col = "black", outlier.shape = NA)+
+  geom_jitter(width = 0.2)+
+  #xlab("Region")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        axis.title.x = element_blank(), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        strip.text.x = element_text(size = 13),
+        legend.position = "none")
+
 
 ## PERMANOVA
 set.seed(13)
@@ -174,6 +271,25 @@ set.seed(13)
 jun2021TideDispResults = permutest(jun2021TideDisp, pairwise = T, permutations = 9999)
 set.seed(13)
 jun2021StnDispResults = permutest(jun2021StnDisp, pairwise = T, permutations = 9999)
+
+# Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
+disAug20df = data.frame(group = jun2021TideDisp$group, distances = jun2021TideDisp$distances, type = "Tide") %>%
+  rbind(data.frame(group = jun2021StnDisp$group, distances = jun2021StnDisp$distances, type = "Station"))
+
+ggplot(disAug20df, aes(x = group, y = distances), fill = "white")+
+  facet_wrap(.~type, scales = "free")+
+  geom_boxplot(col = "black", outlier.shape = NA)+
+  geom_jitter(width = 0.2)+
+  #xlab("Region")+
+  ylab("Distance to centroid")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11),
+        axis.title.x = element_blank(), 
+        axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
+        strip.text.x = element_text(size = 13),
+        legend.position = "none")
+
+
 
 ## PERMANOVA
 set.seed(13)
