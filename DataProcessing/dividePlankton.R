@@ -227,10 +227,10 @@ nl = zoo_distribute %>%
   ungroup()
 
 
-gulfMerge = gulf
+gulfMerge = gulf 
 marMerge = mar
-nlMerge = nl
-pacMerge = pac
+nlMerge = nl 
+pacMerge = pac 
 
 nmdsBay = function(regionData, stationCol) {
 
