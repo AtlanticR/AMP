@@ -24,8 +24,6 @@
 source("DataProcessing/studyAreaDataPrep.R") # preps all the data for plotting
 source("Figures/colourPchSchemes.R") # defines colour schemes for the region map
 
-# Test with new PAT
-
 ################################################################################
 # Create the top panel of my maps
 # One with all of Canada (canMap)
@@ -150,6 +148,7 @@ atlMap =
 
 # Lemmens 
 ggLemMap = ggplot()+
+  geom_polygon(lemmensBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
   geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
@@ -191,6 +190,7 @@ ggLemMap = ggplot()+
 
 # Argyle                   
 ggArgMap = ggplot()+
+  geom_polygon(argBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = "black", linewidth = 0.1, alpha = 0.1)+
   geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
   # Data are transects. In theory, they could be plotted as lines using geom_sf
@@ -212,6 +212,7 @@ ggArgMap = ggplot()+
 
 # Sober Island
 ggSobMap = ggplot()+
+  geom_polygon(soberBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
   geom_polygon(soberCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
   geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.70, linewidth = 2.5, lineend = "round")+
@@ -231,6 +232,7 @@ ggSobMap = ggplot()+
 
 # Country Harbour                   
 ggChMap = ggplot()+
+  geom_polygon(countryBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
   geom_polygon(countryCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
   geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
@@ -252,6 +254,7 @@ ggChMap = ggplot()+
 
 # Whitehead
 ggWhMap = ggplot()+
+  geom_polygon(whiteheadBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
   geom_polygon(whiteheadCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
   geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+  # Use this instead of coord_map to get the scalebar thing to work. 
@@ -276,6 +279,7 @@ ggWhMap = ggplot()+
 # Cocagne
 ggCocMap = 
   ggplot()+
+  geom_polygon(cocagneBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_polygon(nbLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
@@ -292,6 +296,7 @@ ggCocMap =
 # Malpeque
 ggMalMap = 
   ggplot()+
+  geom_polygon(malpequeBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
@@ -308,6 +313,7 @@ ggMalMap =
 # St. Peters
 ggStPMap = 
   ggplot()+
+  geom_polygon(stPetersBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
@@ -327,6 +333,7 @@ ggStPMap =
 # Southeast Arm (what name should I be using for this?)
 ggSeArmMap = 
   ggplot()+
+  geom_polygon(seArmBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
     geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_sf(data = lease1Sf, col = "#cc3d6f", fill = "pink")+
     geom_sf(data = lease2Sf, col = "#cc3d6f", fill = "pink")+
