@@ -190,13 +190,22 @@ ggLemMap = ggplot()+
 
 # Argyle                   
 ggArgMap = ggplot()+
-  geom_polygon(argBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = "black", linewidth = 0.1, alpha = 0.1)+
+  geom_polygon(argBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
   geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
+  
+  # The coastline layer wasn't detailed enough for Eel Lake, where there were some shellfish farms.
+  # Add the eelLakeBoundary file in white first, otherwise it'll overlay on grey and this will look incorrect when alpha is set to 0.1
+  # Then, add the eelLakeBoundary in blue with the alpha set to 0.1
+  geom_polygon(eelLakeBoundary, mapping = aes(x = long, y = lat, group=group), fill = "white", col = NA, linewidth = 0.1)+
+  geom_polygon(eelLakeBoundary, mapping = aes(x = long, y = lat, group=group), fill = "blue", col = "black", linewidth = 0.1, alpha = 0.1)+
+  # Then, add the islands
+  geom_polygon(eelLakeIslands, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
   # Data are transects. In theory, they could be plotted as lines using geom_sf
   # However, idk how to get the data into the right format for that lol. So I am using geom_segment to connect between start/end coordinates of the tow
   geom_segment(marTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
-  coord_sf(xlim = c(259213, 267918), ylim = c(4846335, 4855031), crs = 32620)+ # UTM zone 20
+  #coord_sf(xlim = c(259213, 267918), ylim = c(4846335, 4855031), crs = 32620)+ # UTM zone 20
+  coord_sf(xlim = c(255400, 280573), ylim = c(4838335, 4863182), crs = 32620)+ # UTM zone 20
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.8, "cm"))+
   # # Add a north arrow to map
   # annotation_north_arrow(location = "tr", which_north = "true",
@@ -238,7 +247,8 @@ ggChMap = ggplot()+
   geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
-  coord_sf(xlim = c(596383, 611074), ylim = c(4996642, 5011378), crs = 32620)+
+  # coord_sf(xlim = c(596383, 611074), ylim = c(4996642, 5011378), crs = 32620)+
+  coord_sf(xlim = c(593384, 606378), ylim = c(5000120, 5011138), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   # Add a north arrow to map
   # annotation_north_arrow(location = "tr", which_north = "true",
@@ -300,7 +310,8 @@ ggMalMap =
     geom_polygon(gulfCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
-    coord_sf(xlim = c(431139, 450611), ylim = c(5147976, 5167271), crs = 32620)+
+    # coord_sf(xlim = c(431139, 450611), ylim = c(5147976, 5167271), crs = 32620)+
+    coord_sf(xlim = c(423090, 451168), ylim = c(5142615, 5168319), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
     ggtitle("(J) Malpeque")+
     theme_bw()+
@@ -338,7 +349,8 @@ ggSeArmMap =
     geom_sf(data = lease1Sf, col = "#cc3d6f", fill = "pink")+
     geom_sf(data = lease2Sf, col = "#cc3d6f", fill = "pink")+
     geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
-    coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+ # UTM zone 21N
+    # coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+ # UTM zone 21N
+    coord_sf(xlim = c(618447, 626387), ylim = c(5462394, 5469127), crs = 32621)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
     ggtitle("(L) Southeast Arm")+
     theme_bw()+
@@ -369,5 +381,5 @@ studyMaps = ggarrange(ggLemMap, ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, 
   plot_layout(heights = (c(0.25, 0.75))) # top panel takes up 1/4 of plot. studyMaps make up 3/4
 
 
-# ggsave("test.png", width = 12.32, height = 12.07, units = "in", dpi = 300)
+ggsave("test.png", width = 12.32, height = 12.07, units = "in", dpi = 300)
 
