@@ -381,5 +381,5 @@ studyMaps = ggarrange(ggLemMap, ggArgMap, ggSobMap, ggChMap, ggWhMap, ggCocMap, 
   plot_layout(heights = (c(0.25, 0.75))) # top panel takes up 1/4 of plot. studyMaps make up 3/4
 
 
-ggsave("test.png", width = 12.32, height = 12.07, units = "in", dpi = 300)
+# ggsave("test.png", width = 12.32, height = 12.07, units = "in", dpi = 300)
 
