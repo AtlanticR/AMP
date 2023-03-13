@@ -87,17 +87,22 @@ jun2021DispTable = rbind(dispCreateTable(jun2021TideDispResults),
 sept2021DispTable = rbind(dispCreateTable(sept2021TideDispResults),
                           dispCreateTable(sept2021StnDispResults))
 
+nl21DispTable = rbind(dispCreateTable(nl21TideDispResults),
+                      dispCreateTable(nl21StnDispResults))
+
+
 # Write them out as csvs
-write.csv(regDispTable, "regionsDisp.csv")
-write.csv(marDispTable, "marDisp.csv")
-write.csv(gulfDispTable, "gulfDisp.csv")
-write.csv(pacDispTable, "pacDisp.csv")
+# write.csv(regDispTable, "regionsDisp.csv")
+# write.csv(marDispTable, "marDisp.csv")
+# write.csv(gulfDispTable, "gulfDisp.csv")
+# write.csv(pacDispTable, "pacDisp.csv")
 
 # write.csv(argDispTable, "argDispTable.csv")
 # write.csv(stPDispTable, "stPDispTable.csv")
 # write.csv(aug2020DispTable, "aug2020DispTable.csv")
 # write.csv(jun2021DispTable, "jun2021DispTable.csv")
 # write.csv(sept2021DispTable, "sept2021DispTable.csv")
+# write.csv(nl21DispTable, "nl21DispTable.csv")
 
 #################################################################################
 ## PERMANOVA
@@ -114,7 +119,7 @@ permCreateTable = function(permResults, pairwiseDf, order){
     # Multiply R2 by 100 to convert to percentages
     mutate_at(vars(c(R2)), .funs = funs(.*100)) %>% 
     # Add mean sum of squares (MS) column. Note: this adds a cell in the "total" row. Will need to manually remove this.
-    mutate(MS = Df/SumOfSqs, .before = R2) %>%
+    mutate(MS = SumOfSqs/Df, .before = R2) %>%
     # Round most columns to 2 decimal places
     mutate(across(c(SumOfSqs, MS, R2, F), round, 3))
   
@@ -172,8 +177,16 @@ pacPNtable = permCreateTable(pacPNresults, pacPairwisePN, order.pacField)
 argPNtable = permCreateTable(argPerm, argStnPairwise, order.arg)
 stPpermTable = permCreateTable(stPperm, stPStnPairwise, order.stP)
 aug2020permTable = permCreateTable(aug2020perm, pacAug2020StnPairwise, order.aug2020)
-jun2021permTable = permCreateTable(jun2021perm, NA, NA) # None were significant. No pairwise comparisons
+jun2021permTable = permCreateTable(jun2021perm, pacJun2021StnPairwise, NA) # None were significant. No pairwise comparisons
 sept2021permTable = permCreateTable(sept2021perm, pacSept2021StnPairwise, order.sept2021)
+nl21permTable = permCreateTable(nl21perm, NA, NA)
+
+# write.csv(regPNtable, "regPNtable.csv")
+# write.csv(marPNtable, "marPNtable.csv")
+# write.csv(gulfPNtable, "gulfPNtable.csv")
+# write.csv(pacPNtable, "pacPNtable.csv")
+
+
 
 # write.csv(argPNtable, "argPNtable.csv")
 # write.csv(stPpermTable, "stPpermTable.csv")
@@ -244,9 +257,9 @@ marBaySimperTable = rbind(
 
 # Gulf bay comparisons 
 gulfBaySimperTable = rbind(
-  simDfMaker(summary(simGulf)$`Cocagne_Malpeque`, simGulf$`Cocagne_Malpeque`, "Cocagne_Malpeque"),
-  simDfMaker(summary(simGulf)$`Cocagne_St. Peters`, simGulf$`Cocagne_St. Peters`, "Cocagne_St. Peters"), 
-  simDfMaker(summary(simGulf)$`Malpeque_St. Peters`, simGulf$`Malpeque_St. Peters`, "Malpeque_St. Peters")
+  #simDfMaker(summary(simGulf)$`Cocagne_Malpeque`, simGulf$`Cocagne_Malpeque`, "Cocagne_Malpeque"),
+  simDfMaker(summary(simGulf)$`Cocagne_St. Peters`, simGulf$`Cocagne_St. Peters`, "Cocagne_St. Peters") 
+  #simDfMaker(summary(simGulf)$`Malpeque_St. Peters`, simGulf$`Malpeque_St. Peters`, "Malpeque_St. Peters")
 )
 
 
@@ -260,6 +273,12 @@ pacFieldSimperTable = rbind(
   simDfMaker(summary(simPac)$`September 2021_June 2021`, simPac$`September 2021_June 2021`, "September 2021_June 2021")
 )
 
+write.csv(regSimperTable, "regSimperTable.csv")
+write.csv(marBaySimperTable, "marSimperTable.csv")
+write.csv(gulfBaySimperTable, "gulfSimperTable.csv")
+write.csv(pacFieldSimperTable, "pacSimperTable.csv")
+
+
 
 ### Bay comparisons
 
@@ -270,17 +289,23 @@ argyleSimperTableTide =
 
 # Argyle Tide
 argyleSimperTableStn = rbind(
-  simDfMaker(summary(simArgStn)$Central_North, simArgStn$Central_North, "Central_North"),
-  simDfMaker(summary(simArgStn)$Central_South, simArgStn$Central_South, "Central_South"),
-  simDfMaker(summary(simArgStn)$South_North, simArgStn$South_North, "South_North")
+  #simDfMaker(summary(simArgStn)$Central_North, simArgStn$Central_North, "Central_North"),
+  simDfMaker(summary(simArgStn)$Central_South, simArgStn$Central_South, "Central_South")
+  #simDfMaker(summary(simArgStn)$South_North, simArgStn$South_North, "South_North")
   )
 
 # St Peters
 stPSimperTableStn = rbind(
-  simDfMaker(summary(simStPStn)$Mid_Inner, simStPStn$Mid_Inner, "Mid_Inner"),
-  simDfMaker(summary(simStPStn)$Outer_Inner, simStPStn$Outer_Inner, "Outer_Inner"),
+  #simDfMaker(summary(simStPStn)$Mid_Inner, simStPStn$Mid_Inner, "Mid_Inner"),
+  #simDfMaker(summary(simStPStn)$Outer_Inner, simStPStn$Outer_Inner, "Outer_Inner"),
   simDfMaker(summary(simStPStn)$Outer_Mid, simStPStn$Outer_Mid, "Outer_Mid")
 )
+
+# Southeast Arm Sept 2021
+nl21SimperTableStn = rbind(
+  simDfMaker(summary(simnl21Stn)$`Outer_Mid-B`, simnl21Stn$`Outer_Mid-B`, "Outer_Mid-B")
+)
+
 
 # Pacific Aug 2020
 aug2020SimperTableStn = rbind(
@@ -289,18 +314,20 @@ aug2020SimperTableStn = rbind(
   simDfMaker(summary(simAug2020Stn)$Outer_Mid, simAug2020Stn$Outer_Mid, "Outer_Mid") 
 )
 
-# Pacific Sept 2021
-sept2021SimperTableStn = rbind(
-  simDfMaker(summary(simSept2021Stn)$Inner_Mid, simSept2021Stn$Inner_Mid, "Inner_Mid"),
-  simDfMaker(summary(simSept2021Stn)$Outer_Inner, simSept2021Stn$Outer_Inner, "Outer_Inner"),
-  simDfMaker(summary(simSept2021Stn)$Outer_Mid, simSept2021Stn$Outer_Mid, "Outer_Mid") 
+# Pacific June 2021
+jun2021SimperTableStn = rbind(
+  simDfMaker(summary(simJun2021Stn)$Inner_Mid, simAug2020Stn$Mid_Inner, "Inner_Mid")
+  #simDfMaker(summary(simJun2021Stn)$Outer_Inner, simAug2020Stn$Outer_Inner, "Outer_Inner"),
+  #simDfMaker(summary(simJun2021Stn)$Outer_Mid, simAug2020Stn$Outer_Mid, "Outer_Mid") 
 )
 
-# write.csv(argyleSimperTableTide, "argyleSimperTableTide.csv")
-# write.csv(argyleSimperTableStn, "argyleSimperTableStn.csv")
-# write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
-# write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
-# write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
+
+write.csv(argyleSimperTableTide, "argyleSimperTableTide.csv")
+write.csv(argyleSimperTableStn, "argyleSimperTableStn.csv")
+write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
+write.csv(nl21SimperTableStn, "nl21SimperTableStn.csv")
+write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
+write.csv(jun2021SimperTableStn, "jun2021SimperTableStn.csv")
 # write.csv(sept2021SimperTableStn, "sept2021SimperTableStn.csv")
 
 
