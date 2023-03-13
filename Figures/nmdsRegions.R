@@ -349,7 +349,7 @@ nmdsPrep = function(mergeData, bayColours, breakVals) {
   # For Pacific, they only sampled one bay (Lemmens) but had multiple field seasons that will be displayed instead
   legendTitle = ifelse(mergeData$region[1] == "Pacific", # only need to check first entry
                               "Field Season", 
-                              "Bay")
+                              "Site")
   
   # Get centroid of each bay (facetFactor) to be plotted on NMDS as lines
   centFacet = aggregate(cbind(NMDS1, NMDS2)~facetFactor, data =ordCoords, FUN = mean) # centroid of the regions
@@ -397,6 +397,11 @@ gulfNMDS = nmdsPrep(gulf, gulfColours, waiver())
 # I actually don't want Newfoundland data to be displayed this way due to the sampling design.
 # NMDS ordinations are instead shown below.
 # nlNMDS = nmdsPrep(nlMerge, nlColours, waiver())
+
+# Remember to make sure the graph you want is in the plotting window before saving
+# ggsave("test.png", width = 6.80, height = 3.98, units = "in", dpi = 300)
+
+
 
 # This works better than grid.arrange! It aligns all the plots with unequal legends
 # plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
