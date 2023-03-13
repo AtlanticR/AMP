@@ -99,6 +99,7 @@ adonis2(vegdist(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp. (civ
 ## PAIRWISE PERMANOVA
 # set seed to get reproducible p-values
 # Both tide and station were significant, so do pairwise comparisons for both
+set.seed(13)
 argTidePairwise = pairwise.adonis2(vegdist(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp. (civ-vi)"):ncol(argMinusMR)]))~as.factor(tidePhase), data = argMinusMR, perm=9999, set.seed(13))
 argStnPairwise = pairwise.adonis2(vegdist(sqrt(argMinusMR[,which(colnames(argMinusMR)== "Acartia spp. (civ-vi)"):ncol(argMinusMR)]))~as.factor(myLabel), data = argMinusMR, perm=9999, set.seed(13))
 
@@ -289,15 +290,15 @@ ggplot(disAug20df, aes(x = group, y = distances), fill = "white")+
         strip.text.x = element_text(size = 13),
         legend.position = "none")
 
-
-
 ## PERMANOVA
 set.seed(13)
 jun2021perm = adonis2(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp. (civ-vi)"):ncol(pacJun2021)])~tidePhase*myLabel, data = pacJun2021, method = "bray", permutations = 9999)
 
-# UPDATE: 
-# If I do post-hoc pairwise tests, outer vs mid is very slightly significant (p = 0.0483). But the main permanova above is not significant.
 pacJun2021StnPairwise = pairwise.adonis2(vegdist(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp. (civ-vi)"):ncol(pacJun2021)]))~as.factor(myLabel), data = pacJun2021, perm=9999, set.seed(13))
+
+## SIMPER
+simJun2021Stn = simper(sqrt(pacJun2021[,which(colnames(pacJun2021)== "Acartia spp. (civ-vi)"):ncol(pacJun2021)]), 
+                       group=pacJun2021$myLabel, permutations = 9999)
 
 ################################################################################
 ### September 2021
