@@ -274,10 +274,10 @@ set.seed(13)
 jun2021StnDispResults = permutest(jun2021StnDisp, pairwise = T, permutations = 9999)
 
 # Extract dispersion info (distances to centroid for each group) and turn it into a dataframe for ggplot
-disAug20df = data.frame(group = jun2021TideDisp$group, distances = jun2021TideDisp$distances, type = "Tide") %>%
+disJun21df = data.frame(group = jun2021TideDisp$group, distances = jun2021TideDisp$distances, type = "Tide") %>%
   rbind(data.frame(group = jun2021StnDisp$group, distances = jun2021StnDisp$distances, type = "Station"))
 
-ggplot(disAug20df, aes(x = group, y = distances), fill = "white")+
+ggplot(disJun21df, aes(x = group, y = distances), fill = "white")+
   facet_wrap(.~type, scales = "free")+
   geom_boxplot(col = "black", outlier.shape = NA)+
   geom_jitter(width = 0.2)+
