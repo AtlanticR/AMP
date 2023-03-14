@@ -11,6 +11,10 @@ source("DataProcessing/zooplanktonCounts.R")
 devtools::install_github("teunbrand/ggh4x")
 library("ggh4x")
 
+# Don't want values in scientific notation
+options(scipen=999)
+
+
 ################################################################################
 ## Function to create stacked bar charts and relative abundance charts
 # Takes the count data for each bay and returns:
@@ -31,7 +35,8 @@ stackedBarChart = function(bayData, plotTitle){
     summarize(countPerClass = sum(abund)) %>%
     mutate(rank = rank(-countPerClass),
            # Keep 5 most abundant classes, make the rest "Other"
-           classNew = ifelse(rank <=7, class, "Other"))
+           classNew = ifelse(rank <=7, class, "Other")) %>%
+    mutate(relAbund = countPerClass/sum(countPerClass)) # if i want the relative abundance
 
   # Add this these new classes as a column in the original dataframe
   bayPlotDf = bayData %>%
@@ -81,7 +86,7 @@ stackedBarChart = function(bayData, plotTitle){
     )+
     guides(fill=guide_legend(ncol=2))
   
-  return(relGGPlot)
+  return(bayOther)
   
 }
 
@@ -181,7 +186,14 @@ ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
   )+
   guides(fill=guide_legend(ncol=2)) # Break the legend into 2 columns
 
+###############################################################################
 
+# Find the relative abundance of each taxa PER SAMPLE (helpful for tech report)
+test = gulf %>% subset(facetFactor == "St. Peters") %>%
+  # Want counts per taxa (class) for the whole bay, not by tow
+  group_by(sampleCode, class) %>%
+  summarize(countPerClass = sum(abund)) %>%
+  mutate(relAbund = countPerClass/sum(countPerClass)*100)
 
 
 
