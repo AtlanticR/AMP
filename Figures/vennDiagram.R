@@ -163,4 +163,4 @@ ggarrange(marVennPlot, gulfVennPlot, pacVennPlot)
 # This will stop any annoying issues happening with font sizes 
 # Always save at 300 dpi for journal-quality resolution
 # Example:
-# ggsave("test.png", width = 10.55, height = 13.33, units = "in", dpi = 100)
+# ggsave("test.png", width = 10.55, height = 13.33, units = "in", dpi = 300)
