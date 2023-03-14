@@ -24,7 +24,8 @@ breakupBayBay = function(regionData, bayName) {
   regionData %>%
     pivot_wider(names_from = class, values_from = abund) %>%
     mutate_all(~replace(., is.na(.), 0)) %>%
-    subset(facetFactor == bayName)
+    subset(facetFactor == bayName) %>%
+    mutate(waterVolAnalyzed = (waterVolume * PercZooIdentified * PercSampleCleaned)/4)
 }
 
 
@@ -65,4 +66,5 @@ pacSept2021 = breakupBayBay(pac, "September 2021")
 
 ## NEWFOUNDLAND
 # There's only one bay and time period (so far) but it still needs to have the layout adjusted
+seArm2020 = breakupBayBay(nl, "Sept 2020")
 seArm2021 = breakupBayBay(nl, "Oct 2021")
