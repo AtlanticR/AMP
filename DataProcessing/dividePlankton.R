@@ -183,21 +183,20 @@ zoo_distribute = cop_distribute %>%
   ungroup() %>%
   filter(class != "Zooplankton (unid)") %>% # Now get rid of it 
   # Remove epibenthic taxa. These should not be part of the analysis
-  # For the following, I have marked in the taxa sheet to "Remove" them:
-  # Caprellidae
-  # Cyclopoida_epibenthic_Civ-vi from Maritimes 2021
-  # Harpacticoida
+  
+  # Make a few  adjustments to the epibenthic taxa
+  # Caprellidae: Renamed to Amphipoda-epibenthic (in the taxa excel sheet)
+  # Cyclopoida_epibenthic_Civ-vi from Maritimes 2021: renamed to Cyclopoida- epibenthic in the taxa excel sheet
+  # Harpacticoida: renamed to Harpacticoida- epibenthic in the taxa Excel sheet
   # For the next two, I knew they were benthic from looking at the taxa list prepared by the taxonomists (in the "Data & Classes" tab of the Flowcam spreadsheets)
   # Amphipoda from Gulf 2020 (from taxa list) and
   # Isopoda Gulf 2020
-  filter(!(class ==  "Amphipoda" & region == "Gulf" & yearStart == 2020)) %>%
-  filter(!(class == "Isopoda" & region == "Gulf" & yearStart == 2020))
+  mutate(class = ifelse(class ==  "Amphipoda" & region == "Gulf" & yearStart == 2020, "Amphipoda- epibenthic", class)) %>%
+  mutate(class = ifelse(class == "Isopoda (larvae)" & region == "Gulf" & yearStart == 2020, "Isopoda- epibenthic", class))
 
 # All of this added a lot of extra columns. I need to remove these. 
 rem.cols = c("isCopepod", "copepodType", "relAbundCal", "relAbundCycl", "relAbundCop", "relAbundZoo", "abund", "calan_abund", "cycl_abund", "copep_abund", "zooUnid_abund",
              "abundPlusCal", "abundPlusCycl", "abundPlusCop")
-
-
 
 mar = zoo_distribute %>%
   select(-all_of(rem.cols)) %>%
@@ -289,7 +288,7 @@ nmdsBay = function(regionData, stationCol) {
         # Low tides are from July, Mid-Rising are from August
         geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= ifelse(facetFactor == "Cocagne" & tidePhase == "Low", "Jul",
                                                                               ifelse(facetFactor == "Cocagne" & tidePhase == "Mid-Rising", "Aug", ""))), colour = "gray30")+ # Use pch=21 to get black outline circles
-        # geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= sampleCode), colour = "gray30")+ # Use this to check my legends in nmdsBaysWithLegend.R are correct
+         geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= sampleCode), colour = "gray30")+ # Use this to check my legends in nmdsBaysWithLegend.R are correct
          geom_text_repel(data = ordCoords, aes(x=NMDS1, y=NMDS2, label= myLabel), colour = "gray30")+
         # adding "breaks" will make sure only the tidePhases actually present in each plot will show up
         # sorting them will make sure they display alphabetically/consistently between each plot
@@ -353,11 +352,11 @@ pac2 %>%
 #   filter(monthStart == 10 & yearStart == 2021)
 # 
 # 
-# nl3 = nl %>%
-#   filter(monthStart == 09 & yearStart == 2020)
+nl3 = nl %>%
+   filter(monthStart == 09 & yearStart == 2020)
 # 
 # 
-# nlNMDSbays = nmdsBay(nl2, stationColNL)
+nlNMDSbays = nmdsBay(nl3, stationColNL)
 # 
 # nlNMDSbays = as.grob(nlNMDSbays)
 # 
