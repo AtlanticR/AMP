@@ -57,7 +57,7 @@ library("iNEXT.4steps")
 # I will then sum incidences across ALL TOWS. e.g., if Acartia was present in 14 of the 15 tows, its incidence frequency is 14
 
 
-inextPrep = function(bayData, colourScheme, plotLetter){
+inextPrep = function(bayData, avTowVol, colourScheme, plotLetter){
 
 # First, just extract only the taxa info:
 # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
@@ -75,22 +75,26 @@ baySums = as.vector(colSums(bayTaxa))
 baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
 
 # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
-bay.inext = iNEXT(baySumsList, q = c(0), datatype = "incidence_freq")
+bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
 
 # Plot the graph of diversity vs sampling units
-bay.gg = ggiNEXT(bay.inext)+
+bay.gg = ggiNEXT(bay.inext, facet.var = "Order.q")+
     scale_colour_manual(values=colourScheme) +
     scale_fill_manual(values=colourScheme)+
+    scale_x_continuous(sec.axis = sec_axis(~.*avTowVol, name = bquote(paste("Cumulative water volume ",(m^-3)))))+
     xlab("Number of zooplankton tows")+
     ylab("Taxa diversity")+
     ggtitle(plotLetter)+
-    theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
+    theme_bw(base_size = 14)+ # cool trick so I don't have to adjust the size of everything manually
     theme(
-      axis.title.x = element_blank(),
+     # axis.title = element_blank(),
+      axis.title = element_text(size = 11),
+      axis.text = element_text(size = 9),
       legend.position = "none",
-      plot.margin=unit(c(0.1, 1, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
-      plot.title = element_text(size = 15),
-      plot.title.position = "plot")
+      plot.margin=unit(c(0.1, 0.5, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
+      plot.title = element_text(size = 11.5),
+      plot.title.position = "plot",
+      strip.text.x = element_text(size = 8))
 
 # Extract the asymptotic diversity estimates
 asy.df = data.frame(bay.inext$AsyEst) %>%
@@ -107,50 +111,67 @@ return(list(bay.gg, asy.df, baySumsList, asy.df))
 
 }
 
+
 # Maritimes
-argInext = inextPrep(argyle, marColours[[1]], "(A) Argyle")
-countryInext = inextPrep(country, marColours[[2]], "(B) Country Harbour")
-soberInext = inextPrep(sober, marColours[[3]], "(C) Sober Island")
-whiteheadInext = inextPrep(whitehead, marColours[[4]], "(D) Whitehead")
+argInext = inextPrep(argyle, mean(argyle$waterVolAnalyzed), marColours[[1]], "(A) Argyle")
+countryInext = inextPrep(country, mean(country$waterVolAnalyzed), marColours[[2]], "(B) Country Harbour")
+soberInext = inextPrep(sober, mean(sober$waterVolAnalyzed), marColours[[3]], "(C) Sober Island")
+whiteheadInext = inextPrep(whitehead, mean(whitehead$waterVolAnalyzed), marColours[[4]], "(D) Whitehead")
 
 # Plots are stored in the first list element
-plot_grid(argInext[[1]], countryInext[[1]], soberInext[[1]], whiteheadInext[[1]], align = "v", ncol = 1)
+plot_grid(argInext[[1]], countryInext[[1]], align = "v", ncol = 1)
+plot_grid(soberInext[[1]], whiteheadInext[[1]], align = "v", ncol = 1)
+
+# View each one then save it
+# ggsave("axisLabels.png", width = 6.67, height = 4.31, units = "in", dpi = 300)
+
 # Get the dataframe of asymptotic estimator results
 marInextResults = bind_rows(argInext[[2]], countryInext[[2]], soberInext[[2]], whiteheadInext[[2]])
-
-plot_grid(inextPrep(whitehead, marColours[[4]], "Whitehead")[[1]], inextPrep(stPeters, gulfColours[[3]], "St. Peters")[[1]], ncol = 1)
 
 
 
 # Gulf
-cocagneInext = inextPrep(cocagne, gulfColours[[1]], "(A) Cocagne")
-malpequeInext = inextPrep(malpeque, gulfColours[[2]], "(B) Malpeque")
-stPetersInext = inextPrep(stPeters, gulfColours[[3]], "(C) St. Peters")
+cocagneInext = inextPrep(cocagne, mean(cocagne$waterVolAnalyzed), gulfColours[[1]], "(A) Cocagne")
+malpequeInext = inextPrep(malpeque, mean(malpeque$waterVolAnalyzed), gulfColours[[2]], "(B) Malpeque")
+stPetersInext = inextPrep(stPeters, mean(stPeters$waterVolAnalyzed), gulfColours[[3]], "(C) St. Peters")
 
 # Add an extra plot of St. Peters so all plots in all regions are the same size
-plot_grid(cocagneInext[[1]], malpequeInext[[1]], stPetersInext[[1]], stPetersInext[[1]], align = "v", ncol = 1)
+plot_grid(cocagneInext[[1]], malpequeInext[[1]], align = "v", ncol = 1)
+plot_grid(stPetersInext[[1]], malpequeInext[[1]], align = "v", ncol = 1)
+# ggsave("gulf2.png", width = 6.67, height = 4.31, units = "in", dpi = 300)
+
 gulfInextResults = bind_rows(cocagneInext[[2]], malpequeInext[[2]], stPetersInext[[2]])
 
 
 # Pacific
-pacAug2020Inext = inextPrep(pacAug2020, pacColours[[1]], "(A) August 2020")
-#pacMar2021Inext = inextPrep(pacMar2021, pacColours[[2]], "(B) March 2021") # not enough data
-pacJun2021Inext = inextPrep(pacJun2021, pacColours[[3]], "(C) June 2021")
-pacSept2021Inext = inextPrep(pacSept2021, pacColours[[4]], "(D) September 2021")
+pacAug2020Inext = inextPrep(pacAug2020, mean(pacAug2020$waterVolAnalyzed), pacColours[[1]], "(A) August 2020")
+pacJun2021Inext = inextPrep(pacJun2021, mean(pacJun2021$waterVolAnalyzed), pacColours[[3]], "(C) June 2021")
+pacSept2021Inext = inextPrep(pacSept2021, mean(pacSept2021$waterVolAnalyzed), pacColours[[4]], "(D) September 2021")
 
 # For now, add one extra plot so all the graphs look the same for each region
-plot_grid(pacAug2020Inext[[1]], pacJun2021Inext[[1]], pacSept2021Inext[[1]], align = "v", ncol = 1)
+plot_grid(pacAug2020Inext[[1]], pacJun2021Inext[[1]], align = "v", ncol = 1)
+plot_grid(pacJun2021Inext[[1]], pacSept2021Inext[[1]], align = "v", ncol = 1)
+
+# ggsave("pac2.png", width = 6.67, height = 4.31, units = "in", dpi = 300)
+
+
 pacInextResults = bind_rows(pacAug2020Inext[[2]], pacJun2021Inext[[2]], pacSept2021Inext[[2]])
 
 # Newfoundland
-seArm2020Inext = inextPrep(seArm2020, nlColours[[1]], "(A) Southeast Arm")
-plot_grid(seArm2020Inext[[1]], seArm2020Inext[[1]], seArm2020Inext[[1]], seArm2020Inext[[1]], align = "v", ncol = 1)
-seInextResults = seArm2020Inext[[2]]
+seArm2020Inext = inextPrep(seArm2020, mean(seArm2020$waterVolAnalyzed), nlColours[[1]], "(A) September 2020")
+seArm2021Inext = inextPrep(seArm2021, mean(seArm2021$waterVolAnalyzed), "dark blue", "(B) October 2021")
 
-# write.csv(marInextResults, "marInextResults.csv")
-# write.csv(gulfInextResults, "gulfInextResults.csv")
-# write.csv(pacInextResults, "pacInextResults.csv")
-# write.csv(seInextResults, "seInextResults.csv")
+nlInextResults = bind_rows(seArm2020Inext[[2]], seArm2021Inext[[2]])
+
+
+plot_grid(seArm2020Inext[[1]], seArm2021Inext[[1]], align = "v", ncol = 1)
+# ggsave("nl.png", width = 6.67, height = 4.31, units = "in", dpi = 300)
+
+
+write.csv(marInextResults, "marInextResults.csv")
+write.csv(gulfInextResults, "gulfInextResults.csv")
+write.csv(pacInextResults, "pacInextResults.csv")
+write.csv(nlInextResults, "nlInextResults.csv")
 
 # Argyle
 argInext[[4]]$Estimator[1] # asymptotic diversity ie Chao2
