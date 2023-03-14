@@ -160,6 +160,7 @@ order.pacField = c("September 2021_vs_August 2020", "August 2020_vs_June 2021", 
 order.arg = c("Central_vs_North", "Central_vs_South", "South_vs_North")
 order.stP = c("Mid_vs_Inner", "Outer_vs_Inner", "Outer_vs_Mid")
 order.aug2020 = c("Mid_vs_Inner", "Outer_vs_Inner", "Outer_vs_Mid")
+order.jun2021 = c("Inner_vs_Mid", "Outer_vs_Inner", "Outer_vs_Mid")
 order.sept2021 = c("Inner_vs_Mid", "Outer_vs_Inner", "Outer_vs_Mid")
 
 # Make PERMANOVA tables to be exported that combine adonis2 and pairwise.adonis2 results
@@ -177,7 +178,7 @@ pacPNtable = permCreateTable(pacPNresults, pacPairwisePN, order.pacField)
 argPNtable = permCreateTable(argPerm, argStnPairwise, order.arg)
 stPpermTable = permCreateTable(stPperm, stPStnPairwise, order.stP)
 aug2020permTable = permCreateTable(aug2020perm, pacAug2020StnPairwise, order.aug2020)
-jun2021permTable = permCreateTable(jun2021perm, pacJun2021StnPairwise, NA) # None were significant. No pairwise comparisons
+jun2021permTable = permCreateTable(jun2021perm, pacJun2021StnPairwise, order.jun2021) 
 sept2021permTable = permCreateTable(sept2021perm, pacSept2021StnPairwise, order.sept2021)
 nl21permTable = permCreateTable(nl21perm, NA, NA)
 
@@ -273,10 +274,10 @@ pacFieldSimperTable = rbind(
   simDfMaker(summary(simPac)$`September 2021_June 2021`, simPac$`September 2021_June 2021`, "September 2021_June 2021")
 )
 
-write.csv(regSimperTable, "regSimperTable.csv")
-write.csv(marBaySimperTable, "marSimperTable.csv")
-write.csv(gulfBaySimperTable, "gulfSimperTable.csv")
-write.csv(pacFieldSimperTable, "pacSimperTable.csv")
+# write.csv(regSimperTable, "regSimperTable.csv")
+# write.csv(marBaySimperTable, "marSimperTable.csv")
+# write.csv(gulfBaySimperTable, "gulfSimperTable.csv")
+# write.csv(pacFieldSimperTable, "pacSimperTable.csv")
 
 
 
@@ -322,12 +323,12 @@ jun2021SimperTableStn = rbind(
 )
 
 
-write.csv(argyleSimperTableTide, "argyleSimperTableTide.csv")
-write.csv(argyleSimperTableStn, "argyleSimperTableStn.csv")
-write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
-write.csv(nl21SimperTableStn, "nl21SimperTableStn.csv")
-write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
-write.csv(jun2021SimperTableStn, "jun2021SimperTableStn.csv")
+# write.csv(argyleSimperTableTide, "argyleSimperTableTide.csv")
+# write.csv(argyleSimperTableStn, "argyleSimperTableStn.csv")
+# write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
+# write.csv(nl21SimperTableStn, "nl21SimperTableStn.csv")
+# write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
+# write.csv(jun2021SimperTableStn, "jun2021SimperTableStn.csv")
 # write.csv(sept2021SimperTableStn, "sept2021SimperTableStn.csv")
 
 
