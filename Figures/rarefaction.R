@@ -49,14 +49,14 @@ library("iNEXT.4steps")
 ###########################################################################################################################
 ### With the iNEXT package
 
-# For sample-based rarefaction (what I want to do!!!) data must be converted to presence/absence
+# For sample-based rarefaction (what I want to do) data must be converted to presence/absence
 
 # I am prepping my data as "incidence freqencies" which normally I would only do if I have >1 assemblage
 # This means that the data frame will be converted to presence/absence
 # I then sum all the presence/absence values for each species
 # I will then sum incidences across ALL TOWS. e.g., if Acartia was present in 14 of the 15 tows, its incidence frequency is 14
 
-
+# Create function to create graphs and return summary statistics for each bay
 inextPrep = function(bayData, avTowVol, colourScheme, plotLetter){
 
 # First, just extract only the taxa info:
@@ -112,7 +112,7 @@ return(list(bay.gg, asy.df, baySumsList, asy.df))
 }
 
 
-# Maritimes
+### Maritimes
 argInext = inextPrep(argyle, mean(argyle$waterVolAnalyzed), marColours[[1]], "(A) Argyle")
 countryInext = inextPrep(country, mean(country$waterVolAnalyzed), marColours[[2]], "(B) Country Harbour")
 soberInext = inextPrep(sober, mean(sober$waterVolAnalyzed), marColours[[3]], "(C) Sober Island")
@@ -130,7 +130,7 @@ marInextResults = bind_rows(argInext[[2]], countryInext[[2]], soberInext[[2]], w
 
 
 
-# Gulf
+### Gulf
 cocagneInext = inextPrep(cocagne, mean(cocagne$waterVolAnalyzed), gulfColours[[1]], "(A) Cocagne")
 malpequeInext = inextPrep(malpeque, mean(malpeque$waterVolAnalyzed), gulfColours[[2]], "(B) Malpeque")
 stPetersInext = inextPrep(stPeters, mean(stPeters$waterVolAnalyzed), gulfColours[[3]], "(C) St. Peters")
@@ -143,7 +143,7 @@ plot_grid(stPetersInext[[1]], malpequeInext[[1]], align = "v", ncol = 1)
 gulfInextResults = bind_rows(cocagneInext[[2]], malpequeInext[[2]], stPetersInext[[2]])
 
 
-# Pacific
+### Pacific
 pacAug2020Inext = inextPrep(pacAug2020, mean(pacAug2020$waterVolAnalyzed), pacColours[[1]], "(A) August 2020")
 pacJun2021Inext = inextPrep(pacJun2021, mean(pacJun2021$waterVolAnalyzed), pacColours[[3]], "(C) June 2021")
 pacSept2021Inext = inextPrep(pacSept2021, mean(pacSept2021$waterVolAnalyzed), pacColours[[4]], "(D) September 2021")
@@ -154,10 +154,9 @@ plot_grid(pacJun2021Inext[[1]], pacSept2021Inext[[1]], align = "v", ncol = 1)
 
 # ggsave("pac2.png", width = 6.67, height = 4.31, units = "in", dpi = 300)
 
-
 pacInextResults = bind_rows(pacAug2020Inext[[2]], pacJun2021Inext[[2]], pacSept2021Inext[[2]])
 
-# Newfoundland
+### Newfoundland
 seArm2020Inext = inextPrep(seArm2020, mean(seArm2020$waterVolAnalyzed), nlColours[[1]], "(A) September 2020")
 seArm2021Inext = inextPrep(seArm2021, mean(seArm2021$waterVolAnalyzed), "dark blue", "(B) October 2021")
 
@@ -168,14 +167,18 @@ plot_grid(seArm2020Inext[[1]], seArm2021Inext[[1]], align = "v", ncol = 1)
 # ggsave("nl.png", width = 6.67, height = 4.31, units = "in", dpi = 300)
 
 
-write.csv(marInextResults, "marInextResults.csv")
-write.csv(gulfInextResults, "gulfInextResults.csv")
-write.csv(pacInextResults, "pacInextResults.csv")
-write.csv(nlInextResults, "nlInextResults.csv")
+# write.csv(marInextResults, "marInextResults.csv")
+# write.csv(gulfInextResults, "gulfInextResults.csv")
+# write.csv(pacInextResults, "pacInextResults.csv")
+# write.csv(nlInextResults, "nlInextResults.csv")
 
 # Argyle
 argInext[[4]]$Estimator[1] # asymptotic diversity ie Chao2
 argInext[[4]]$Estimator[1]* 0.95 # 95% of that
+argInext[[4]]$Estimator[1]* 0.9
+argInext[[4]]$Estimator[1]* 0.8
+estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq", level = 6)$qD
+
 estimateD(argInext[[3]], q = 0, datatype = "incidence_freq")$qD # does sampling 2x the # of samples hit the 95% mark?
 
 
@@ -237,6 +240,22 @@ estimateD(pacJun2021Inext[[3]], q = 0, datatype = "incidence_freq", level = 14)$
 pacSept2021Inext[[4]]$Estimator[1]
 pacSept2021Inext[[4]]$Estimator[1] * 0.95
 
+
+###########################################################################################################################
+
+# Calculate statistics for each bay regarding the water volume (to add to tables with rarefaction stats )
+# This is just a very quick way. Need to change each dataframe to get new results for each region
+volStats = nl %>%
+  pivot_wider(names_from = class, values_from = abund) %>%
+  mutate_all(~replace(., is.na(.), 0)) %>%
+  mutate(waterVolAnalyzed = (waterVolume * PercZooIdentified * PercSampleCleaned)/4) %>%
+  group_by(facetFactor) %>%
+  mutate(avWaterVolume = round(mean(waterVolume), 2),
+         sdWaterVolume = round(sd(waterVolume),2),
+         avAnalyzed = round(mean(PercZooIdentified * PercSampleCleaned)*100,2),
+         sdAnalyzed = round(sd(PercZooIdentified * PercSampleCleaned)*100,2)) %>%
+  select(facetFactor, avWaterVolume, sdWaterVolume, avAnalyzed, sdAnalyzed) %>%
+  unique()
 
 
 ###########################################################################################################################
@@ -415,3 +434,5 @@ estimateD(cocagneInext[[3]], q = 0, datatype = "incidence_freq")
 
 
 estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 1000)
+
+###########################################################################################################################
