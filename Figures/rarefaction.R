@@ -106,8 +106,22 @@ asy.df = data.frame(bay.inext$AsyEst) %>%
   mutate_if(is.numeric, round, digits = 2) %>%
   mutate(bay = bayData$facetFactor[1], .before = Diversity)
 
+# Calculate 80%, 90% and 95% of asymptotic estimator for richness only
+chao2_est = bay.inext$AsyEst$Estimator[1] # Get the asymptotic est for richness (the 1st of the 3 listed)
 
-return(list(bay.gg, asy.df, baySumsList, asy.df))
+# Get x, y values of richness information only
+richCoords = fortify(bay.inext) %>%
+  filter(Order.q == 0)
+
+n80 = richCoords$x[which.min(abs( richCoords$y - (chao2_est*0.8)))]
+n90 = richCoords$x[which.min(abs( richCoords$y - (chao2_est*0.9)))]
+n95 = richCoords$x[which.min(abs( richCoords$y - (chao2_est*0.95)))]
+
+
+
+print(c(chao2_est, n80, n90, n95))
+
+return(list(bay.gg, asy.df, baySumsList, asy.df, fortify(bay.inext)))
 
 }
 
@@ -127,7 +141,6 @@ plot_grid(soberInext[[1]], whiteheadInext[[1]], align = "v", ncol = 1)
 
 # Get the dataframe of asymptotic estimator results
 marInextResults = bind_rows(argInext[[2]], countryInext[[2]], soberInext[[2]], whiteheadInext[[2]])
-
 
 
 ### Gulf
@@ -172,14 +185,28 @@ plot_grid(seArm2020Inext[[1]], seArm2021Inext[[1]], align = "v", ncol = 1)
 # write.csv(pacInextResults, "pacInextResults.csv")
 # write.csv(nlInextResults, "nlInextResults.csv")
 
+###############################################################################
+# Estimate the number of samples it would take to obtain 95%, 90% and 80% of taxa
+# within a bay
+# There must be an easier way to do this, but I can't see one?
+
 # Argyle
 argInext[[4]]$Estimator[1] # asymptotic diversity ie Chao2
-argInext[[4]]$Estimator[1]* 0.95 # 95% of that
-argInext[[4]]$Estimator[1]* 0.9
-argInext[[4]]$Estimator[1]* 0.8
-estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq", level = 6)$qD
 
+# What's the diversity at 2x the sample size (up to extrapolation point)
+estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 30)$qD
+# Gives same answer as 
 estimateD(argInext[[3]], q = 0, datatype = "incidence_freq")$qD # does sampling 2x the # of samples hit the 95% mark?
+
+
+argInext[[4]]$Estimator[1]* 0.95 # 32.7465 i.e. >30
+argInext[[4]]$Estimator[1]* 0.9 # 31.023 i.e. >30
+targ = argInext[[4]]$Estimator[1]* 0.8 # 27.576
+
+# Figure out 80%
+estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 17)$qD # does sampling 2x the # of samples hit the 95% mark?
+
+
 
 
 # Country Harbour
@@ -204,6 +231,23 @@ estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq")$qD
 # Try and get close to 29.0605
 estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 6)$qD # 6 is closer
 estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 7)$qD
+
+data_list = c(argInext, countryInext, soberInext, whiteheadInext)
+
+for(i in seq_along(data_list)){
+  df = data_list[[i]][[5]] # x, y values are stored in the 5th element
+  chao2_est = data_list[[4]][i]$Estimator[1]
+  print(chao2_est)
+  
+  
+}
+
+
+test = argInext[[5]] %>%
+  filter(Order.q == 0)
+
+closest = test$x[which.min(abs(test$y - targ))]
+
 
 
 # Cocagne
@@ -435,4 +479,3 @@ estimateD(cocagneInext[[3]], q = 0, datatype = "incidence_freq")
 
 estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 1000)
 
-###########################################################################################################################
