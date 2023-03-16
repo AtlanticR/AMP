@@ -18,25 +18,26 @@
 
 ################################################################################
 
+options(scipen = 999)
+
+# These are the stats 
+waterVolStats = read.csv("../AMPDataFiles/rarefactionWaterVol.csv") %>%
+  select(-c("waterVolume"))
+
+
+
 ## Create a function to alter the data format
 breakupBayBay = function(regionData, bayName) {
+  
   # Change data with tows as rows, species as columns, counts as cells (with the metadata also as columns)
   regionData %>%
+    left_join(waterVolStats, by = "sampleCode") %>%
     pivot_wider(names_from = class, values_from = abund) %>%
     mutate_all(~replace(., is.na(.), 0)) %>%
     subset(facetFactor == bayName) %>%
     mutate(waterVolAnalyzed = (waterVolume * PercZooIdentified * PercSampleCleaned)/4)
 }
 
-
-## TEST: WHAT IF I NEED THEM FROM COUNTS????
-# breakupBayBay = function(regionData, bayName) {
-#   # Change data with tows as rows, species as columns, counts as cells (with the metadata also as columns)
-#   regionData %>%
-#     pivot_wider(names_from = class, values_from = count) %>%
-#     mutate_all(~replace(., is.na(.), 0)) %>%
-#     subset(facetFactor == bayName)
-# }
 
 ################################################################################
 ## Now run the function for each bay
