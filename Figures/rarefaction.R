@@ -30,6 +30,17 @@
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6550328/
 # https://onlinelibrary.wiley.com/doi/full/10.1111/fwb.13031
 
+# Here's a study that uses weights with the random method to account for differences in water volume:
+# https://onlinelibrary.wiley.com/doi/full/10.1002/edn3.74
+
+# See here for some good examples
+# https://royalsocietypublishing.org/doi/10.1098/rspb.2020.0248
+# Has extrapolations and asymptotes
+
+# https://www.neonscience.org/resources/learning-hub/tutorials/aquatic-diversity-algae
+
+
+
 
 ###########################################################################################################################
 # SETUP
@@ -59,69 +70,87 @@ library("iNEXT.4steps")
 # Create function to create graphs and return summary statistics for each bay
 inextPrep = function(bayData, avTowVol, colourScheme, plotLetter){
 
-# First, just extract only the taxa info:
-# Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
-bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp. (civ-vi)"): ncol(bayData)]
+  
+  # I do not want these higher-order taxa to be included
+  taxa_to_remove = c("Cnidaria (larvae)", "Copepoda (nauplii)", "Invertebrate (egg, trochophore larvae)")
+  
+  # Remove the taxa specified above
+  # However, I need to check if they actually exist in the dataframe, otherwise I'll get an error
+  if(any(spp_to_remove %in% colnames(bayData))){
+    # If they are present, remove them
+    bayData = bayData %>%
+      select(-taxa_to_remove[taxa_to_remove %in% colnames(bayData)])
+  }
+  
+  # Next, just extract only the taxa info:
+  # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
+  bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp. (civ-vi)"): ncol(bayData)]
 
-# Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
-bayTaxa[bayTaxa>0] = 1
+  # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
+  bayTaxa[bayTaxa>0] = 1
+  
+  # I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
+  # It never works!!! Instead, convert to incidence_freq lol
+  # Need to get incidence freqncies by summing the columns
+  baySums = as.vector(colSums(bayTaxa))
+  
+  # It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
+  baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
+  
+  # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
+  bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
+  
+  # Plot the graph of diversity vs sampling units
+  bay.gg = ggiNEXT(bay.inext, facet.var = "Order.q")+
+      scale_colour_manual(values=colourScheme) +
+      #geom_hline(yintercept=bay.inext$AsyEst$Estimator, linetype = "dashed")+
+      scale_fill_manual(values=colourScheme)+
+      scale_x_continuous(sec.axis = sec_axis(~.*avTowVol, name = bquote(paste("Cumulative water volume ",(m^-3)))))+
+      xlab("Number of samples")+
+      ylab("Taxa diversity")+
+      ggtitle(plotLetter)+
+      theme_bw(base_size = 14)+ # cool trick so I don't have to adjust the size of everything manually
+      theme(
+       axis.title = element_blank(),
+        #axis.title = element_text(size = 11),
+        axis.text = element_text(size = 9),
+        legend.position = "none",
+        plot.margin=unit(c(0.1, 0.5, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
+        plot.title = element_text(size = 11.5),
+        plot.title.position = "plot",
+        strip.text.x = element_text(size = 8))
+  
+  # Calculate 80%, 90% and 95% of asymptotic estimator for richness only
+  chao2_est = bay.inext$AsyEst$Estimator[1] # Get the asymptotic est for richness (the 1st of the 3 listed)
+  
+  # Get x, y values of richness information only
+  richCoords = fortify(bay.inext) %>%
+    filter(Order.q == 0)
+  
+  n80 = richCoords$x[which.min(abs(richCoords$y - (chao2_est*0.8)))]
+  n90 = richCoords$x[which.min(abs(richCoords$y - (chao2_est*0.9)))]
+  n95 = richCoords$x[which.min(abs(richCoords$y - (chao2_est*0.95)))]
+  
+  
+  # Extract the asymptotic diversity estimates
+  asy.df = data.frame(bay.inext$AsyEst) %>%
+    # Remove the Assemblage column
+    select(-c(Assemblage)) %>%
+    # Add a column with undetected species and put the column before the s.e. column
+    # Actually I don't want this anymore
+    # mutate(Undetected = Estimator-Observed, .before = s.e.) %>%
+    # Round numeric values to 2 decimal places
+    mutate_if(is.numeric, round, digits = 2) %>%
+    mutate(bay = bayData$facetFactor[1], .before = Diversity) %>%
+    mutate(Diversity = ifelse(Diversity == "Species richness", "Taxa richness", Diversity)) %>%
+    mutate(n80 = ifelse(Diversity == "Taxa richness", n80, ""), 
+           n90 = ifelse(Diversity == "Taxa richness", n90, ""),
+           n95 = ifelse(Diversity == "Taxa richness", n95, "")) %>%
+    select(-c("s.e.", "LCL", "UCL")) # I actually don't want these columns
+  
 
-# I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
-# It never works!!! Instead, convert to incidence_freq lol
-# Need to get incidence freqncies by summing the columns
-baySums = as.vector(colSums(bayTaxa))
 
-# It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
-baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
-
-# Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
-bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
-
-# Plot the graph of diversity vs sampling units
-bay.gg = ggiNEXT(bay.inext, facet.var = "Order.q")+
-    scale_colour_manual(values=colourScheme) +
-    scale_fill_manual(values=colourScheme)+
-    scale_x_continuous(sec.axis = sec_axis(~.*avTowVol, name = bquote(paste("Cumulative water volume ",(m^-3)))))+
-    xlab("Number of zooplankton tows")+
-    ylab("Taxa diversity")+
-    ggtitle(plotLetter)+
-    theme_bw(base_size = 14)+ # cool trick so I don't have to adjust the size of everything manually
-    theme(
-     # axis.title = element_blank(),
-      axis.title = element_text(size = 11),
-      axis.text = element_text(size = 9),
-      legend.position = "none",
-      plot.margin=unit(c(0.1, 0.5, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
-      plot.title = element_text(size = 11.5),
-      plot.title.position = "plot",
-      strip.text.x = element_text(size = 8))
-
-# Extract the asymptotic diversity estimates
-asy.df = data.frame(bay.inext$AsyEst) %>%
-  # Remove the Assemblage column
-  select(-c(Assemblage)) %>%
-  # Add a column with undetected species and put the column before the s.e. column
-  mutate(Undetected = Estimator-Observed, .before = s.e.) %>%
-  # Round numeric values to 2 decimal places
-  mutate_if(is.numeric, round, digits = 2) %>%
-  mutate(bay = bayData$facetFactor[1], .before = Diversity)
-
-# Calculate 80%, 90% and 95% of asymptotic estimator for richness only
-chao2_est = bay.inext$AsyEst$Estimator[1] # Get the asymptotic est for richness (the 1st of the 3 listed)
-
-# Get x, y values of richness information only
-richCoords = fortify(bay.inext) %>%
-  filter(Order.q == 0)
-
-n80 = richCoords$x[which.min(abs( richCoords$y - (chao2_est*0.8)))]
-n90 = richCoords$x[which.min(abs( richCoords$y - (chao2_est*0.9)))]
-n95 = richCoords$x[which.min(abs( richCoords$y - (chao2_est*0.95)))]
-
-
-
-print(c(chao2_est, n80, n90, n95))
-
-return(list(bay.gg, asy.df, baySumsList, asy.df, fortify(bay.inext)))
+return(list(bay.gg, asy.df, baySumsList, asy.df, fortify(bay.inext), bay.inext))
 
 }
 
@@ -137,6 +166,7 @@ plot_grid(argInext[[1]], countryInext[[1]], align = "v", ncol = 1)
 plot_grid(soberInext[[1]], whiteheadInext[[1]], align = "v", ncol = 1)
 
 # View each one then save it
+# ggsave("mar2.png", width = 6.67, height = 4.31, units = "in", dpi = 300)
 # ggsave("axisLabels.png", width = 6.67, height = 4.31, units = "in", dpi = 300)
 
 # Get the dataframe of asymptotic estimator results
@@ -187,8 +217,10 @@ plot_grid(seArm2020Inext[[1]], seArm2021Inext[[1]], align = "v", ncol = 1)
 
 ###############################################################################
 # Estimate the number of samples it would take to obtain 95%, 90% and 80% of taxa
-# within a bay
+# within a bay: the long way
 # There must be an easier way to do this, but I can't see one?
+# I figured it out! It's written into the function above
+# But I am keeping this as a reference just in case
 
 # Argyle
 argInext[[4]]$Estimator[1] # asymptotic diversity ie Chao2
@@ -198,91 +230,8 @@ estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 30)$qD
 # Gives same answer as 
 estimateD(argInext[[3]], q = 0, datatype = "incidence_freq")$qD # does sampling 2x the # of samples hit the 95% mark?
 
-
-argInext[[4]]$Estimator[1]* 0.95 # 32.7465 i.e. >30
-argInext[[4]]$Estimator[1]* 0.9 # 31.023 i.e. >30
-targ = argInext[[4]]$Estimator[1]* 0.8 # 27.576
-
 # Figure out 80%
 estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 17)$qD # does sampling 2x the # of samples hit the 95% mark?
-
-
-
-
-# Country Harbour
-countryInext[[4]]$Estimator[1]
-countryInext[[4]]$Estimator[1] * 0.95
-estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq")$qD
-
-# Try and get close to 34.16797
-estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq", level = 6)$qD
-estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq", level = 7)$qD
-
-# Sober Island
-soberInext[[4]]$Estimator[1]
-soberInext[[4]]$Estimator[1] * 0.95
-estimateD(countryInext[[3]], q = 0, datatype = "incidence_freq")$qD
-
-# Whitehead
-whiteheadInext[[4]]$Estimator[1]
-whiteheadInext[[4]]$Estimator[1] * 0.95
-estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq")$qD
-
-# Try and get close to 29.0605
-estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 6)$qD # 6 is closer
-estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 7)$qD
-
-data_list = c(argInext, countryInext, soberInext, whiteheadInext)
-
-for(i in seq_along(data_list)){
-  df = data_list[[i]][[5]] # x, y values are stored in the 5th element
-  chao2_est = data_list[[4]][i]$Estimator[1]
-  print(chao2_est)
-  
-  
-}
-
-
-test = argInext[[5]] %>%
-  filter(Order.q == 0)
-
-closest = test$x[which.min(abs(test$y - targ))]
-
-
-
-# Cocagne
-cocagneInext[[4]]$Estimator[1]
-cocagneInext[[4]]$Estimator[1] * 0.95
-estimateD(cocagneInext[[3]], q = 0, datatype = "incidence_freq")$qD
-
-# Malpeque
-malpequeInext[[4]]$Estimator[1]
-malpequeInext[[4]]$Estimator[1] * 0.95
-estimateD(malpequeInext[[3]], q = 0, datatype = "incidence_freq", level = 3)$qD
-
-# St Peters
-stPetersInext[[4]]$Estimator[1]
-stPetersInext[[4]]$Estimator[1] * 0.95
-estimateD(stPetersInext[[3]], q = 0, datatype = "incidence_freq")$qD
-
-# Get to 37.8575
-estimateD(stPetersInext[[3]], q = 0, datatype = "incidence_freq", level = 20)$qD
-estimateD(stPetersInext[[3]], q = 0, datatype = "incidence_freq", level = 21)$qD
-
-# Pacific Aug 2020
-pacAug2020Inext[[4]]$Estimator[1]
-pacAug2020Inext[[4]]$Estimator[1] * 0.95
-
-# Pacific Jun 2021
-pacJun2021Inext[[4]]$Estimator[1]
-pacJun2021Inext[[4]]$Estimator[1] * 0.95
-
-# Try to get to 39.349
-estimateD(pacJun2021Inext[[3]], q = 0, datatype = "incidence_freq", level = 14)$qD
-
-# Pacific Sept 2021
-pacSept2021Inext[[4]]$Estimator[1]
-pacSept2021Inext[[4]]$Estimator[1] * 0.95
 
 
 ###########################################################################################################################
