@@ -35,7 +35,22 @@ breakupBayBay = function(regionData, bayName) {
     pivot_wider(names_from = class, values_from = abund) %>%
     mutate_all(~replace(., is.na(.), 0)) %>%
     subset(facetFactor == bayName) %>%
-    mutate(waterVolAnalyzed = (waterVolume * PercZooIdentified * PercSampleCleaned)/4)
+    mutate(waterVolAnalyzed = (waterVolume * PercZooIdentified * PercSampleCleaned)/4) 
+    
+    
+    #### Comment this out unless I want to get statistics
+    # If I need to calculate water volume statistics per tow, uncomment this section 
+    # (and add  %>% to the last line of code above)
+
+    
+    # mutate(avWaterVolume = round(mean(waterVolume), 2), # Avg. water volume per tow
+    #        sdWaterVolume = round(sd(waterVolume),2),  # standard dev of water volume per tow
+    #        avAnalyzed = round(mean(PercZooIdentified * PercSampleCleaned)*100,2),
+    #        sdAnalyzed = round(sd(PercZooIdentified * PercSampleCleaned)*100,2)) %>%
+    # select(facetFactor, avWaterVolume, sdWaterVolume, avAnalyzed, sdAnalyzed) %>%
+    # unique()
+    # 
+    # 
 }
 
 
@@ -69,3 +84,4 @@ pacSept2021 = breakupBayBay(pac, "September 2021")
 # There's only one bay and time period (so far) but it still needs to have the layout adjusted
 seArm2020 = breakupBayBay(nl, "Sept 2020")
 seArm2021 = breakupBayBay(nl, "Oct 2021")
+
