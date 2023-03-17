@@ -111,7 +111,7 @@ inextPrep = function(bayData, avTowVol, colourScheme, plotLetter){
       ggtitle(plotLetter)+
       theme_bw(base_size = 14)+ # cool trick so I don't have to adjust the size of everything manually
       theme(
-       axis.title = element_blank(),
+        axis.title = element_blank(),
         #axis.title = element_text(size = 11),
         axis.text = element_text(size = 9),
         legend.position = "none",
@@ -188,8 +188,8 @@ gulfInextResults = bind_rows(cocagneInext[[2]], malpequeInext[[2]], stPetersInex
 
 ### Pacific
 pacAug2020Inext = inextPrep(pacAug2020, mean(pacAug2020$waterVolAnalyzed), pacColours[[1]], "(A) August 2020")
-pacJun2021Inext = inextPrep(pacJun2021, mean(pacJun2021$waterVolAnalyzed), pacColours[[3]], "(C) June 2021")
-pacSept2021Inext = inextPrep(pacSept2021, mean(pacSept2021$waterVolAnalyzed), pacColours[[4]], "(D) September 2021")
+pacJun2021Inext = inextPrep(pacJun2021, mean(pacJun2021$waterVolAnalyzed), pacColours[[3]], "(B) June 2021")
+pacSept2021Inext = inextPrep(pacSept2021, mean(pacSept2021$waterVolAnalyzed), pacColours[[4]], "(C) September 2021")
 
 # For now, add one extra plot so all the graphs look the same for each region
 plot_grid(pacAug2020Inext[[1]], pacJun2021Inext[[1]], align = "v", ncol = 1)
@@ -215,7 +215,15 @@ plot_grid(seArm2020Inext[[1]], seArm2021Inext[[1]], align = "v", ncol = 1)
 # write.csv(pacInextResults, "pacInextResults.csv")
 # write.csv(nlInextResults, "nlInextResults.csv")
 
+
 ###############################################################################
+###############################################################################
+###############################################################################
+
+#### Everything below this point is just drafts of things, and me testing stuff
+
+
+
 # Estimate the number of samples it would take to obtain 95%, 90% and 80% of taxa
 # within a bay: the long way
 # There must be an easier way to do this, but I can't see one?
@@ -232,23 +240,6 @@ estimateD(argInext[[3]], q = 0, datatype = "incidence_freq")$qD # does sampling 
 
 # Figure out 80%
 estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 17)$qD # does sampling 2x the # of samples hit the 95% mark?
-
-
-###########################################################################################################################
-
-# Calculate statistics for each bay regarding the water volume (to add to tables with rarefaction stats )
-# This is just a very quick way. Need to change each dataframe to get new results for each region
-volStats = nl %>%
-  pivot_wider(names_from = class, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0)) %>%
-  mutate(waterVolAnalyzed = (waterVolume * PercZooIdentified * PercSampleCleaned)/4) %>%
-  group_by(facetFactor) %>%
-  mutate(avWaterVolume = round(mean(waterVolume), 2),
-         sdWaterVolume = round(sd(waterVolume),2),
-         avAnalyzed = round(mean(PercZooIdentified * PercSampleCleaned)*100,2),
-         sdAnalyzed = round(sd(PercZooIdentified * PercSampleCleaned)*100,2)) %>%
-  select(facetFactor, avWaterVolume, sdWaterVolume, avAnalyzed, sdAnalyzed) %>%
-  unique()
 
 
 ###########################################################################################################################
