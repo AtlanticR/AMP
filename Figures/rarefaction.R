@@ -98,7 +98,7 @@ inextPrep = function(bayData, avTowVol, colourScheme, plotLetter){
   baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
   
   # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
-  bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
+  bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq", endpoint = 100)
   
   # Plot the graph of diversity vs sampling units
   bay.gg = ggiNEXT(bay.inext, facet.var = "Order.q")+
@@ -240,6 +240,10 @@ estimateD(argInext[[3]], q = 0, datatype = "incidence_freq")$qD # does sampling 
 
 # Figure out 80%
 estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 17)$qD # does sampling 2x the # of samples hit the 95% mark?
+
+
+pacSept2021Inext[[4]]$Estimator[1]*0.95
+estimateD(pacSept2021Inext[[3]], q = 0, datatype = "incidence_freq", level = 58)$qD
 
 
 ###########################################################################################################################
@@ -419,3 +423,5 @@ estimateD(cocagneInext[[3]], q = 0, datatype = "incidence_freq")
 
 estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 1000)
 
+factorial(8)
+(factorial(4))^2
