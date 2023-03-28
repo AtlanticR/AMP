@@ -353,7 +353,7 @@ pac2 %>%
 # 
 # 
 nl3 = nl %>%
-   filter(monthStart == 09 & yearStart == 2020)
+   filter(monthStart == 10 & yearStart == 2021)
 # 
 # 
 nlNMDSbays = nmdsBay(nl3, stationColNL)
@@ -390,8 +390,6 @@ pacNMDSbays = nmdsBay(pac2, stationCol)
 # # 
 # # 
 # 
-
-
 
 
 
