@@ -71,8 +71,8 @@ stackedBarChart = function(bayData, plotTitle){
     #theme_minimal(base_family = "Roboto Condensed") +
     theme_bw()+
     theme(
-      #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
-      axis.text.x = element_blank(),
+      axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
+      #axis.text.x = element_blank(),
       axis.text.y = element_text(size = 13),
       axis.ticks.x = element_blank(),
       axis.title = element_text(size = 13),
@@ -86,7 +86,7 @@ stackedBarChart = function(bayData, plotTitle){
     )+
     guides(fill=guide_legend(ncol=2))
   
-  return(bayOther)
+  return(relGGPlot)
   
 }
 
