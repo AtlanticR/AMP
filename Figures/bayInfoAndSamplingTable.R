@@ -93,6 +93,6 @@ bayTable = allRegionsWide %>%
 
 # write.csv(bayTable, "bayTable.csv")
   
+#### OK I actually want to get a max/min depth for each site instead
 
-
-
+min(pac$depthWaterM)
