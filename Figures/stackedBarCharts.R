@@ -71,8 +71,8 @@ stackedBarChart = function(bayData, plotTitle){
     #theme_minimal(base_family = "Roboto Condensed") +
     theme_bw()+
     theme(
-      axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
-      #axis.text.x = element_blank(),
+      #axis.text.x = element_text(angle = 90, size = 8), # use this if want station labels
+      axis.text.x = element_blank(),
       axis.text.y = element_text(size = 13),
       axis.ticks.x = element_blank(),
       axis.title = element_text(size = 13),
@@ -112,6 +112,8 @@ stPetersProcess = stackedBarChart(gulf %>% subset(facetFactor=="St. Peters"), "(
 
 # Will add dummy grobs to fill the extra space. Want all plots for all regions to be approx. same size
 ggarrange(cocagneProcess, cocagneProcess, malpequeProcess, stPetersProcess, ncol = 1)
+
+ggsave("test.png", width = 10.11, height = 10.56, units = "in", dpi = 300)
 
 # Newfoundland (only one bay)
 seArmSept2020 = stackedBarChart(nl %>% subset(facetFactor == "Sept 2020"), "Sept 2020")
