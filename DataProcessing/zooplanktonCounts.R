@@ -471,7 +471,9 @@ gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
          region = "Gulf",
          ocean = "Atlantic") %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters")) %>%
-  rename(class = newName)
+  rename(class = newName) 
+  # mutate(sampleCode = if_else(sampleCode == "20_09_03_Gulf_S04_Z40_1526_250", "TEST",
+  #        if_else(sampleCode == "20_09_03_Gulf_S04_Z38_1613_250", "OTHER", sampleCode)))
 
 nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
   # For Newfoundland data, I will only be running stats for month/year combos with enough data
