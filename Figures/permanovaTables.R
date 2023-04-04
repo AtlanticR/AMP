@@ -158,7 +158,7 @@ order.pacField = c("September 2021_vs_August 2020", "August 2020_vs_June 2021", 
 
 # For the bays, I also want the comparisons to be alphabetical
 order.arg = c("Central_vs_North", "Central_vs_South", "South_vs_North")
-order.stP = c("Mid_vs_Inner", "Outer_vs_Inner", "Outer_vs_Mid")
+order.stP = c("Inner_vs_Mid", "Outer_vs_Inner", "Outer_vs_Mid")
 order.aug2020 = c("Mid_vs_Inner", "Outer_vs_Inner", "Outer_vs_Mid")
 order.jun2021 = c("Inner_vs_Mid", "Outer_vs_Inner", "Outer_vs_Mid")
 order.sept2021 = c("Inner_vs_Mid", "Outer_vs_Inner", "Outer_vs_Mid")
@@ -298,7 +298,7 @@ argyleSimperTableStn = rbind(
 # St Peters
 stPSimperTableStn = rbind(
   #simDfMaker(summary(simStPStn)$Mid_Inner, simStPStn$Mid_Inner, "Mid_Inner"),
-  #simDfMaker(summary(simStPStn)$Outer_Inner, simStPStn$Outer_Inner, "Outer_Inner"),
+  simDfMaker(summary(simStPStn)$Outer_Inner, simStPStn$Outer_Inner, "Outer_Inner"),
   simDfMaker(summary(simStPStn)$Outer_Mid, simStPStn$Outer_Mid, "Outer_Mid")
 )
 
@@ -325,7 +325,7 @@ jun2021SimperTableStn = rbind(
 
 # write.csv(argyleSimperTableTide, "argyleSimperTableTide.csv")
 # write.csv(argyleSimperTableStn, "argyleSimperTableStn.csv")
-# write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
+write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
 # write.csv(nl21SimperTableStn, "nl21SimperTableStn.csv")
 # write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
 # write.csv(jun2021SimperTableStn, "jun2021SimperTableStn.csv")
