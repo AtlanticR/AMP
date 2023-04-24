@@ -63,7 +63,7 @@ stackedBarChart = function(bayData, plotTitle){
     geom_bar(stat = "identity", position = "fill", col = "black", linewidth = 0.05) +
     scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
     
-    facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
+   # facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
     # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
     scale_x_discrete(name = "Sample")+
     scale_fill_brewer(palette = "Set3", name = "Zooplankton Class")+
@@ -128,6 +128,16 @@ lemmensJun21Process = stackedBarChart(pac %>% subset(facetFactor == "June 2021")
 lemmensSept21Process = stackedBarChart(pac %>% subset(facetFactor == "September 2021"), "(D) September 2021")
 
 ggarrange(lemmens20Process, lemmensMar21Process, lemmensJun21Process, lemmensSept21Process, ncol = 1)
+
+
+#####
+# For the AMP Meeting:
+pacAMP = stackedBarChart(pac %>% subset(facetFactor == "August 2020"), "(A) Lemmens Aug 2020- Pacific")
+argyleAMP = stackedBarChart(mar %>% subset(facetFactor == "Argyle"), "(B) Argyle- Maritimes")
+stPetersAMP = stackedBarChart(gulf %>% subset(facetFactor=="St. Peters"), "(C) St. Peters- Gulf")
+nlAMP = stackedBarChart(nl %>% subset(facetFactor == "Oct 2021"), "(D) Pleasantville Oct 2021- Newfoundland")
+
+ggarrange(pacAMP, argyleAMP, stPetersAMP, nlAMP, ncol = 1)
 
 
 ################################################################################
