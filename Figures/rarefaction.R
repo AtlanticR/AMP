@@ -98,7 +98,7 @@ inextPrep = function(bayData, avTowVol, colourScheme, plotLetter){
   baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
   
   # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
-  bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq", endpoint = 100)
+  bay.inext = iNEXT(baySumsList, q = c(0,1,2), datatype = "incidence_freq")
   
   # Plot the graph of diversity vs sampling units
   bay.gg = ggiNEXT(bay.inext, facet.var = "Order.q")+
@@ -305,6 +305,17 @@ sapply(mods$models, AIC)
 
 inextCSRF = function(bayData, colourScheme, plotLetter){
   
+  # I do not want these higher-order taxa to be included
+  taxa_to_remove = c("Cnidaria (larvae)", "Copepoda (nauplii)", "Invertebrate (egg, trochophore larvae)")
+  
+  # Remove the taxa specified above
+  # However, I need to check if they actually exist in the dataframe, otherwise I'll get an error
+  if(any(spp_to_remove %in% colnames(bayData))){
+    # If they are present, remove them
+    bayData = bayData %>%
+      select(-taxa_to_remove[taxa_to_remove %in% colnames(bayData)])
+  }
+  
   # First, just extract only the taxa info:
   # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
   bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp. (civ-vi)"): ncol(bayData)]
@@ -320,41 +331,56 @@ inextCSRF = function(bayData, colourScheme, plotLetter){
   # It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
   baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
   
-  # Create the iNEXT object! Calculate for all Hill numbers (q = 1, 2, and 3)
+  # Create the iNEXT object! Calculate for richness only
   bay.inext = iNEXT(baySumsList, q = c(0), datatype = "incidence_freq")
   # Plot the graph of diversity vs sampling units
+  
+  # Calculate 80%, 90% and 95% of asymptotic estimator for richness only
+  chao2_est = bay.inext$AsyEst$Estimator[1] # Get the asymptotic est for richness (the 1st of the 3 listed)
   
   ggiNEXT(bay.inext, color.var = "Order.q")+
     scale_colour_manual(values=colourScheme) +
     scale_fill_manual(values=colourScheme)+
-    xlab("Number of zooplankton tows")+
+    #scale_y_continuous(limits = c(13, 40))+
+    xlab("Number of samples")+
     ylab("Taxa richness")+
+    geom_hline(aes(yintercept = chao2_est), col = "red", linetype = "dashed")+
+    # geom_text(aes( 0, chao2_est, label = chao2_est, vjust = -1), size = 3)+
     ggtitle(plotLetter)+
     theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
     theme(
-      axis.title.x = element_blank(),
+      #axis.title.x = element_blank(),
       legend.position = "none",
       plot.margin=unit(c(0.1, 1, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
       plot.title = element_text(size = 15),
       plot.title.position = "plot")
   
-  
-  # ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q")+
-  #   theme_bw()
-  
-  # For species diversity vs coverage
-  # ggiNEXT(bay.inext, facet.var = "Order.q", color.var = "Order.q", type = 3)
-  
-  #return(bay.inext)
-  
 }
  
 # Pass in the dataframe of species counts, colour, and label
-stPetersCSRF = inextCSRF(stPeters, "MediumBlue", "(B) St. Peters (Gulf)")
-nlCSRF = inextCSRF(seArm2020, "red", "(A) Southeast Arm (Newfoundland)")
+argCSRF = inextCSRF(argyle, marColours[[1]], "(A) Argyle")
+countryCSRF = inextCSRF(country, marColours[[2]], "(B) Country Harbour")
+soberCSRF = inextCSRF(sober, marColours[[3]], "(C) Sober Island")
+whiteheadCSRF = inextCSRF(whitehead, marColours[[4]], "(D) Whitehead")
 
 #  Plot them both together
-plot_grid(nlCSRF, stPetersCSRF, ncol = 1)
+plot_grid(argCSRF, countryCSRF, soberCSRF, whiteheadCSRF, ncol = 4)
+
+cocagneCSRF = inextCSRF(cocagne, gulfColours[[1]], "(A) Cocagne")
+malpequeCSRF = inextCSRF(malpeque, gulfColours[[2]], "(B) Malpeque")
+stPetersCSRF = inextCSRF(stPeters, gulfColours[[3]], "(C) St. Peters")
+plot_grid(cocagneCSRF, malpequeCSRF, stPetersCSRF, ncol = 3)
+
+
+pacAug2020CSRF = inextCSRF(pacAug2020, pacColours[[1]], "(A) August 2020")
+pacJun2021CSRF = inextCSRF(pacJun2021, pacColours[[3]], "(B) June 2021")
+pacSept2021CSRF = inextCSRF(pacSept2021, pacColours[[4]], "(C) September 2021")
+plot_grid(pacAug2020CSRF, pacJun2021CSRF, pacSept2021CSRF, ncol = 3)
+
+seArm2020CSRF = inextCSRF(seArm2020, nlColours[[1]], "(A) September 2020")
+seArm2021CSRF = inextCSRF(seArm2021, "dark blue", "(B) October 2021")
+plot_grid(seArm2020CSRF, seArm2021CSRF, ncol = 2)
+
 
 
 ###########################################################################################################################
