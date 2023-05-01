@@ -30,32 +30,41 @@ aug20HT.outer = pacAug2020 %>%
   filter(tidePhase == "High" & myLabel == "Outer") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 aug20LT.outer = pacAug2020 %>%
   filter(tidePhase == "Low" & myLabel == "Outer") %>%
   select(-c("waterVolAnalyzed")) %>%
-  select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  select(starts_with("Acartia"):last_col()) %>% 
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(aug20HT.outer, aug20LT.outer, var.equal=T, alternative = "two.sided")
-
+t.test(aug20HT.outer$abund, aug20LT.outer$abund, var.equal=T, alternative = "two.sided")
+t.test(aug20HT.outer$rich, aug20LT.outer$rich, var.equal=T, alternative = "two.sided")
 
 
 ##
 aug20HT.mid = pacAug2020 %>%
   filter(tidePhase == "High" & myLabel == "Mid") %>%
   select(-c("waterVolAnalyzed")) %>%
+  # mutate(abund = rowSums())
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 aug20LT.mid = pacAug2020 %>%
   filter(tidePhase == "Low" & myLabel == "Mid") %>%
   select(-c("waterVolAnalyzed")) %>%
-  select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  select(starts_with("Acartia"):last_col()) %>% 
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(aug20HT.mid, aug20LT.mid, var.equal=T, alternative = "two.sided")
+t.test(aug20HT.mid$abund, aug20LT.mid$abund, var.equal=T, alternative = "two.sided")
 
 
 ####
@@ -63,30 +72,38 @@ aug20HT.inner = pacAug2020 %>%
   filter(tidePhase == "High" & myLabel == "Inner") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 aug20LT.inner = pacAug2020 %>%
   filter(tidePhase == "Low" & myLabel == "Inner") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(aug20HT.inner, aug20LT.inner, var.equal=T, alternative = "two.sided")
+t.test(aug20HT.inner$abund, aug20LT.inner$abund, var.equal=T, alternative = "two.sided")
 
 # June 2021: high vs low at Mid stations
 jun21HT.mid = pacJun2021 %>%
   filter(tidePhase == "High" & myLabel == "Mid") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 jun21LT.mid = pacJun2021 %>%
   filter(tidePhase == "Low" & myLabel == "Mid") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(jun21HT.mid, jun21LT.mid, var.equal=T, alternative = "two.sided")
+t.test(jun21HT.mid$abund, jun21LT.mid$abund, var.equal=T, alternative = "two.sided")
 
 
 
@@ -97,15 +114,19 @@ soberHT.outer = sober %>%
   filter(tidePhase == "High" & myLabel == "Outer") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 soberLT.outer = sober %>%
   filter(tidePhase == "Low" & myLabel == "Outer") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(soberHT.outer, soberLT.outer, var.equal=T, alternative = "two.sided")
+t.test(soberHT.outer$abund, soberLT.outer$abund, var.equal=T, alternative = "two.sided")
 
 
 
@@ -117,45 +138,57 @@ stpHT.outer = stPeters %>%
   filter(tidePhase == "High" & myLabel == "Outer") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 stpLT.outer = stPeters %>%
   filter(tidePhase == "Low" & myLabel == "Outer") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(stpHT.outer, stpLT.outer, var.equal=T, alternative = "two.sided")
+t.test(stpHT.outer$abund, stpLT.outer$abund, var.equal=T, alternative = "two.sided")
 
 ## Mid
 stpHT.mid = stPeters %>%
   filter(tidePhase == "High" & myLabel == "Mid") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 stpLT.mid = stPeters %>%
   filter(tidePhase == "Low" & myLabel == "Mid") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(stpHT.mid, stpLT.mid, var.equal=T, alternative = "two.sided")
+t.test(stpHT.mid$abund, stpLT.mid$abund, var.equal=T, alternative = "two.sided")
 
 ### Inner
 stpHT.inner = stPeters %>%
   filter(tidePhase == "High" & myLabel == "Inner") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 stpLT.inner = stPeters %>%
   filter(tidePhase == "Low" & myLabel == "Inner") %>%
   select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(stpHT.inner, stpLT.inner, var.equal=T, alternative = "two.sided")
+t.test(stpHT.inner$abund, stpLT.inner$abund, var.equal=T, alternative = "two.sided")
 
 # Newfoundland: Outer High vs Low
 
@@ -166,7 +199,9 @@ nlHT.outer = nl %>%
   filter(tidePhase == "High" & myLabel == "Outer") %>%
   #select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
 nlLT.outer = nl %>%
   filter(monthStart == 10 & yearStart == 2021) %>%
@@ -175,9 +210,11 @@ nlLT.outer = nl %>%
   filter(tidePhase == "Low" & myLabel == "Outer") %>%
   #select(-c("waterVolAnalyzed")) %>%
   select(starts_with("Acartia"):last_col()) %>%
-  specnumber()
+  mutate(abund = rowSums(.),
+         rich = specnumber(.)) %>%
+  select(abund, rich)
 
-t.test(nlHT.outer, nlLT.outer, var.equal=T, alternative = "two.sided")
+t.test(nlHT.outer$abund, nlLT.outer$abund, var.equal=T, alternative = "two.sided")
 
 
 install.packages("SpadeR")
