@@ -18,10 +18,55 @@ library("effsize")
 install.packages("rempsyc")
 library("rempsyc")
 
-cohen.d(group1, group2)
+install.packages("broom")
+library("broom")
+
+
 
 ###############################################################################
 ## Which tides am I testing between
+
+
+
+
+tTestFun = function(specDF, station) {
+
+    dfHT = specDF %>%
+    filter(tidePhase == "High" & myLabel == station) %>%
+    select(-c("waterVolAnalyzed")) %>%
+    select(starts_with("Acartia"):last_col()) %>%
+    mutate(abund = rowSums(.),
+           rich = specnumber(.),
+           shan = exp(diversity(., index = "shannon")),
+           sim = diversity(., index = "invsimpson"))
+    
+   dfLT = specDF %>%
+     filter(tidePhase == "Low" & myLabel == station) %>%
+     select(-c("waterVolAnalyzed")) %>%
+     select(starts_with("Acartia"):last_col()) %>%
+     mutate(abund = rowSums(.),
+            rich = specnumber(.),
+            shan = exp(diversity(., index = "shannon")),
+            sim = diversity(., index = "invsimpson"))
+    
+   tTestResults = bind_rows(
+     tidy(t.test(dfHT$abund, dfLT$abund, var.equal=T, alternative = "two.sided")),
+     tidy(t.test(dfHT$rich, dfLT$rich, var.equal=T, alternative = "two.sided")),
+     tidy(t.test(dfHT$shan, dfLT$shan, var.equal=T, alternative = "two.sided")),
+     tidy(t.test(dfHT$sim, dfLT$sim, var.equal=T, alternative = "two.sided"))
+          
+   )
+  
+  
+}
+
+
+dataset_list = list(pacAug2020 = "Outer", pacAug2020 = "Mid", pacAug2020 = "Inner")
+
+do.call(rbind, lapply(names(dataset_list), function(x) tTestFun(get(x), dataset_list[[x]])))
+
+
+
 
 # Pacific:
 # August 2020: high vs low at all stations
@@ -46,7 +91,9 @@ aug20LT.outer = pacAug2020 %>%
          sim = diversity(., index = "invsimpson")) %>%
   select(abund, rich, shan, sim)
 
-t.test(aug20HT.outer$abund, aug20LT.outer$abund, var.equal=T, alternative = "two.sided")
+tidy(t.test(aug20HT.outer$abund, aug20LT.outer$abund, var.equal=T, alternative = "two.sided"))
+tidy(t.test(aug20HT.outer$rich, aug20LT.outer$rich, var.equal=T, alternative = "two.sided"))
+
 t.test(aug20HT.outer$rich, aug20LT.outer$rich, var.equal=T, alternative = "two.sided")
 t.test(aug20HT.outer$shan, aug20LT.outer$shan, var.equal=T, alternative = "two.sided")
 t.test(aug20HT.outer$sim, aug20LT.outer$sim, var.equal=T, alternative = "two.sided")
@@ -97,7 +144,7 @@ aug20LT.inner = pacAug2020 %>%
          sim = diversity(., index = "invsimpson")) %>%
   select(abund, rich, shan, sim)
 
-t.test(aug20HT.inner$sim, aug20LT.inner$sim, var.equal=T, alternative = "two.sided")
+x = t.test(aug20HT.inner$sim, aug20LT.inner$sim, var.equal=T, alternative = "two.sided")
 
 # June 2021: high vs low at Mid stations
 jun21HT.mid = pacJun2021 %>%
@@ -254,10 +301,6 @@ nlLT.outer = nl %>%
 t.test(nlHT.outer$sim, nlLT.outer$sim, var.equal=T, alternative = "two.sided")
 
 
-
-data(DiversityData)
-
-Diversity(DiversityData$Abu, "abundance", q = c(0, 0.5, 1, 1.5, 2))
 
 
 
