@@ -421,8 +421,8 @@ nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
   # For Newfoundland data, I will only be running stats for month/year combos with enough data
   # Only testing tide and station effects for September 2020 data and October 2021. 
   # Just call the rest "Other" and ignore them for most of the stats/plots
-  mutate(facetFactor = ifelse(monthStart == 9 & yearStart == 2020, "Sept 2020", 
-                              ifelse(monthStart == 10 & yearStart == 2021, "Oct 2021", "Other")),
+  mutate(facetFactor = ifelse(monthStart == 9 & yearStart == 2020, "SEA Sept 2020", 
+                              ifelse(monthStart == 10 & yearStart == 2021, "SEA Oct 2021", "SEA")),
          region = "Newfoundland") %>%
   filter(flowcamCode != "NO MATCH")
 
@@ -441,15 +441,46 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   mutate(facetFactor = dataset,
          region = "Pacific",
          ocean = "Pacific") %>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific August 2020", "August 2020"))%>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific June 2021", "June 2021"))%>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific March 2021", "March 2021"))%>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "September 2021"))
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific August 2020", "Lemmens August 2020"))%>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific June 2021", " Lemmens June 2021"))%>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific March 2021", "Lemmens March 2021"))%>%
+  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "Lemmens September 2021"))
 
 
+allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
+  
+  #pivot_wider(names_from = newName, values_from = count) %>%
+  mutate_all(~replace(., is.na(.), 0)) %>%
+  group_by(facetFactor) %>%
+  summarize(tot = sum(count))
+
+
+
 ################################################################################
 ################################################################################
 ################################################################################
+
+rem = c("Remove", "Zooplankton (unid)", "Copepoda parent", "Calanoida parent")
+
+sumData = read.csv("../AMPDataFiles/taxaSummaryReport.csv") %>%
+  filter(!newName %in% rem) %>%
+  select(c(newName, taxonRank)) %>%
+  distinct(newName, .keep_all = T)
+
+
+numUniqueRank = sumData %>%
+  group_by(taxonRank) %>%
+  summarize(num_unique = n_distinct(newName))
+
+
+
+
+
+
+
+
+
+
 
 
 # THIS IS FOR LOOKING AT RAW COUNTS INSTEAD OF ABUNDANCES
