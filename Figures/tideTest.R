@@ -56,10 +56,13 @@ tTestFun = function(specDF, station, site) {
      tidy(t.test(dfHT$shan, dfLT$shan, var.equal=T, alternative = "two.sided")),
      tidy(t.test(dfHT$sim, dfLT$sim, var.equal=T, alternative = "two.sided"))
    ) %>%
-     select(estimate1, estimate2, parameter, statistic, conf.low, conf.high, p.value) %>%
+     mutate(ci95 = paste0("[", round(conf.low,2), ", ", round(conf.high,2), "]")) %>%
+     select(estimate1, estimate2, parameter, statistic, ci95, p.value) %>%
      mutate(stationName = station, .before = estimate1) %>%
-     mutate(siteName = site, .before = stationName)
-  
+     mutate(siteName = site, .before = stationName) %>%
+     mutate(across(c(estimate1, estimate2, statistic), round, 2)) %>%
+     mutate(across(c(p.value), round, 3)) 
+     
   
 }
 
