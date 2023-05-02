@@ -1,19 +1,37 @@
+################################################################################
+################################################################################
+### Testing diversity indices between tides
+
+# In this code, we're testing if diversity is different between high and low tide
+# Specifically, if: abundance, richness, Shannon diversity and Simpson diversity are different
+# We're only testing in sites where there are at least 3 samples collected at each tide, for specific stations
+
+# Tests are therefore conducted in: 
+# Outer, Mid and Inner stations for Lemmens Aug 2020
+# Mid stations for Lemmens Jun 2021
+# Outer stations for Sober Island
+# Outer, Mid, Inner stations for St. Peters
+# Outer stations for Southeast Arm Oct 2021
+
+## Background info
+# This paper is helpful for discussing t-tests with small sample sizes:
+# https://scholarworks.umass.edu/pare/vol18/iss1/10/
+
+# Hill numbers are a bit confusing. These have some more explanation:
+# See here for an explanation of the confusing indices especially Simpson: http://www.countrysideinfo.co.uk/simpsons.htm
+# This is also helpful for getting diversity from indices: https://jonlefcheck.net/2012/10/23/diversity-as-effective-numbers/
+
+###############################################################################
+###############################################################################
+## Setup
+
+# Read in the data 
+# I'm using datasets that have already be broken up by site
+source("DataProcessing/bayBreakdown.R")
 
 
 
-install.packages("lsr")
-library("lsr")
 
-cohensD(group1, group2)
-
-install.packages("effsize")
-library("effsize")
-
-install.packages("rempsyc")
-library("rempsyc")
-
-install.packages("broom")
-library("broom")
 
 # Get rid of that awful scientific notation
 options(scipen = 999)
@@ -77,7 +95,7 @@ x= rbind(
   tTestFun(stPeters, "Outer", "St. Peters"),
   tTestFun(stPeters, "Mid", "St. Peters"),
   tTestFun(stPeters, "Inner", "St. Peters"),
-  tTestFun(nlPrepT, "Outer", "St. Peters")
+  tTestFun(seArm2021, "Outer", "Southeast Arm Oct 2021")
   )
 
 
