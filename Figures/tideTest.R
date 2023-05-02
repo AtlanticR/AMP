@@ -1,10 +1,4 @@
-#create vectors to hold plant heights from each sample
-group1 <- c(8, 8, 14)
-group2 <- c(11, 12, 13)
 
-# Perform two sample t-test
-# If var.equal = T, then the Welch modification to the degrees of freedom is used
-t.test(group1, group2, var.equal=T, alternative = "two.sided")
 
 
 install.packages("lsr")
@@ -26,10 +20,16 @@ library("broom")
 ###############################################################################
 ## Which tides am I testing between
 
+# All the other data is prepped properly, I just have to get Newfoundland in the format I need
+nlPrepT = nl %>%
+  filter(monthStart == 10 & yearStart == 2021) %>%
+  pivot_wider(names_from = class, values_from = abund) %>%
+  mutate_all(~replace(., is.na(.), 0)) %>%
+  mutate(waterVolAnalyzed = NA) # add this so it doesn't throw an error lol
 
 
 
-tTestFun = function(specDF, station) {
+tTestFun = function(specDF, station, site) {
 
     dfHT = specDF %>%
     filter(tidePhase == "High" & myLabel == station) %>%
@@ -54,16 +54,32 @@ tTestFun = function(specDF, station) {
      tidy(t.test(dfHT$rich, dfLT$rich, var.equal=T, alternative = "two.sided")),
      tidy(t.test(dfHT$shan, dfLT$shan, var.equal=T, alternative = "two.sided")),
      tidy(t.test(dfHT$sim, dfLT$sim, var.equal=T, alternative = "two.sided"))
-          
-   )
+   ) %>%
+     select(estimate1, estimate2, parameter, statistic, conf.low, conf.high, p.value) %>%
+     mutate(stationName = station, .before = estimate1) %>%
+     mutate(siteName = site, .before = stationName)
   
   
 }
 
 
-dataset_list = list(pacAug2020 = "Outer", pacAug2020 = "Mid", pacAug2020 = "Inner")
 
-do.call(rbind, lapply(names(dataset_list), function(x) tTestFun(get(x), dataset_list[[x]])))
+x= rbind(
+  tTestFun(pacAug2020, "Outer", "Lemmens Aug 2020"),
+  tTestFun(pacAug2020, "Mid", "Lemmens Aug 2020"),
+  tTestFun(pacAug2020, "Inner", "Lemmens Aug 2020"),
+  tTestFun(pacJun2021, "Mid", "Lemmens Jun 2021"),
+  tTestFun(sober, "Outer", "Sober Island"),
+  tTestFun(stPeters, "Outer", "St. Peters"),
+  tTestFun(stPeters, "Mid", "St. Peters"),
+  tTestFun(stPeters, "Inner", "St. Peters"),
+  tTestFun(nlPrepT, "Outer", "St. Peters")
+  )
+
+
+
+
+
 
 
 
