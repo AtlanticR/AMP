@@ -220,6 +220,58 @@ plot_grid(seArm2020Inext[[1]], seArm2021Inext[[1]], align = "v", ncol = 1)
 ###############################################################################
 ###############################################################################
 
+
+###############################################################################
+test = pacAug2020Inext[[5]] %>%
+  filter(Order.q == 0) %>%
+  mutate(dataset = "Lemmens Aug 2020")
+
+ok = pacJun2021Inext[[5]] %>%
+  filter(Order.q == 0) %>%
+  mutate(dataset = "Lemmens Jun 2021")
+
+
+
+
+hi = rbind(test, ok)
+
+ggplot()+
+  geom_ribbon(data = hi, aes(x=x, ymin = y.lwr, ymax = y.upr, fill = dataset), alpha = 0.2) +
+  geom_line(data = hi %>% filter(Method == "Extrapolation"), mapping = aes(x = x, y=y, linetype = Method, col = dataset), linetype = "dashed", lwd = 1.5)+
+  geom_line(data = hi %>% filter(Method == "Rarefaction"), mapping = aes(x = x, y=y, linetype = Method, col = dataset), lwd = 1.5)+
+  geom_point(data = hi %>% filter(Method == "Observed"), mapping = aes(x=x, y=y, col = dataset), size = 5)+
+  xlab("Number of samples")+
+  ylab("Richness")+
+  theme_bw()+
+  theme(
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 13)
+    #legend.position = "none"
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #### Everything below this point is just drafts of things, and me testing stuff
 
 
