@@ -15,7 +15,8 @@ library("rempsyc")
 install.packages("broom")
 library("broom")
 
-
+# Get rid of that awful scientific notation
+options(scipen = 999)
 
 ###############################################################################
 ## Which tides am I testing between
