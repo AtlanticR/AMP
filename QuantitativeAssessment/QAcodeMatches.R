@@ -88,22 +88,45 @@
 # Be careful when matching these, because tide phase and date were not included in QA IDs
 # They were added as separate columns. Need to be included
 
+################################################################################
+#### SETUP
+
+# Read in all required R packages
+source("DataProcessing/metadataProcessing.R") 
+
+# Remove scientific notation
+options(scipen=999)
+
+# Read in the Excel spreadsheet with the QA IDs
+# Read in spreadsheet with adjustments to taxa names
+
+# Files are read relative to my R Project (within "AMP"), which is separate from where the data files are stored (AMPDataFiles)
+# ".." means "go back a directory"
+
+# Read in the file I created that matches the QA samples (and the IDs used by the taxonomists) with the FlowCam IDs
+# Note the FlowCAM IDs are NOT the same as the sampleCodes in the metadata
+# Those will have to be obtained by joining/merging the IDs again with separate files
+qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/QuantAssessPairings.xlsx")
+
+# Note that I have renamed the QA Excel file names from the originals
+# File names are self explanatory
+# I did not change the sheet names
+qaGulf2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Gulf_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
+  # renaming is "new" = "old"
+  rename("abundTot" = `Abundance in total sample`)
+qaMar2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Mar_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)")
+qaNl2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)")
+qaNLGulf2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_Gulf_2020_QA_Zooplankton_AMP.xlsx", sheet = "ID raw data")
+qaPac2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2020_QA_Zooplankton_AMP.xlsx", sheet = "3. Data-Long")
+qaPac2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2021_QA_Zooplankton_AMP.xlsx", sheet = "4. Biologica Data-Long", skip = 5) # ignore first 5 lines with background info
+
+
+ggplot()+
+  geom_bar(qaNl2021, mapping = aes(x = `DFO Sample ID`, y = `Abundance in total sample`, fill = Taxon), stat = "identity")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+qaGulf2021$`Abundance in total sample`
 
 
 
