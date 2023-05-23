@@ -89,6 +89,10 @@ pacMap =
   ggtitle("(B) Pacific")+
   coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+ # set map extents and define coordinate system
   scale_fill_manual(values = regionMapCols)+ # Make this map purple
+  # Add a north arrow to map
+  annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
   theme(
     axis.text = element_blank(),
     axis.ticks = element_blank(),
@@ -116,6 +120,10 @@ atlMap =
   theme_bw()+
   coord_sf(crs = can.lcc, xlim = c(2263445, 3057367), ylim = c(911226, 2161814))+
   scale_fill_manual(values = regionMapCols)+
+  # Add a north arrow to map
+  annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
   ggtitle("(C) Atlantic")+
   theme(
     axis.text = element_blank(),
@@ -157,8 +165,8 @@ ggLemMap = ggplot()+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+ # see note above about scale bar
   # Add a north arrow to Lemmens only in the top right
   annotation_north_arrow(location = "tr", which_north = "grid",
-                         height = unit(1, "cm"), width = unit(1, "cm"),
-                         style = north_arrow_fancy_orienteering)+
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
   ggtitle("(D) Lemmens")+
   theme_bw()+
   theme(
@@ -207,10 +215,10 @@ ggArgMap = ggplot()+
   #coord_sf(xlim = c(259213, 267918), ylim = c(4846335, 4855031), crs = 32620)+ # UTM zone 20
   coord_sf(xlim = c(255400, 280573), ylim = c(4838335, 4863182), crs = 32620)+ # UTM zone 20
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.8, "cm"))+
-  # # Add a north arrow to map
-  # annotation_north_arrow(location = "tr", which_north = "true",
-  #                        height = unit(1, "cm"), width = unit(1, "cm"),
-  #                        style = north_arrow_fancy_orienteering)+
+  # Add a north arrow to map
+  annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
   ggtitle("(E) Argyle")+
   theme_bw()+
   theme(
@@ -228,9 +236,9 @@ ggSobMap = ggplot()+
   coord_sf(xlim = c(541154, 542825), ylim = c(4964661, 4966410), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   # # Add a north arrow to map
-  # annotation_north_arrow(location = "tr", which_north = "true",
-  #                        height = unit(1, "cm"), width = unit(1, "cm"),
-  #                        style = north_arrow_fancy_orienteering)+
+  annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
   ggtitle("(F) Sober Island")+
   theme_bw()+
   theme(
@@ -251,9 +259,9 @@ ggChMap = ggplot()+
   coord_sf(xlim = c(593384, 606378), ylim = c(5000120, 5011138), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   # Add a north arrow to map
-  # annotation_north_arrow(location = "tr", which_north = "true",
-  #                        height = unit(1, "cm"), width = unit(1, "cm"),
-  #                        style = north_arrow_fancy_orienteering)+
+  annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
   ggtitle("(G) Country Harbour")+
   theme_bw()+
   theme(
@@ -271,9 +279,9 @@ ggWhMap = ggplot()+
   coord_sf(xlim = c(641669, 647881), ylim = c(5013443, 5019630), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(4.1, "cm"))+
   # Add a north arrow to map
-  # annotation_north_arrow(location = "tr", which_north = "true",
-  #                        height = unit(1, "cm"), width = unit(1, "cm"),
-  #                        style = north_arrow_fancy_orienteering)+
+  annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
   ggtitle("(H) Whitehead")+
   theme_bw()+
   theme(
@@ -295,6 +303,10 @@ ggCocMap =
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
     coord_sf(xlim = c(373453, 382190), ylim = c(5131250, 5140014), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
+  # Add a north arrow to map
+  annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
     ggtitle("(I) Cocagne")+
     theme_bw()+
     theme(
@@ -313,6 +325,10 @@ ggMalMap =
     # coord_sf(xlim = c(431139, 450611), ylim = c(5147976, 5167271), crs = 32620)+
     coord_sf(xlim = c(423090, 451168), ylim = c(5142615, 5168319), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
+    # Add a north arrow to map
+    annotation_north_arrow(location = "tr", which_north = "true",
+                           height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
     ggtitle("(J) Malpeque")+
     theme_bw()+
     theme(
@@ -330,6 +346,10 @@ ggStPMap =
     geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "blue", alpha = 0.7, linewidth = 2.5, lineend = "round")+
     coord_sf(xlim = c(519487, 532582), ylim = c(5136283, 5149220), crs = 32620)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
+    #  Add a north arrow to map
+    annotation_north_arrow(location = "tr", which_north = "true",
+                           height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
     ggtitle("(K) St. Peters")+
     theme_bw()+
     theme(
@@ -352,7 +372,11 @@ ggSeArmMap =
     # coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+ # UTM zone 21N
     coord_sf(xlim = c(618447, 626387), ylim = c(5462394, 5469127), crs = 32621)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
-    ggtitle("(L) Southeast Arm")+
+    # Add a north arrow to map
+    annotation_north_arrow(location = "tr", which_north = "true",
+                         height = unit(0.7, "cm"), width = unit(0.7, "cm"),
+                         style = north_arrow_minimal)+
+    ggtitle("(L) South Arm")+
     theme_bw()+
     theme(
       axis.text = element_blank(),
