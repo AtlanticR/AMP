@@ -208,6 +208,8 @@ test = gulf %>% subset(facetFactor == "St. Peters") %>%
   mutate(relAbund = countPerClass/sum(countPerClass)*100)
 
 
-
+test2 = allRegionsWide %>%
+  rowwise() %>%
+  mutate(totAbund = sum(c_across(21:last_col())))
 
 
