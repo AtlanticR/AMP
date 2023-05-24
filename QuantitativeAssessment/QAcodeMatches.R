@@ -109,20 +109,54 @@ options(scipen=999)
 qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/QuantAssessPairings.xlsx")
 
 # Note that I have renamed the QA Excel file names from the originals
-# File names are self explanatory
-# I did not change the sheet names
+# File names are self explanatory. I did not change the sheet names
+
+# Gulf, Maritimes and NL samples were done by Huntsman. Their format is slightly different
+# I am using the term "countTot" to refer to the total count in the entire sample!
+# I will use "abundance" when it is converted to individuals in seawater
 qaGulf2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Gulf_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
   # renaming is "new" = "old"
-  rename("abundTot" = `Abundance in total sample`)
-qaMar2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Mar_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)")
-qaNl2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)")
-qaNLGulf2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_Gulf_2020_QA_Zooplankton_AMP.xlsx", sheet = "ID raw data")
-qaPac2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2020_QA_Zooplankton_AMP.xlsx", sheet = "3. Data-Long")
-qaPac2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2021_QA_Zooplankton_AMP.xlsx", sheet = "4. Biologica Data-Long", skip = 5) # ignore first 5 lines with background info
+  rename("countTot" = `Abundance in total sample`,
+         "qaSampleID" = `DFO Sample ID`)
+qaMar2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Mar_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
+  rename("countTot" = `Abundance in total sample`,
+         "qaSampleID" = `DFO Sample ID`)
+qaNL2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
+  rename("countTot" = `Abundance in total sample`,
+         "qaSampleID" = `DFO Sample ID`)
+qaNLGulf2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_Gulf_2020_QA_Zooplankton_AMP.xlsx", sheet = "ID raw data") %>%
+  rename("countTot" = `Abundance in total sample`,
+         "qaSampleID" = `Unique sample name`,
+         "Taxon" = "Species")
+
+
+# Pacific samples (done by Biologica) have a slightly different format
+qaPac2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2020_QA_Zooplankton_AMP.xlsx", sheet = "3. Data-Long") %>%
+  rename("countTot" = "Count")
+qaPac2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2021_QA_Zooplankton_AMP.xlsx", sheet = "4. Biologica Data-Long", skip = 5) %>% # ignore first 5 lines with background info
+  rename("countTot" = `Total Abundance`) %>%
+  filter(countTot != "n/a") %>% # remove this NA where ctenophora fragments were found, but no counts provided
+  mutate(countTot = as.numeric(countTot), # now I can make the value a numeric
+         # IDs for Pacific samples have to be concatenated with Tide and Date info, or they can't be distinguished
+    qaSampleID =  paste(`Client Sample ID`, Tide, `Date Sampled`, sep = "_"), .before = Fraction)
+
+
+# Combine all dataframes (except qaPac2020)
+allData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021) %>%
+  select(qaSampleID, countTot, Taxon) %>%
+  left_join(qaID, by = "qaSampleID")
+
+
+
 
 
 ggplot()+
-  geom_bar(qaNl2021, mapping = aes(x = `DFO Sample ID`, y = `Abundance in total sample`, fill = Taxon), stat = "identity")
+  geom_bar(qaPac2021, mapping = aes(x = qaSampleID, y = countTot, fill = Taxon), stat = "identity")+
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+ 
+  )
 
 
 
