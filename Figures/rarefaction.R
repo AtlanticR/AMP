@@ -111,8 +111,8 @@ inextPrep = function(bayData, avTowVol, colourScheme, plotLetter){
       ggtitle(plotLetter)+
       theme_bw(base_size = 14)+ # cool trick so I don't have to adjust the size of everything manually
       theme(
-        axis.title = element_blank(),
-        #axis.title = element_text(size = 11),
+        # axis.title = element_blank(),
+        axis.title = element_text(size = 11),
         axis.text = element_text(size = 9),
         legend.position = "none",
         plot.margin=unit(c(0.1, 0.5, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
