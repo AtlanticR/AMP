@@ -13,8 +13,8 @@ ipak = function(pkg){
 
 # Choose necessary packages
 packages = c("broom", "cowplot", "devtools", "dplyr", "egg", "ggplot2", "ggrepel", "ggsignif", "ggsn", "ggnewscale", 
-             "ggspatial", "ggthemes", "ggh4x", "gridExtra", "iNEXT", "jcolors", "leaflet", "lsr", "mapr", "mapview",
-             "patchwork", "pkgcond", "purrr", "readxl", "remotes", "rgdal", "rnaturalearth", "rnaturalearthdata", 
+             "ggspatial", "ggthemes", "ggh4x", "gridExtra", "iNEXT", "jcolors", "leaflet", "lmodel2", "lsr", "mapr", "mapview",
+             "patchwork", "pkgcond", "purrr", "readxl", "remotes", "reshape2", "rgdal", "rnaturalearth", "rnaturalearthdata", 
              "scales", "sf", "sp", "stringr", "tidyr", "tools", "useful", "vegan", "wbstats", "wpa")
 ipak(packages)
 
