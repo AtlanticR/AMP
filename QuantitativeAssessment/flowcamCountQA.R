@@ -481,4 +481,22 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "September 2021")) %>%
   rename(class = newName)
 
+# Combine data from all datasets
+dataForQA = rbind(nlMerge, marMerge, pacMerge, gulfMerge) %>%
+  # Revert back to counts in one sample
+  # But this also includes the 5mm fraction
+  mutate(taxaCountPerSample = abund / 4 * waterVolume) 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
