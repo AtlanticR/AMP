@@ -112,7 +112,11 @@ options(scipen=999)
 # Read in the file I created that matches the QA samples (and the IDs used by the taxonomists) with the FlowCam IDs
 # Note the FlowCAM IDs are NOT the same as the sampleCodes in the metadata
 # Those will have to be obtained by joining/merging the IDs again with separate files
-qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/QuantAssessPairings.xlsx")
+qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/QuantAssessPairings.xlsx")
+
+# Read in the file that has the adjustments to the QA taxa names (to make sure they're consistent)
+qaTaxaChanges = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/quantAssess_taxaChanges.xlsx")
+
 
 # Note that I have renamed the QA Excel file names from the originals
 # File names are self explanatory. I did not change the sheet names
@@ -123,35 +127,50 @@ qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/QuantAssessPairings.xls
 qaGulf2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Gulf_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
   # renaming is "new" = "old"
   rename("countTot" = `Abundance in total sample`,
-         "qaSampleID" = `DFO Sample ID`)
+         "qaSampleID" = `DFO Sample ID`) %>%
+  mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 qaMar2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Mar_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
   rename("countTot" = `Abundance in total sample`,
-         "qaSampleID" = `DFO Sample ID`)
+         "qaSampleID" = `DFO Sample ID`) %>%
+  mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 qaNL2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
   rename("countTot" = `Abundance in total sample`,
-         "qaSampleID" = `DFO Sample ID`)
+         "qaSampleID" = `DFO Sample ID`) %>%
+  mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 qaNLGulf2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_Gulf_2020_QA_Zooplankton_AMP.xlsx", sheet = "ID raw data") %>%
   rename("countTot" = `Abundance in total sample`,
          "qaSampleID" = `Unique sample name`,
-         "Taxon" = "Species")
+         "Taxon" = "Species") %>%
+  mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 
 
 # Pacific samples (done by Biologica) have a slightly different format
 qaPac2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2020_QA_Zooplankton_AMP.xlsx", sheet = "3. Data-Long") %>%
-  rename("countTot" = "Count")
+  rename("countTot" = "Count") %>%
+  mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
+  
 qaPac2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2021_QA_Zooplankton_AMP.xlsx", sheet = "4. Biologica Data-Long", skip = 5) %>% # ignore first 5 lines with background info
   rename("countTot" = `Total Abundance`) %>%
   filter(countTot != "n/a") %>% # remove this NA where ctenophora fragments were found, but no counts provided
   mutate(countTot = as.numeric(countTot), # now I can make the value a numeric
          # IDs for Pacific samples have to be concatenated with Tide and Date info, or they can't be distinguished
-    qaSampleID =  paste(`Client Sample ID`, Tide, `Date Sampled`, sep = "_"), .before = Fraction)
+    qaSampleID =  paste(`Client Sample ID`, Tide, `Date Sampled`, sep = "_"), .before = Fraction) %>%
+  mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 
 
 # Combine all dataframes (except qaPac2020)
-allData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021) %>%
-  select(qaSampleID, countTot, Taxon) %>%
+allData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, qaPac2020) %>%
+  select(qaSampleID, countTot, Taxon, taxStage) %>%
   left_join(qaID, by = "qaSampleID")
 
+
+test = allData %>%
+  group_by(taxStage) %>%
+  dplyr::summarize(countUnique = sum(countTot))
+
+# write.csv(test, "test.csv")
+
+unique(allData$Taxon)
 
 ################################################################################
 ################################################################################
@@ -190,7 +209,11 @@ flowCamData = qaID %>%
   #left_join(datafor) %>%
   group_by(qaSampleID) %>%
   mutate(FCentireSampleCount = sum(taxaCountPerSample)) %>%
-  select(FCentireSampleCount, qaSampleID) %>%
+  select(FCentireSampleCount, qaSampleID, waterVolume, monthStart) %>%
+  distinct() %>%
+  group_by(qaSampleID) %>%
+  mutate(totVol = sum(waterVolume)) %>%
+  select(-waterVolume) %>%
   distinct()
 
 # Get total microscopy counts for each sample
@@ -198,7 +221,7 @@ qaDataPerSample = allData %>%
   group_by(FlowCamID) %>%
   mutate(QAentireSampleCount = sum(countTot)) %>%
   ungroup() %>%
-  select(QAentireSampleCount, qaSampleID)%>%
+  select(QAentireSampleCount, qaSampleID, site)%>%
   distinct()
 
 # Join the flowcam data with the microscopy data based on the FlowCamID
@@ -207,6 +230,21 @@ fcAndMicro = flowCamData %>%
 
 # Plot them both to see what it looks like
 plot(fcAndMicro$FCentireSampleCount, fcAndMicro$QAentireSampleCount)
+
+x = lm(fcAndMicro$FCentireSampleCount ~ fcAndMicro$QAentireSampleCount)
+summary(x)
+
+
+microAbund = fcAndMicro$QAentireSampleCount*4 / fcAndMicro$totVol
+fcAbund = fcAndMicro$FCentireSampleCount*4/fcAndMicro$totVol
+
+plot(microAbund, fcAbund)
+
+summary(lm(microAbund ~fcAbund))
+summary(lm(fcAbund~microAbund))
+
+summary(lm(fcAndMicro$FCentireSampleCount~fcAndMicro$QAentireSampleCount))
+
 
 # Now try log transforming it
 # I think I will need to do this (based on the literature, and also because the data are skewed)
@@ -257,14 +295,6 @@ ggplot()+
        y = expression(log[10]~"[FlowCam abundance (ind."~ (m^-3) ~"]")) +
   theme_bw()+
   theme(legend.title = element_blank())
-
-install.packages("ggiraph")
-library("ggiraph")
-
-x=
-ggplot()+
-  geom_point_interactive(data = fcAndMicro, aes(x = QAentireSampleCount, y = FCentireSampleCount), data_id = fcAndMicro$qaSampleID, tooltip = fcAndMicro$qaSampleID, onclick = fcAndMicro$qaSampleID, size = 5)
-girafe(ggobj = x)
 
 
 # Run model 2 regression for non-transformed data
@@ -331,13 +361,22 @@ ggplot()+
   xlim(0, 10)+
   ylim(0,30)
 
+################################################################################
+# Test interactive plotting to see what the problem samples are 
+x=
+  ggplot()+
+  geom_point_interactive(data = fcAndMicro, aes(x = QAentireSampleCount, y = FCentireSampleCount), data_id = fcAndMicro$qaSampleID, tooltip = fcAndMicro$qaSampleID, onclick = fcAndMicro$qaSampleID, size = 5)
+girafe(ggobj = x)
 
 
 
+microAbund = fcAndMicro$QAentireSampleCount*4 / fcAndMicro$totVol
+fcAbund = fcAndMicro$FCentireSampleCount*4/fcAndMicro$totVol
 
-
-
-
+x=
+  ggplot()+
+  geom_point_interactive(data = fcAndMicro, aes(x = microAbund, y = fcAbund), data_id = fcAndMicro$qaSampleID, tooltip = fcAndMicro$qaSampleID, onclick = fcAndMicro$qaSampleID, size = 5)
+girafe(ggobj = x)
 
 
 
