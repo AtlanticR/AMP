@@ -210,6 +210,12 @@ taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun2
   dplyr::summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
 
+taxaCountsSampleOrigNames = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
+  group_by(originalNames, newName, sample) %>%
+  dplyr::summarize(countPerClass = sum(count)) %>%
+  filter(countPerClass > 0) # remove any zeroes
+
+
 # write.csv(taxaCountsBay, "taxaCountsBay2.csv")
 
 ################################################################################
@@ -426,7 +432,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     # multiply by 4 because tow was split in 4 and this just represents 1/4 of total
     mutate(abund = adjCount / waterVolume * 4) %>%
     # Remove unnecessary columns
-    select(-c(count, PercSampleCleaned, PercZooIdentified, adjCount)) %>%
+    select(-c(PercSampleCleaned, PercZooIdentified, adjCount)) %>%
     # Make depthWaterM numeric
     mutate(depthWaterM = as.numeric(depthWaterM)) %>%
     # Group the stations so 5mm species are added to the regular counts 
@@ -434,7 +440,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     # group_by(flowcamCode, newName, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
     
     # This is needed to combine the 250 fraction with the 5mm fraction
-    dplyr::summarize(abund = sum(abund))
+    dplyr::summarize(count = sum(count))
 }
 
 
