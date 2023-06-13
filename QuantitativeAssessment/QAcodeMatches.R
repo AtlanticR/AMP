@@ -125,6 +125,9 @@ qaTaxaChanges = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFi
   # Only keep the important column names (not all my draft labelling)
   select(taxStage, taxaUpdateAgain)
 
+# Read in the file that has the adjustments to the FLOWCAM taxa names
+# Note, these are very very slightly different than what I was using for the previous tech report
+fcTaxaChanges = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/flowcam_taxaChanges.xlsx")
 
 # Note that I have renamed the QA Excel file names from the originals
 # File names are self explanatory. I did not change the sheet names
@@ -180,7 +183,29 @@ allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, 
   # Only select the samples we are interested in
   filter(selectForAnalysis == "Yes") %>%
   # Now replace the old names with my new updated names
-  left_join(qaTaxaChanges)
+  left_join(qaTaxaChanges) %>%
+  # Select only the relevant columns again
+  select(FlowCamID, countSample, regionYear, qaSampleID, taxaUpdateAgain) %>%
+  group_by(taxaUpdateAgain, FlowCamID, regionYear, qaSampleID) %>%
+  summarize(count = sum(countSample))
+
+# Get the FlowCam data. Join my df with the updated taxa names to it
+flowCamData = qaID %>%
+  left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
+  # Only select the samples we're interested in
+  filter(selectForAnalysis == "Yes") %>%
+  left_join(fcTaxaChanges) %>% 
+  mutate(newNameTake2 = ifelse(is.na(newNameTake2) & originalNames == "Chaetognatha (juvenile or n.s.)", originalNames, newNameTake2)) %>%
+  mutate(newNameTake2 = ifelse(is.na(newNameTake2) & originalNames == "Pseudocalanus spp Civ-vi ", originalNames, newNameTake2)) %>%
+  # Only select the relevant columns otherwise there are too many
+  select(newNameTake2, regionYear, FlowCamID, qaSampleID, count) %>%
+  # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
+  group_by(newNameTake2, regionYear, FlowCamID, qaSampleID) %>%
+  summarize(count = sum(count))
+
+
+
+
 
 
 qaCodes = allQAData %>%
@@ -205,11 +230,11 @@ sd(rawCountsPerSample$rawSampleCount)
 
 # Get taxa list from the FlowCam samples
 
-taxaIDsFCsamples = qaID %>%
-  left_join(taxaCountsSampleOrigNames, by = c("FlowCamID" = "sample")) %>%
-  filter(selectForAnalysis == "Yes") %>%
-  group_by(originalNames, newName) %>%
-  summarize(countSample = sum(countPerClass))
+# taxaIDsFCsamples = qaID %>%
+#   left_join(taxaCountsSampleOrigNames, by = c("FlowCamID" = "sample")) %>%
+#   filter(selectForAnalysis == "Yes") %>%
+#   group_by(originalNames, newName) %>%
+#   summarize(countSample = sum(countPerClass))
 
 # write.csv(taxaIDsFCsamples, "taxaIDsFCsamples.csv")
 
@@ -223,7 +248,7 @@ taxaIDsFCsamples = qaID %>%
 # Make stacked bar charts of counts for each sample in each of the datasets
 
 ggplot()+
-  geom_bar(allQAData, mapping = aes(x = qaSampleID, y = countSample, fill = taxaUpdateAgain), stat = "identity")+
+  geom_bar(allQAData, mapping = aes(x = qaSampleID, y = count, fill = taxaUpdateAgain), stat = "identity")+
   # Break up by region/year so it displays the 4 groups of interest
   facet_wrap(~regionYear, scales = "free")+
   theme(
@@ -231,11 +256,106 @@ ggplot()+
     axis.ticks.x = element_blank(),
     legend.position = "none")
 
-
+ggplot()+
+  geom_bar(flowCamData, mapping = aes(x = qaSampleID, y = count, fill = newNameTake2), stat = "identity")+
+  # Break up by region/year so it displays the 4 groups of interest
+  facet_wrap(~regionYear, scales = "free")+
+  theme(
+    # axis.text.x = element_text(angle = 90),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank())
+    #legend.position = "none")
 
 
 ################################################################################
+### TESTING SOME RAREFACTION THINGS
 
+# FIRST WITH THE FLOWCAM DATAs
+
+# Convert data to wide format so I can use the rarecurve() vegan function
+fcWide = flowCamData %>%
+  select(FlowCamID, count, newNameTake2) %>%
+  pivot_wider(names_from = newNameTake2, values_from = count) %>%
+  mutate_all(~replace(., is.na(.), 0))  # replace NAs with 0 
+
+# Gulf 2020 (St. Peters)
+fcGulf2020 = fcWide %>%
+  filter(regionYear == "Gulf 2020")
+
+# Pac 2021
+fcPac2021 = fcWide %>%
+  filter(regionYear == "Pac 21")
+
+# NL 2020
+fcNL2020 = fcWide %>%
+  filter(regionYear == "NL 2020")
+
+# NL 2021
+fcNL2021 = fcWide %>%
+  filter(regionYear == "NL 2021")
+
+par(mfrow = c(2,2))
+
+rarecurve(fcGulf2020[3:58], xlab = "Number of individuals", ylab = "Taxa richness")  
+abline(v=203, col="red")
+title("St. Peters (2020)")
+
+rarecurve(fcPac2021[3:58], xlab = "Number of individuals", ylab = "Taxa richness")  
+abline(v=203, col="red")
+title("Lemmens (2021)")
+
+rarecurve(fcNL2020[3:58], xlab = "Number of individuals", ylab = "Taxa richness")  
+abline(v=203, col="red")
+title("South Arm (2020)")
+
+rarecurve(fcNL2021[3:58], xlab = "Number of individuals", ylab = "Taxa richness")  
+abline(v=203, col="red")
+title("South Arm (2021)")
+
+dev.off()
+
+## Now try with the QA data
+
+
+
+qaWide = allQAData %>%
+  select(FlowCamID, count, taxaUpdateAgain) %>%
+  pivot_wider(names_from = taxaUpdateAgain, values_from = count) %>%
+  mutate_all(~replace(., is.na(.), 0))  # replace NAs with 0 
+
+# Gulf 2020 (St. Peters)
+qaGulf2020Wide = qaWide %>%
+  filter(regionYear == "Gulf 2020")
+
+# Pac 2021
+qaPac2021Wide = qaWide %>%
+  filter(regionYear == "Pac 21")
+
+# NL 2020
+qaNL2020Wide = qaWide %>%
+  filter(regionYear == "NL 2020")
+
+# NL 2021
+qaNL2021Wide = qaWide %>%
+  filter(regionYear == "NL 2021")
+
+par(mfrow = c(2,2))
+
+rarecurve(qaGulf2020Wide[3:58], xlab = "Number of individuals", ylab = "Taxa richness")  
+abline(v=203, col="red")
+title("St. Peters (2020)")
+
+rarecurve(qaPac2021Wide[3:58], xlab = "Number of individuals", ylab = "Taxa richness")  
+abline(v=203, col="red")
+title("Lemmens (2021)")
+
+rarecurve(qaNL2020Wide[3:58], xlab = "Number of individuals", ylab = "Taxa richness")  
+abline(v=203, col="red")
+title("South Arm (2020)")
+
+rarecurve(qaNL2021Wide[3:58], xlab = "Number of individuals", ylab = "Taxa richness")  
+abline(v=203, col="red")
+title("South Arm (2021)")
 
 
 
@@ -253,13 +373,13 @@ flowCamData = qaID %>%
   # Only select the samples we're interested in
   filter(selectForAnalysis == "Yes") %>%
   group_by(qaSampleID) %>%
-  mutate(FCentireSampleCount = sum(taxaCountPerSample)) %>%
+  mutate(FCentireSampleCount = sum(count)) %>%
   select(FCentireSampleCount, qaSampleID, waterVolume, monthStart) %>%
   distinct() %>%
-  group_by(qaSampleID) %>%
-  mutate(totVol = sum(waterVolume)) %>%
-  select(-waterVolume) %>%
-  distinct()
+  #group_by(qaSampleID) %>%
+  #mutate(totVol = sum(waterVolume)) %>%
+ # select(-waterVolume) %>%
+  #distinct()
 
 # Get total microscopy counts for each sample
 qaDataPerSample = allQAData %>%
@@ -271,7 +391,8 @@ qaDataPerSample = allQAData %>%
 
 # Join the flowcam data with the microscopy data based on the FlowCamID
 fcAndMicro = flowCamData %>%
-  left_join(qaDataPerSample)
+  left_join(qaDataPerSample) %>%
+
 
 # Plot them both to see what it looks like
 plot(fcAndMicro$FCentireSampleCount, fcAndMicro$QAentireSampleCount)
