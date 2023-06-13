@@ -436,7 +436,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     # Make depthWaterM numeric
     mutate(depthWaterM = as.numeric(depthWaterM)) %>%
     # Group the stations so 5mm species are added to the regular counts 
-    group_by(flowcamCode, newName, isCopepod, copepodType, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
+    group_by(flowcamCode, newName, originalNames, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
     # group_by(flowcamCode, newName, facilityName, waterVolume, dataset, yearStart, monthStart, dayStart, myLabel, tidePhase, sampleCode, depthWaterM, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>% 
     
     # This is needed to combine the 250 fraction with the 5mm fraction
@@ -488,10 +488,10 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   rename(class = newName)
 
 # Combine data from all datasets
-fcDataForQA = rbind(nlMerge, marMerge, pacMerge, gulfMerge) %>%
+fcDataForQA = rbind(nlMerge, marMerge, pacMerge, gulfMerge) 
   # Revert back to counts in one sample
   # But this also includes the 5mm fraction
-  mutate(taxaCountPerSample = abund / 4 * waterVolume) 
+  # mutate(taxaCountPerSample = abund / 4 * waterVolume) 
 
 
 
