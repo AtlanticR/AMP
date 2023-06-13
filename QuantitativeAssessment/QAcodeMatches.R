@@ -88,6 +88,11 @@
 # Be careful when matching these, because tide phase and date were not included in QA IDs
 # They were added as separate columns. Need to be included
 
+## NOTE: As of June 9, 2023 we will only be using a select few samples
+# 10 from St. Peters, 10 from NL (2020), 10 from NL (2021), and 10 from Pacific
+# To make analysis more consistent
+# These are identified in the 'selectForAnalysis' column in QA Pairings spreadsheet
+
 ################################################################################
 #### SETUP
 
@@ -112,10 +117,13 @@ options(scipen=999)
 # Read in the file I created that matches the QA samples (and the IDs used by the taxonomists) with the FlowCam IDs
 # Note the FlowCAM IDs are NOT the same as the sampleCodes in the metadata
 # Those will have to be obtained by joining/merging the IDs again with separate files
-qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/QuantAssessPairings.xlsx")
+# THIS IS WHERE WE SELECT WHICH SAMPLES WE ARE LOOKING AT
+qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/selectionsQuantitativeAssessmentPairings.xlsx")
 
 # Read in the file that has the adjustments to the QA taxa names (to make sure they're consistent)
-qaTaxaChanges = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/quantAssess_taxaChanges.xlsx")
+qaTaxaChanges = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/quantAssess_taxaChanges.xlsx") %>%
+  # Only keep the important column names (not all my draft labelling)
+  select(taxStage, taxaUpdateAgain)
 
 
 # Note that I have renamed the QA Excel file names from the originals
@@ -127,18 +135,22 @@ qaTaxaChanges = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFi
 qaGulf2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Gulf_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
   # renaming is "new" = "old"
   rename("countTot" = `Abundance in total sample`,
+         "countSample" = `Count in subsample`,
          "qaSampleID" = `DFO Sample ID`) %>%
   mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 qaMar2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/Mar_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
   rename("countTot" = `Abundance in total sample`,
+         "countSample" = `Count in subsample`,
          "qaSampleID" = `DFO Sample ID`) %>%
   mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 qaNL2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_2021_QA_Zooplankton_AMP.xlsx", sheet = "Quantitative Format (Raw data)") %>%
   rename("countTot" = `Abundance in total sample`,
+         "countSample" = `Count in subsample`,
          "qaSampleID" = `DFO Sample ID`) %>%
   mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 qaNLGulf2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/NL_Gulf_2020_QA_Zooplankton_AMP.xlsx", sheet = "ID raw data") %>%
   rename("countTot" = `Abundance in total sample`,
+         "countSample" = `Count in split`,
          "qaSampleID" = `Unique sample name`,
          "Taxon" = "Species") %>%
   mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
@@ -150,63 +162,96 @@ qaPac2020 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/
   mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
   
 qaPac2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/PAC_2021_QA_Zooplankton_AMP.xlsx", sheet = "4. Biologica Data-Long", skip = 5) %>% # ignore first 5 lines with background info
-  rename("countTot" = `Total Abundance`) %>%
-  filter(countTot != "n/a") %>% # remove this NA where ctenophora fragments were found, but no counts provided
-  mutate(countTot = as.numeric(countTot), # now I can make the value a numeric
+  rename("countTot" = `Total Abundance`,
+         "countSample" = `Raw Abundance`) %>%
+  filter(countTot != "n/a" | countSample !="n/a") %>% # remove this NA where ctenophora fragments were found, but no counts provided
+  mutate(countTot = as.numeric(countTot),
+         countSample = as.numeric(countSample), # now I can make the value a numeric
          # IDs for Pacific samples have to be concatenated with Tide and Date info, or they can't be distinguished
     qaSampleID =  paste(`Client Sample ID`, Tide, `Date Sampled`, sep = "_"), .before = Fraction) %>%
   mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 
 
 # Combine all dataframes (except qaPac2020)
-allData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, qaPac2020) %>%
-  select(qaSampleID, countTot, Taxon, taxStage) %>%
-  left_join(qaID, by = "qaSampleID")
+allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, qaPac2020) %>%
+  select(qaSampleID, countTot, Taxon, taxStage, countSample) %>%
+  # Join with the file that matches FlowCam IDs to Quantitative Assessment IDs
+  left_join(qaID, by = "qaSampleID") %>%
+  # Only select the samples we are interested in
+  filter(selectForAnalysis == "Yes") %>%
+  # Now replace the old names with my new updated names
+  left_join(qaTaxaChanges)
 
 
-test = allData %>%
-  group_by(taxStage) %>%
-  dplyr::summarize(countUnique = sum(countTot))
+qaCodes = allQAData %>%
+  group_by(taxStage, FlowCamID) %>%
+    summarize(totalCount = sum(countSample))
 
-# write.csv(test, "test.csv")
+# write.csv(qaCodes, "")
 
-unique(allData$Taxon)
+################################################################################
+# Get counts per sample in each region:
+
+rawCountsPerSample = allQAData %>%
+  group_by(qaSampleID) %>%
+  summarize(rawSampleCount = sum(countSample))
+
+min(rawCountsPerSample$rawSampleCount)
+max(rawCountsPerSample$rawSampleCount)
+mean(rawCountsPerSample$rawSampleCount)
+sd(rawCountsPerSample$rawSampleCount)
+
+################################################################################
+
+# Get taxa list from the FlowCam samples
+
+taxaIDsFCsamples = qaID %>%
+  left_join(taxaCountsSampleOrigNames, by = c("FlowCamID" = "sample")) %>%
+  filter(selectForAnalysis == "Yes") %>%
+  group_by(originalNames, newName) %>%
+  summarize(countSample = sum(countPerClass))
+
+# write.csv(taxaIDsFCsamples, "taxaIDsFCsamples.csv")
+
+
+
 
 ################################################################################
 ################################################################################
 ## Do some basic plotting
 
 # Make stacked bar charts of counts for each sample in each of the datasets
-# Switch out the dataframe to view (first entry in geom_bar) to view other datasets
+
 ggplot()+
-  geom_bar(qaMar2021, mapping = aes(x = qaSampleID, y = countTot, fill = Taxon), stat = "identity")+
+  geom_bar(allQAData, mapping = aes(x = qaSampleID, y = countSample, fill = taxaUpdateAgain), stat = "identity")+
+  # Break up by region/year so it displays the 4 groups of interest
+  facet_wrap(~regionYear, scales = "free")+
   theme(
-    axis.text = element_blank(),
-    axis.ticks = element_blank()
-    )
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "none")
+
+
 
 
 ################################################################################
-## Make plots of FlowCam counts vs Microscopy counts
 
-# Many papers do a similar analysis (see my Google Doc for examples)
-# Some then perform a correction to get this on a 1:1 relationship
-# See https://www.eeer.org/upload/eer-2018-266.pdf and https://link.springer.com/article/10.1007/s10750-019-03980-w
-# for examples of how to do this
-# I am still in testing mode, so not doing a full description of methods
+
+
+
+
+
+################################################################################
+## Combine FlowCam counts vs Microscopy counts
 
 # Get the FlowCam data put together
 # NOTE dataForQA comes from flowCountQA.R, my test script for reading in count data for this project
 # It's the same as zooplanktonCounts.R, but with a few adjustments for this project
 # Need to join with qaID to match up the FlowCam codes from the quantitative assessment to what Julie put together
 flowCamData = qaID %>%
-  left_join(dataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
-  #filter(regionYear != "Maritimes 21") %>%
-  #group_by(FlowCamID) %>%
-  #mutate(FCentireSampleCount = sum(taxaCountPerSample)) %>%
-  #select(FCentireSampleCount, FlowCamID) %>%
-  #distinct() %>%
-  #left_join(datafor) %>%
+  left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
+  # Only select the samples we're interested in
+  filter(selectForAnalysis == "Yes") %>%
   group_by(qaSampleID) %>%
   mutate(FCentireSampleCount = sum(taxaCountPerSample)) %>%
   select(FCentireSampleCount, qaSampleID, waterVolume, monthStart) %>%
@@ -217,7 +262,7 @@ flowCamData = qaID %>%
   distinct()
 
 # Get total microscopy counts for each sample
-qaDataPerSample = allData %>%
+qaDataPerSample = allQAData %>%
   group_by(FlowCamID) %>%
   mutate(QAentireSampleCount = sum(countTot)) %>%
   ungroup() %>%
