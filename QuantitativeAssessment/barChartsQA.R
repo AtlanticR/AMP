@@ -144,7 +144,10 @@ barChart = function(qaData, fcData){
 
 # Create the charts. Pass in QA data (first item) and then Flowcam data (second)
 gulf20Charts = barChart(allQAData %>% subset(regionYear == "Gulf 2020"), flowCamData %>% subset(regionYear == "Gulf 2020"))
+
 pac21Charts = barChart(allQAData %>% subset(regionYear == "Pac 21"), flowCamData %>% subset(regionYear == "Pac 21"))
+
 nl20Charts = barChart(allQAData %>% subset(regionYear == "NL 2020"), flowCamData %>% subset(regionYear == "NL 2020"))
+
 nl21Charts = barChart(allQAData %>% subset(regionYear == "NL 2021"), flowCamData %>% subset(regionYear == "NL 2021"))
 
