@@ -123,7 +123,7 @@ qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/selec
 # Read in the file that has the adjustments to the QA taxa names (to make sure they're consistent)
 qaTaxaChanges = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/quantAssess_taxaChanges.xlsx") %>%
   # Only keep the important column names (not all my draft labelling)
-  select(taxStage, taxaUpdateAgain)
+  select(taxStage, newName)
 
 # Read in the file that has the adjustments to the FLOWCAM taxa names
 # Note, these are very very slightly different than what I was using for the previous tech report
@@ -185,8 +185,9 @@ allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, 
   # Now replace the old names with my new updated names
   left_join(qaTaxaChanges) %>%
   # Select only the relevant columns again
-  select(FlowCamID, countSample, regionYear, qaSampleID, taxaUpdateAgain) %>%
-  group_by(taxaUpdateAgain, FlowCamID, regionYear, qaSampleID) %>%
+  select(FlowCamID, countSample, regionYear, qaSampleID, newName) %>%
+  # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
+  group_by(newName, FlowCamID, regionYear, qaSampleID) %>%
   summarize(count = sum(countSample))
 
 # Get the FlowCam data. Join my df with the updated taxa names to it
@@ -195,24 +196,99 @@ flowCamData = qaID %>%
   # Only select the samples we're interested in
   filter(selectForAnalysis == "Yes") %>%
   left_join(fcTaxaChanges) %>% 
-  mutate(newNameTake2 = ifelse(is.na(newNameTake2) & originalNames == "Chaetognatha (juvenile or n.s.)", originalNames, newNameTake2)) %>%
-  mutate(newNameTake2 = ifelse(is.na(newNameTake2) & originalNames == "Pseudocalanus spp Civ-vi ", originalNames, newNameTake2)) %>%
+  mutate(newName = ifelse(is.na(newName) & originalNames == "Chaetognatha (juvenile or n.s.)", originalNames, newName)) %>%
+  mutate(newName = ifelse(is.na(newName) & originalNames == "Pseudocalanus spp Civ-vi ", originalNames, newName)) %>%
   # Only select the relevant columns otherwise there are too many
-  select(newNameTake2, regionYear, FlowCamID, qaSampleID, count) %>%
+  select(newName, regionYear, FlowCamID, qaSampleID, count) %>%
   # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
-  group_by(newNameTake2, regionYear, FlowCamID, qaSampleID) %>%
+  group_by(newName, regionYear, FlowCamID, qaSampleID) %>%
   summarize(count = sum(count))
 
 
 
 
 
+################################################################################
 
-qaCodes = allQAData %>%
-  group_by(taxStage, FlowCamID) %>%
-    summarize(totalCount = sum(countSample))
 
-# write.csv(qaCodes, "")
+# Find the __ most abundant taxa. Label all others as "Other"
+# Otherwise there are too many legend items
+bayOther = allQAData %>%
+  # Want counts per taxa (class) for the whole bay, not by tow
+  group_by(newName) %>%
+  summarize(countTotals = sum(count)) %>%
+  mutate(rank = rank(-countTotals),
+         # Keep 5 most abundant classes, make the rest "Other"
+         classRanks = ifelse(rank <=8, newName, "Other")) %>%
+  mutate(relAbund = countTotals/sum(countTotals)) # if i want the relative abundance
+
+# Add this these new classes as a column in the original dataframe
+bayPlotDf = bayOther %>%
+  left_join(allQAData) %>% 
+              # Might be a better way, but I don't want to join the ENTIRE dataframe
+              # select(newName, class, countTotals), by = c("newName" = "newName")) %>%
+  group_by(classRanks, FlowCamID) %>%
+  # If you don't recompute counts, the "Other" class will have a bunch of black lines
+  # if you set the outline colour to black in geom_bar
+  summarise(sumCount = sum(count))
+
+hi = 
+ggplot()+
+  geom_bar(bayPlotDf, mapping = aes(x = FlowCamID, y = sumCount, fill = classRanks), col = "black", linewidth = 0.05, stat = "identity")+
+  # Break up by region/year so it displays the 4 groups of interest
+  #facet_wrap(~regionYear, scales = "free")+
+  #scale_fill_manual(values=as.vector(alphabet(10)))+
+  scale_fill_brewer(palette = "Set3", name = "Taxa")+
+  theme_bw()+
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank())
+
+hi2=
+ggplot() +
+  geom_bar(bayPlotDf, mapping = aes(x=FlowCamID, y=sumCount, fill=classRanks), position = "fill", stat = "identity", col = "black", linewidth = 0.05) +
+  scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
+  scale_fill_brewer(palette = "Set3", name = "Taxa")+
+  theme_bw()+
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+  )
+  
+ggarrange(hi, hi2)
+
+
+
+
+################################################################################
+################################################################################
+## Do some basic plotting
+
+# Make stacked bar charts of counts for each sample in each of the datasets
+
+ggplot()+
+  geom_bar(allQAData, mapping = aes(x = qaSampleID, y = count, fill = newName), stat = "identity")+
+  # Break up by region/year so it displays the 4 groups of interest
+  facet_wrap(~regionYear, scales = "free")+
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "none")
+
+ggplot()+
+  geom_bar(flowCamData, mapping = aes(x = qaSampleID, y = count, fill = newName), stat = "identity")+
+  # Break up by region/year so it displays the 4 groups of interest
+  facet_wrap(~regionYear, scales = "free")+
+  theme(
+    # axis.text.x = element_text(angle = 90),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "none")
+
+
+################################################################################
+### TESTING SOME RAREFACTION THINGS
 
 ################################################################################
 # Get counts per sample in each region:
@@ -226,49 +302,10 @@ max(rawCountsPerSample$rawSampleCount)
 mean(rawCountsPerSample$rawSampleCount)
 sd(rawCountsPerSample$rawSampleCount)
 
-################################################################################
-
-# Get taxa list from the FlowCam samples
-
-# taxaIDsFCsamples = qaID %>%
-#   left_join(taxaCountsSampleOrigNames, by = c("FlowCamID" = "sample")) %>%
-#   filter(selectForAnalysis == "Yes") %>%
-#   group_by(originalNames, newName) %>%
-#   summarize(countSample = sum(countPerClass))
-
-# write.csv(taxaIDsFCsamples, "taxaIDsFCsamples.csv")
 
 
 
 
-################################################################################
-################################################################################
-## Do some basic plotting
-
-# Make stacked bar charts of counts for each sample in each of the datasets
-
-ggplot()+
-  geom_bar(allQAData, mapping = aes(x = qaSampleID, y = count, fill = taxaUpdateAgain), stat = "identity")+
-  # Break up by region/year so it displays the 4 groups of interest
-  facet_wrap(~regionYear, scales = "free")+
-  theme(
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    legend.position = "none")
-
-ggplot()+
-  geom_bar(flowCamData, mapping = aes(x = qaSampleID, y = count, fill = newNameTake2), stat = "identity")+
-  # Break up by region/year so it displays the 4 groups of interest
-  facet_wrap(~regionYear, scales = "free")+
-  theme(
-    # axis.text.x = element_text(angle = 90),
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank())
-    #legend.position = "none")
-
-
-################################################################################
-### TESTING SOME RAREFACTION THINGS
 
 # FIRST WITH THE FLOWCAM DATAs
 
