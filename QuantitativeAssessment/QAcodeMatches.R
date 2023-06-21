@@ -196,8 +196,8 @@ flowCamData = qaID %>%
   # Only select the samples we're interested in
   filter(selectForAnalysis == "Yes") %>%
   left_join(fcTaxaChanges) %>% 
-  mutate(newName = ifelse(is.na(newName) & originalNames == "Chaetognatha (juvenile or n.s.)", originalNames, newName)) %>%
-  mutate(newName = ifelse(is.na(newName) & originalNames == "Pseudocalanus spp Civ-vi ", originalNames, newName)) %>%
+  mutate(newName = ifelse(is.na(newName) & originalNames == "Chaetognatha (juvenile or n.s.)", "Chaetognatha", newName)) %>%
+  mutate(newName = ifelse(is.na(newName) & originalNames == "Pseudocalanus spp Civ-vi ", "Pseudocalanus spp.", newName)) %>%
   # Only select the relevant columns otherwise there are too many
   select(newName, regionYear, FlowCamID, qaSampleID, count) %>%
   # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
