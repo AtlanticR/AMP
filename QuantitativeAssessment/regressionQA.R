@@ -1,127 +1,114 @@
+##############################################################################
+### Regression figures 
 
+# Stephen Finnis
+
+# This code compares counts between the FlowCam and Microscopy for AMP
+# Only for the 40 samples chosen for this study
+
+# I am not sure if this should be converted to densities (ind m^-3) using the 
+# water volume of the tow.
+
+# Note that this uses the total count PER SAMPLE, so there is a conversion based on
+# the percent of the sample analyzed
+
+# Also not sure if there should be separate results per region, or all together
 
 ################################################################################
-## Combine FlowCam counts vs Microscopy counts
+### Prep the data
 
-# Get the FlowCam data put together
+# Run the script that preps the QA and FlowCam data
+source("QuantitativeAssessment/QAcodeMatches.R")
+
+## Put together the Quantitative Assessment data
+# Summarize it to get the total zooplankton counts per sample
+# Combine all dataframes (except qaPac2020)
+allQADataReg = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, qaPac2020) %>%
+  select(qaSampleID, countTot, Taxon, taxStage, countSample) %>%
+  # Join with the file that matches FlowCam IDs to Quantitative Assessment IDs
+  left_join(qaID, by = "qaSampleID") %>%
+  # Only select the samples we are interested in
+  filter(selectForAnalysis == "Yes") %>%
+  # Now replace the old names with my new updated names
+  left_join(qaTaxaChanges) %>%
+  # Select only the relevant columns again
+  select(FlowCamID, countTot, regionYear, qaSampleID, newName) %>%
+  # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
+  group_by(FlowCamID, regionYear, qaSampleID) %>%
+  summarize(countTot = sum(countTot))
+
+## Get the FlowCam data put together
+# Summarize it to get the total zooplankton counts per sample
 # NOTE dataForQA comes from flowCountQA.R, my test script for reading in count data for this project
 # It's the same as zooplanktonCounts.R, but with a few adjustments for this project
 # Need to join with qaID to match up the FlowCam codes from the quantitative assessment to what Julie put together
-flowCamData = qaID %>%
+flowCamDataReg = qaID %>%
   left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
   # Only select the samples we're interested in
   filter(selectForAnalysis == "Yes") %>%
   group_by(qaSampleID) %>%
-  mutate(FCentireSampleCount = sum(count)) %>%
+  mutate(FCentireSampleCount = sum(abundSample)) %>%
   select(FCentireSampleCount, qaSampleID, waterVolume, monthStart) %>%
-  distinct() %>%
-  #group_by(qaSampleID) %>%
-  #mutate(totVol = sum(waterVolume)) %>%
-  # select(-waterVolume) %>%
-  #distinct()
-  
-  # Get total microscopy counts for each sample
-  qaDataPerSample = allQAData %>%
-    group_by(FlowCamID) %>%
-    mutate(QAentireSampleCount = sum(countTot)) %>%
-    ungroup() %>%
-    select(QAentireSampleCount, qaSampleID, site)%>%
-    distinct()
-  
-  # Join the flowcam data with the microscopy data based on the FlowCamID
-  fcAndMicro = flowCamData %>%
-    left_join(qaDataPerSample) %>%
+  distinct() 
+
+## Now combine both the QA and FC data together in one data frame for easier plotting  
+# They are joined based on the same FlowCamID
+fcAndMicro = flowCamDataReg %>%
+    left_join(allQADataReg) 
     
-    
-    # Plot them both to see what it looks like
-    plot(fcAndMicro$FCentireSampleCount, fcAndMicro$QAentireSampleCount)
-  
-  x = lm(fcAndMicro$FCentireSampleCount ~ fcAndMicro$QAentireSampleCount)
-  summary(x)
-  
-  
-  microAbund = fcAndMicro$QAentireSampleCount*4 / fcAndMicro$totVol
-  fcAbund = fcAndMicro$FCentireSampleCount*4/fcAndMicro$totVol
-  
-  plot(microAbund, fcAbund)
-  
-  summary(lm(microAbund ~fcAbund))
-  summary(lm(fcAbund~microAbund))
-  
-  summary(lm(fcAndMicro$FCentireSampleCount~fcAndMicro$QAentireSampleCount))
-  
-  
-  # Now try log transforming it
-  # I think I will need to do this (based on the literature, and also because the data are skewed)
-  plot(log10(fcAndMicro$FCentireSampleCount), log10(fcAndMicro$QAentireSampleCount))
-  
-  # Run a model 2 regression (need to do this because both variables are independent)
-  mod = lmodel2(log10(fcAndMicro$FCentireSampleCount) ~ log10(fcAndMicro$QAentireSampleCount))
-  
-  # Now "correct" the flowcam data
-  # To do this, divide by the slope, and subtract the intercept. This turns it into a 1:1 relationship (see links above for more background)
-  flowcamCorLog10 = (log10(fcAndMicro$FCentireSampleCount) - mod$regression.results$Intercept[1])* (1/mod$regression.results$Slope[1])
-  
-  # Now store all the data in a dataframe
-  # Note that I'm log transforming everything
-  
-  flowcamOrig = fcAndMicro$FCentireSampleCount
-  micro = fcAndMicro$QAentireSampleCount
-  
-  flowcamOrigLog10 = log10(fcAndMicro$FCentireSampleCount)
-  microLog10 = log10(fcAndMicro$QAentireSampleCount)
-  
-  dat = data.frame(flowcamCorLog10, flowcamOrig, micro, flowcamOrigLog10, microLog10)
-  
-  
-  datMeltLog = melt(data = dat,
-                    id.vars = c("microLog10"),
-                    measure.vars = c("flowcamCorLog10", "flowcamOrigLog10"),
-                    variable.name = "flowcamType",
-                    value.name = "value")
-  
-  # datOrig = data.frame(
-  #   type = c(rep("Micro", length(micro)), rep("flowcam", length(flowcamOrig))),
-  #   value = c(micro, flowcamOrig)
-  # )
-  
-  datOrig = data.frame(
-    micro, flowcamOrig
-  )
-  
-  
-  ggplot()+
+
+################################################################################
+### Do some analyses
+
+# Run model 2 regression for non-transformed data
+# Note, this type of regression is used because neither variable (axis) is controlled 
+modOrig = lmodel2(dat$flowcamOrig ~ dat$micro)
+
+# Compare these results against the other type of linear regression
+summary(lm(dat$flowcamOrig ~ dat$micro))
+
+# Create figure that plot counts of all flowcam data (y-axis) against all QA data (x-axis)
+ggplot()+
+  # Add a 1:1 red dashed line that shows a perfect relationship between counts
     geom_abline(slope=1, intercept=0, linetype = "dashed", col = "#F8766D", linewidth = 0.8)+
-    geom_abline(slope = mod$regression.results$Slope[1], intercept = mod$regression.results$Intercept[1], col = "#00BFC4", linetype = "dotdash", linewidth = 0.8)+
-    geom_point(data = datMeltLog, aes(x = microLog10, y = value, fill = flowcamType, pch = flowcamType), size = 4, alpha = 0.9)+
-    scale_shape_manual(values = c(21, 22), labels = c("Corrected", "Original"))+
-    scale_fill_manual(values = c("white", "#00BFC4"), labels = c("Corrected", "Original"))+
-    labs(x = expression(log[10]~"[Microscopy abundance (ind."~ (m^-3) ~"]"),
-         y = expression(log[10]~"[FlowCam abundance (ind."~ (m^-3) ~"]")) +
-    theme_bw()+
-    theme(legend.title = element_blank())
-  
-  
-  # Run model 2 regression for non-transformed data
-  
-  modOrig = lmodel2(dat$flowcamOrig ~ dat$micro)
-  
-  
-  ggplot()+
-    geom_abline(slope=1, intercept=0, linetype = "dashed", col = "#F8766D", linewidth = 0.8)+
+  # Add true regression line from model 2 regression
     geom_abline(slope = modOrig$regression.results$Slope[1], intercept = modOrig$regression.results$Intercept[1], col = "lightblue", linetype = "dotdash", linewidth = 0.8)+
-    
-    geom_point(data = datOrig, aes(x = micro, y = flowcamOrig), pch = 21, size = 4, alpha = 0.9, fill = "lightblue")+
-    
-    labs(x = "Microscopy abundance (ind."~ (m^-3),
-         y = "FlowCam abundance (ind."~ (m^-3)) +
+    geom_point(data = fcAndMicro, aes(x = countTot, y = FCentireSampleCount), pch = 21, size = 4, alpha = 0.9, fill = "lightblue")+
+    labs(x = "Microscopy counts (# ind per sample)",
+         y = "FlowCam counts (# ind per sample)") +
     theme_bw()+
     theme(legend.title = element_blank())
   
-  
-  
-  
-  
+
+# Show these same relationships broken up by the 4 regions
+ggplot()+
+  geom_point(data = fcAndMicro, aes(x = countTot, y = FCentireSampleCount), pch = 21, size = 4, alpha = 0.9, fill = "lightblue")+
+  facet_wrap(~regionYear, scales = "free")+
+  labs(x = "Microscopy counts (# ind per sample)",
+       y = "FlowCam counts (# ind per sample)") +
+  theme_bw()+
+  theme(legend.title = element_blank())
+
+
+# Create the same plot (without the regression lines) that plots these as abundances in seawater (idk if I'm supposed to do this)
+ggplot()+
+  #geom_abline(slope=1, intercept=0, linetype = "dashed", col = "#F8766D", linewidth = 0.8)+
+  #geom_abline(slope = modOrig$regression.results$Slope[1], intercept = modOrig$regression.results$Intercept[1], col = "lightblue", linetype = "dotdash", linewidth = 0.8)+
+  geom_point(data = fcAndMicro, aes(x = countTot*4/waterVolume, y = FCentireSampleCount*4/waterVolume), pch = 21, size = 4, alpha = 0.9, fill = "lightblue")+
+  labs(x = "Microscopy counts (# ind per sample)",
+       y = "FlowCam counts (# ind per sample)") +
+  theme_bw()+
+  theme(legend.title = element_blank())
+
+
+
+
+###############################################################################
+###############################################################################  
+###############################################################################
+#### OTHER TESTS 
+
+
   # also see
   # https://www.eeer.org/upload/eer-2018-266.pdf for more bias corrections
   
