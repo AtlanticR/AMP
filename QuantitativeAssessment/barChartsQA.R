@@ -151,3 +151,47 @@ nl20Charts = barChart(allQAData %>% subset(regionYear == "NL 2020"), flowCamData
 
 nl21Charts = barChart(allQAData %>% subset(regionYear == "NL 2021"), flowCamData %>% subset(regionYear == "NL 2021"))
 
+
+
+################################################################################
+################################################################################
+
+
+fcQaData = rbind(allQAData %>% mutate(type = "QA"), flowCamData %>% mutate(type = "FC"))
+
+sampleSummary = fcQaData %>%
+  group_by(FlowCamID, type) %>%
+  mutate(relAbund = count / sum(count)*100) %>%
+  group_by(newName, type, regionYear) %>%
+  mutate(meanAbund = mean(relAbund),
+         sdAbund = sd(relAbund)) %>%
+  select(newName, regionYear, meanAbund, sdAbund, type) %>%
+  distinct()
+
+
+barChartComparison = function(relData, regionYear, plotName) {
+
+  # Newfoundland 2020
+  ggplot(relData %>% filter(regionYear == regionYear), aes(x = meanAbund, y = newName, fill = type, col = type))+
+    geom_errorbar(aes(xmin=meanAbund, xmax=meanAbund+sdAbund), width=.2,
+                  position=position_dodge(.8), col = "black")+
+    geom_col(position = position_dodge2(preserve = "single"), width = 0.8)+
+    #coord_flip()+
+    xlab("Average relative abundance (%)")+
+    ggtitle(plotName)+
+    scale_fill_discrete(labels=c('FlowCam', 'Microscopy'))+
+    scale_color_discrete(labels = c("FlowCam", "Microscopy"))+
+
+    theme_bw()+
+    theme(
+      axis.title.y = element_blank(),
+      legend.title = element_blank())
+  
+}
+  
+barChartComparison(sampleSummary %>% filter(regionYear == "NL 2020"), "NL 2020", "Newfoundland 2020")
+barChartComparison(sampleSummary %>% filter(regionYear == "NL 2021"), "NL 2021", "Newfoundland 2021")
+barChartComparison(sampleSummary %>% filter(regionYear == "Pac 21"), "Pac 21", "Pacific 2021") 
+barChartComparison(sampleSummary %>% filter(regionYear == "Gulf 2020"), "Gulf 2020", "Gulf 2020") 
+
+
