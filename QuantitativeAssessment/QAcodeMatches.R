@@ -175,20 +175,8 @@ qaPac2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/
   mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 
 
-# Combine all dataframes (except qaPac2020)
-allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, qaPac2020) %>%
-  select(qaSampleID, countTot, Taxon, taxStage, countSample) %>%
-  # Join with the file that matches FlowCam IDs to Quantitative Assessment IDs
-  left_join(qaID, by = "qaSampleID") %>%
-  # Only select the samples we are interested in
-  filter(selectForAnalysis == "Yes") %>%
-  # Now replace the old names with my new updated names
-  left_join(qaTaxaChanges) %>%
-  # Select only the relevant columns again
-  select(FlowCamID, countSample, regionYear, qaSampleID, newName) %>%
-  # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
-  group_by(newName, FlowCamID, regionYear, qaSampleID) %>%
-  summarize(count = sum(countSample))
+
+
 
 # Get the FlowCam data. Join my df with the updated taxa names to it
 flowCamData = qaID %>%
@@ -199,11 +187,36 @@ flowCamData = qaID %>%
   mutate(newName = ifelse(is.na(newName) & originalNames == "Chaetognatha (juvenile or n.s.)", "Chaetognatha", newName)) %>%
   mutate(newName = ifelse(is.na(newName) & originalNames == "Pseudocalanus spp Civ-vi ", "Pseudocalanus spp.", newName)) %>%
   # Only select the relevant columns otherwise there are too many
-  select(newName, regionYear, FlowCamID, qaSampleID, count) %>%
+  select(newName, regionYear, FlowCamID, qaSampleID, count, abund, waterVolume) %>%
   # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
-  group_by(newName, regionYear, FlowCamID, qaSampleID) %>%
-  summarize(count = sum(count))
+  group_by(newName, regionYear, FlowCamID, qaSampleID, waterVolume) %>%
+  summarize(count = sum(count), 
+            abund = sum(abund)) # this is abundance in seawater i.e., ind per ml
 
+# Extract the water volume for each sample from the FlowCam data because I need to add this to the QA data below
+waterVolSamples = flowCamData %>%
+  ungroup() %>%
+  select(waterVolume, FlowCamID) %>%
+  distinct()
+
+
+# Combine all Quantitative Assessment dataframes (except qaPac2020)
+allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, qaPac2020) %>%
+  select(qaSampleID, countTot, Taxon, taxStage, countSample) %>%
+  # Join with the file that matches FlowCam IDs to Quantitative Assessment IDs
+  left_join(qaID, by = "qaSampleID") %>%
+  # Only select the samples we are interested in
+  filter(selectForAnalysis == "Yes") %>%
+  # Now replace the old names with my new updated names
+  left_join(qaTaxaChanges) %>%
+  # Select only the relevant columns again
+  select(FlowCamID, countSample, regionYear, qaSampleID, newName, countTot) %>%
+  # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
+  group_by(newName, FlowCamID, regionYear, qaSampleID) %>%
+  summarize(count = sum(countSample),
+            countTot = sum(countTot)) %>%
+  left_join(waterVolSamples, by = "FlowCamID") %>%
+  mutate(abund = countTot * 4 /waterVolume)
 
 
 
