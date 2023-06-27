@@ -28,58 +28,6 @@ source("QuantitativeAssessment/QAcodeMatches.R")
 barChart = function(qaData, fcData){
 
 
-  ### Quantitative Assessment data
-  
-  # Find the __ most abundant taxa. Label all others as "Other"
-  # Otherwise there are too many legend items
-  datRankedQA = qaData %>%
-    # Want counts per taxa (class) for the whole bay, not by tow
-    group_by(newName) %>%
-    summarize(countTotals = sum(count)) %>%
-    mutate(rank = rank(-countTotals),
-           # Keep 5 most abundant classes, make the rest "Other"
-           classRanks = ifelse(rank <=8, newName, "Other")) %>%
-    mutate(relAbund = countTotals/sum(countTotals)) # if i want the relative abundance
-  
-  # Add this these new classes as a column in the original data frame for plotting
-  datPlotQA = datRankedQA %>%
-    left_join(qaData) %>% 
-    group_by(classRanks, FlowCamID) %>%
-    # If you don't recompute counts, the "Other" class will have a bunch of black lines
-    # if you set the outline colour to black in geom_bar
-    summarise(sumCount = sum(count))
-  
-  # Create stacked bar chart
-  stackedBarQA = 
-    ggplot()+
-    geom_bar(datPlotQA, mapping = aes(x = FlowCamID, y = sumCount, fill = classRanks), col = "black", linewidth = 0.05, stat = "identity")+
-    scale_y_continuous(name = "Count")+
-    scale_x_discrete(name = "Sample")+
-    scale_fill_brewer(palette = "Set3", name = "")+
-    labs(title = "Quantitative Assessment Data")+
-    theme_bw()+
-    theme(
-      axis.text.x = element_blank(),
-      # axis.text.x = element_text(angle = 90),
-      axis.ticks.x = element_blank())
-  
-  # Relative abundance chart
-  relAbundQA =
-    ggplot() +
-    geom_bar(datPlotQA, mapping = aes(x=FlowCamID, y=sumCount, fill=classRanks), position = "fill", stat = "identity", col = "black", linewidth = 0.05) +
-    scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
-    scale_x_discrete(name = "Sample")+
-    scale_fill_brewer(palette = "Set3", name = "")+
-    theme_bw()+
-    theme(
-      axis.text.x = element_blank(),
-      # axis.text.x = element_text(angle = 90),
-      axis.ticks.x = element_blank(),
-      panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(),
-      #panel.grid.major.y = element_blank(),
-    )
-
   
   ### FlowCam Data!
   
@@ -134,23 +82,82 @@ barChart = function(qaData, fcData){
       #panel.grid.major.y = element_blank(),
     )
   
+  
+
+  ### Quantitative Assessment data
+  
+  # Find the __ most abundant taxa. Label all others as "Other"
+  # Otherwise there are too many legend items
+  datRankedQA = qaData %>%
+    # Want counts per taxa (class) for the whole bay, not by tow
+    group_by(newName) %>%
+    summarize(countTotals = sum(count)) %>%
+    mutate(rank = rank(-countTotals),
+           # Keep 5 most abundant classes, make the rest "Other"
+           classRanks = ifelse(rank <=8, newName, "Other")) %>%
+    mutate(relAbund = countTotals/sum(countTotals)) # if i want the relative abundance
+  
+  
+  # UPDATE: I actually want the colour scheme to be the same as it is for the FlowCam data 
+  # Add this these new classes as a column in the original data frame for plotting
+  datPlotQA = datRankedFC %>% # replace with "datRankedQA" if using unique colour scheme
+    left_join(qaData) %>% 
+    group_by(classRanks, FlowCamID) %>%
+    # If you don't recompute counts, the "Other" class will have a bunch of black lines
+    # if you set the outline colour to black in geom_bar
+    summarise(sumCount = sum(count)) %>%
+    # Remove these last 2 lines if QA data should have its own unique colour scheme
+    # This will join the FlowCam colour scheme to the QA data. but will result in NAs because sometimes QA doesn't have the same classes
+    # Change these NAs to zero. Also the FlowCam ID will be NA so if that's the case, just set it to a random (I chose 30) flowcam ID instead
+    mutate(sumCount = ifelse(is.na(sumCount), 0, sumCount),
+           FlowCamID = ifelse(is.na(FlowCamID), qaData$FlowCamID[30], FlowCamID)) 
+  
+  # Create stacked bar chart
+  stackedBarQA = 
+    ggplot()+
+    geom_bar(datPlotQA, mapping = aes(x = FlowCamID, y = sumCount, fill = classRanks), col = "black", linewidth = 0.05, stat = "identity")+
+    scale_y_continuous(name = "Count")+
+    scale_x_discrete(name = "Sample")+
+    scale_fill_brewer(palette = "Set3", name = "")+
+    labs(title = "Quantitative Assessment Data")+
+    theme_bw()+
+    theme(
+      axis.text.x = element_blank(),
+      # axis.text.x = element_text(angle = 90),
+      axis.ticks.x = element_blank())
+  
+  # Relative abundance chart
+  relAbundQA =
+    ggplot() +
+    geom_bar(datPlotQA, mapping = aes(x=FlowCamID, y=sumCount, fill=classRanks), position = "fill", stat = "identity", col = "black", linewidth = 0.05) +
+    scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
+    scale_x_discrete(name = "Sample")+
+    scale_fill_brewer(palette = "Set3", name = "")+
+    theme_bw()+
+    theme(
+      axis.text.x = element_blank(),
+      # axis.text.x = element_text(angle = 90),
+      axis.ticks.x = element_blank(),
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(),
+      #panel.grid.major.y = element_blank(),
+    )
+
+  
+
 
   # Put everything together
   # ggarrange makes plots line up even when legends are different sizes
-  ggarrange(stackedBarQA, relAbundQA, stackedBarFC, relAbundFC, ncol = 2)
+  ggarrange(stackedBarFC, relAbundFC, stackedBarQA, relAbundQA, ncol = 2)
   # test = list(stackedBar, relAbund)
 }
 
 
 # Create the charts. Pass in QA data (first item) and then Flowcam data (second)
 gulf20Charts = barChart(allQAData %>% subset(regionYear == "Gulf 2020"), flowCamData %>% subset(regionYear == "Gulf 2020"))
-
 pac21Charts = barChart(allQAData %>% subset(regionYear == "Pac 21"), flowCamData %>% subset(regionYear == "Pac 21"))
-
 nl20Charts = barChart(allQAData %>% subset(regionYear == "NL 2020"), flowCamData %>% subset(regionYear == "NL 2020"))
-
 nl21Charts = barChart(allQAData %>% subset(regionYear == "NL 2021"), flowCamData %>% subset(regionYear == "NL 2021"))
-
 
 
 ################################################################################
