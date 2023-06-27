@@ -1,17 +1,20 @@
 ################################################################################
 ################################################################################
-##### Bar charts
+##### Bar chart figures
 
-# Create bar charts that compare the FlowCam and Quantitative Assessment data
-# For now, I'm making both stacked bar charts and relative abundance charts
+# Create the code for different bar charts of FlowCam (FC) /microscopy 
+# (QA = quantitative assessment) comparisons
 
-# Created by Stephen Finnis
+# The first ones are comparisons of every sample between the FC/QA data
+# Shows relative abundance and stacked bar charts with breakdown of plankton within each sample
+
+# Next ones show side by side bar charts of each taxa (as average relative abundance), 
+# and how those differ between regions.
 
 ################################################################################
 
 # Read in the script that puts together the QA (microscopy) and Flowcam data
 source("QuantitativeAssessment/QAcodeMatches.R")
-
 
 ################################################################################
 
@@ -27,8 +30,6 @@ source("QuantitativeAssessment/QAcodeMatches.R")
 # It was easiest to create all 4 in one function and then use ggarrange to put them together
 barChart = function(qaData, fcData){
 
-
-  
   ### FlowCam Data!
   
   # Find the __ most abundant taxa. Label all others as "Other"
@@ -83,7 +84,6 @@ barChart = function(qaData, fcData){
     )
   
   
-
   ### Quantitative Assessment data
   
   # Find the __ most abundant taxa. Label all others as "Other"
@@ -143,13 +143,10 @@ barChart = function(qaData, fcData){
       #panel.grid.major.y = element_blank(),
     )
 
-  
-
 
   # Put everything together
   # ggarrange makes plots line up even when legends are different sizes
   ggarrange(stackedBarFC, relAbundFC, stackedBarQA, relAbundQA, ncol = 2)
-  # test = list(stackedBar, relAbund)
 }
 
 
@@ -162,33 +159,37 @@ nl21Charts = barChart(allQAData %>% subset(regionYear == "NL 2021"), flowCamData
 
 ################################################################################
 ################################################################################
+## Plots of taxa comparisons
+# Create bar charts that show the average relative abundance for each taxa
+# Have FlowCam data beside the Microscopy data
 
-
+# Combine the flowcam and microscopy datasets. Label each row as QA or FC
 fcQaData = rbind(allQAData %>% mutate(type = "QA"), flowCamData %>% mutate(type = "FC"))
 
+# Get summary stats for plotting
+# I want the average relative abundance for each sample in each region
 sampleSummary = fcQaData %>%
+  # Get the relative abundance for each sample
   group_by(FlowCamID, type) %>%
   mutate(relAbund = count / sum(count)*100) %>%
+  # Now get the AVERAGE relative abundance for each sample. and the standard deviation
   group_by(newName, type, regionYear) %>%
   mutate(meanAbund = mean(relAbund),
          sdAbund = sd(relAbund)) %>%
   select(newName, regionYear, meanAbund, sdAbund, type) %>%
   distinct()
 
-
+# Create a function to make bar chart comparisons for each region
 barChartComparison = function(relData, regionYear, plotName) {
 
-  # Newfoundland 2020
-  ggplot(relData %>% filter(regionYear == regionYear), aes(x = meanAbund, y = newName, fill = type, col = type))+
+  ggplot(relData, aes(x = meanAbund, y = newName, fill = type, col = type))+
     geom_errorbar(aes(xmin=meanAbund, xmax=meanAbund+sdAbund), width=.2,
                   position=position_dodge(.8), col = "black")+
     geom_col(position = position_dodge2(preserve = "single"), width = 0.8)+
-    #coord_flip()+
     xlab("Average relative abundance (%)")+
     ggtitle(plotName)+
     scale_fill_discrete(labels=c('FlowCam', 'Microscopy'))+
     scale_color_discrete(labels = c("FlowCam", "Microscopy"))+
-
     theme_bw()+
     theme(
       axis.title.y = element_blank(),
@@ -196,6 +197,7 @@ barChartComparison = function(relData, regionYear, plotName) {
   
 }
   
+# Create the bar charts for each region separately
 barChartComparison(sampleSummary %>% filter(regionYear == "NL 2020"), "NL 2020", "Newfoundland 2020")
 barChartComparison(sampleSummary %>% filter(regionYear == "NL 2021"), "NL 2021", "Newfoundland 2021")
 barChartComparison(sampleSummary %>% filter(regionYear == "Pac 21"), "Pac 21", "Pacific 2021") 
