@@ -191,8 +191,10 @@ flowCamData = qaID %>%
   # Need to make adjustments: a few taxa names were combined within each sample. Make sure these are added together.
   group_by(newName, regionYear, FlowCamID, qaSampleID, waterVolume) %>%
   summarize(count = sum(count), 
-            abund = sum(abund)) # this is abundance in seawater i.e., ind per ml
-
+            abund = sum(abund), # this is abundance in seawater i.e., ind per ml
+            countTot = abund * waterVolume / 4) %>%  # this is total counts in 1 subsample
+  mutate(type = "FC")
+  
 # Extract the water volume for each sample from the FlowCam data because I need to add this to the QA data below
 waterVolSamples = flowCamData %>%
   ungroup() %>%
@@ -216,9 +218,6 @@ allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, 
   summarize(count = sum(countSample),
             countTot = sum(countTot)) %>%
   left_join(waterVolSamples, by = "FlowCamID") %>%
-  mutate(abund = countTot * 4 /waterVolume)
-
-
-
-
-
+  mutate(abund = countTot * 4 /waterVolume,
+         type = "QA")
+  
