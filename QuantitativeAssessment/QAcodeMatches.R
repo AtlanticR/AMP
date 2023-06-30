@@ -175,9 +175,6 @@ qaPac2021 = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/
   mutate("taxStage" = ifelse(is.na(Stage), Taxon, paste(Taxon, Stage)))
 
 
-
-
-
 # Get the FlowCam data. Join my df with the updated taxa names to it
 flowCamData = qaID %>%
   left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
@@ -201,7 +198,6 @@ waterVolSamples = flowCamData %>%
   select(waterVolume, FlowCamID) %>%
   distinct()
 
-
 # Combine all Quantitative Assessment dataframes (except qaPac2020)
 allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, qaPac2020) %>%
   select(qaSampleID, countTot, Taxon, taxStage, countSample) %>%
@@ -221,3 +217,5 @@ allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, 
   mutate(abund = countTot * 4 /waterVolume,
          type = "QA")
   
+# Combine the FlowCam and QA data into 1 data frame
+fcQaDf = rbind(allQAData, flowCamData)
