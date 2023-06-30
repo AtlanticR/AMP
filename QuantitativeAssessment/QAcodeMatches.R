@@ -190,7 +190,8 @@ flowCamData = qaID %>%
   summarize(count = sum(count), 
             abund = sum(abund), # this is abundance in seawater i.e., ind per ml
             countTot = abund * waterVolume / 4) %>%  # this is total counts in 1 subsample
-  mutate(type = "FC")
+  mutate(type = "FC") %>%
+  distinct() # remove duplicates that were created from renaming and joining taxa
   
 # Extract the water volume for each sample from the FlowCam data because I need to add this to the QA data below
 waterVolSamples = flowCamData %>%
