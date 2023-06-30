@@ -28,24 +28,24 @@ source("QuantitativeAssessment/QAcodeMatches.R")
 # 4. Lower right: FC rel abundance
 
 # It was easiest to create all 4 in one function and then use ggarrange to put them together
-barChart = function(qaData, fcData){
-
+barChart = function(comboData){
+  
   ### FlowCam Data!
   
   # Find the __ most abundant taxa. Label all others as "Other"
   # Otherwise there are too many legend items
-  datRankedFC = fcData %>%
+  datRanked = comboData %>%
     # Want counts per taxa (class) for the whole bay, not by tow
     group_by(newName) %>%
     summarize(countTotals = sum(count)) %>%
     mutate(rank = rank(-countTotals),
            # Keep 5 most abundant classes, make the rest "Other"
-           classRanks = ifelse(rank <=8, newName, "Other")) %>%
+           classRanks = ifelse(rank <=11, newName, "Other")) %>%
     mutate(relAbund = countTotals/sum(countTotals)) # if i want the relative abundance
   
   # Add this these new classes as a column in the original data frame for plotting
-  datPlotFC = datRankedFC %>%
-    left_join(fcData) %>% 
+  datPlot = datRanked %>%
+    left_join(comboData) %>% 
     group_by(classRanks, FlowCamID, type) %>%
     # If you don't recompute counts, the "Other" class will have a bunch of black lines
     # if you set the outline colour to black in geom_bar
@@ -53,167 +53,96 @@ barChart = function(qaData, fcData){
               abund = sum(abund),
               countTot = sum(countTot))
   
+  datPlot$FlowCamID = as.factor(datPlot$FlowCamID)
+  levels(datPlot$FlowCamID) = c("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10")
+
+  
   # Create stacked bar chart
-  stackedBarFC = 
+  stackedBar =
     ggplot()+
-    geom_bar(datPlotFC, mapping = aes(x = FlowCamID, y = sumCount, fill = classRanks), col = "black", linewidth = 0.05, stat = "identity")+
+    geom_bar(datPlot, mapping = aes(x = type, y = sumCount, fill = classRanks), col = "black", linewidth = 0.05, stat = "identity")+
+    facet_grid(.~FlowCamID)+
     scale_y_continuous(name = "Count")+
     scale_x_discrete(name = "Sample")+
     scale_fill_brewer(palette = "Set3", name = "")+
-    ggtitle("FlowCam Data")+
+    ggtitle("Number of individuals ID'd by taxonomists")+
     theme_bw()+
     theme(
-      axis.text.x = element_blank(),
-      # axis.text.x = element_text(angle = 90),
-      axis.ticks.x = element_blank())
+      axis.title.x = element_blank()
+      )+
+    guides(fill = guide_legend(ncol=2))
   
   # Relative abundance chart
-  relAbundFC =
+  relAbund =
     ggplot() +
-    geom_bar(datPlotFC, mapping = aes(x=FlowCamID, y=sumCount, fill=classRanks), position = "fill", stat = "identity", col = "black", linewidth = 0.05) +
+    geom_bar(datPlot, mapping = aes(x=type, y=abund, fill=classRanks), position = "fill", stat = "identity", col = "black", linewidth = 0.05) +
+    facet_grid(.~FlowCamID)+
     scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
     scale_x_discrete(name = "Sample")+
+    ggtitle("Relative abundance")+
     scale_fill_brewer(palette = "Set3", name = "")+
     theme_bw()+
     theme(
-      axis.text.x = element_blank(),
+      axis.title.x = element_blank()
+    )+
+    guides(fill = guide_legend(ncol=2))
+  
+  
+  abundPlot = 
+    ggplot()+
+    geom_col(data = datPlot, aes(x=type, y=abund, fill=classRanks), col = "black", linewidth = 0.05) +
+    facet_grid(.~FlowCamID)+
+    scale_fill_brewer(palette = "Set3", name = "")+
+    ggtitle("Abundance in seawater")+
+    scale_x_discrete(name = "Sample")+
+    theme_bw()+
+    theme(
+      axis.title.x = element_blank()
       
-      # axis.text.x = element_text(angle = 90),
-      axis.ticks.x = element_blank(),
-      panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(),
-      #panel.grid.major.y = element_blank(),
-    )
+      
+    )+
+    guides(fill = guide_legend(ncol=2))
   
-  
-
-  
-  
-  
-  ### Quantitative Assessment data
-  
-  # Find the __ most abundant taxa. Label all others as "Other"
-  # Otherwise there are too many legend items
-  datRankedQA = qaData %>%
-    # Want counts per taxa (class) for the whole bay, not by tow
-    group_by(newName) %>%
-    summarize(countTotals = sum(count)) %>%
-    mutate(rank = rank(-countTotals),
-           # Keep 5 most abundant classes, make the rest "Other"
-           classRanks = ifelse(rank <=8, newName, "Other")) %>%
-    mutate(relAbund = countTotals/sum(countTotals)) # if i want the relative abundance
-  
-  
-  # UPDATE: I actually want the colour scheme to be the same as it is for the FlowCam data 
-  # Add this these new classes as a column in the original data frame for plotting
-  datPlotQA = datRankedQA %>% # replace with "datRankedQA" if using unique colour scheme
-    left_join(qaData) %>% 
-    group_by(classRanks, FlowCamID, type) %>%
-    # If you don't recompute counts, the "Other" class will have a bunch of black lines
-    # if you set the outline colour to black in geom_bar
-    summarise(sumCount = sum(count),
-              abund = sum(abund),
-              countTot = sum(countTot)) %>%
-    # Remove these last 2 lines if QA data should have its own unique colour scheme
-    # This will join the FlowCam colour scheme to the QA data. but will result in NAs because sometimes QA doesn't have the same classes
-    # Change these NAs to zero. Also the FlowCam ID will be NA so if that's the case, just set it to a random (I chose 30) flowcam ID instead
-    mutate(sumCount = ifelse(is.na(sumCount), 0, sumCount),
-           abund = ifelse(is.na(abund), 0, abund),
-           countTot = ifelse(is.na(countTot), 0, countTot),
-           type = ifelse(is.na(type), "QA", type),
-           FlowCamID = ifelse(is.na(FlowCamID), qaData$FlowCamID[30], FlowCamID)) 
-  
-  # Create stacked bar chart
-  stackedBarQA = 
+  countTotPlot = 
     ggplot()+
-    geom_bar(datPlotQA, mapping = aes(x = FlowCamID, y = sumCount, fill = classRanks), col = "black", linewidth = 0.05, stat = "identity")+
+    geom_col(data = datPlot, aes(x=type, y= countTot, fill=classRanks), col = "black", linewidth = 0.05) +
+    facet_grid(.~FlowCamID)+
+    ggtitle("Number of individuals in subsample (1/4 of tow)")+
     scale_y_continuous(name = "Count")+
-    scale_x_discrete(name = "Sample")+
     scale_fill_brewer(palette = "Set3", name = "")+
-    labs(title = "Quantitative Assessment Data")+
+    #scale_x_discrete(name = "Sample")+
     theme_bw()+
     theme(
-      axis.text.x = element_blank(),
-      # axis.text.x = element_text(angle = 90),
-      axis.ticks.x = element_blank())
-  
-  # Relative abundance chart
-  relAbundQA =
-    ggplot() +
-    geom_bar(datPlotQA, mapping = aes(x=FlowCamID, y=sumCount, fill=classRanks), position = "fill", stat = "identity", col = "black", linewidth = 0.05) +
-    scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
-    scale_x_discrete(name = "Sample")+
-    scale_fill_brewer(palette = "Set3", name = "")+
-    theme_bw()+
-    theme(
-      axis.text.x = element_blank(),
-      # axis.text.x = element_text(angle = 90),
-      axis.ticks.x = element_blank(),
-      panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(),
-      #panel.grid.major.y = element_blank(),
-    )
-
+      axis.title.x = element_blank()
+      )+
+    guides(fill = guide_legend(ncol=2))
   
   
-  g1 = 
-    ggplot()+
-    geom_col(data = rbind(datPlotFC, datPlotQA), aes(x=type, y=abund, fill=classRanks), col = "black", linewidth = 0.05) + 
-    facet_grid(.~FlowCamID)+
-    scale_fill_brewer(palette = "Set3", name = "")+
-    scale_x_discrete(name = "Sample")+
-    theme_bw()+
-    theme(
-      axis.text.x = element_blank(),
-      # axis.text.x = element_text(angle = 90),
-      axis.ticks.x = element_blank())
-  
-  g2 = 
-    ggplot()+
-    geom_col(data = rbind(datPlotFC, datPlotQA), aes(x=type, y= countTot, fill=classRanks), col = "black", linewidth = 0.05) + 
-    facet_grid(.~FlowCamID)+
-    scale_fill_brewer(palette = "Set3", name = "")+
-    scale_x_discrete(name = "Sample")+
-    theme_bw()+
-    theme(
-      axis.text.x = element_blank(),
-      # axis.text.x = element_text(angle = 90),
-      axis.ticks.x = element_blank())
-  
-  # g2 = 
-  #   ggplot()+
-  #   geom_col(data = test3, aes(x=type, y=countTot, fill=newName)) + 
-  #   facet_grid(.~FlowCamID)
-  
-  
-  
-  ggarrange(g1, g2)
-  
-  
-  
-
   # Put everything together
   # ggarrange makes plots line up even when legends are different sizes
-  # ggarrange(stackedBarFC, relAbundFC, stackedBarQA, relAbundQA, ncol = 2)
-  #ggarrange(g1, g2)
-  
-  #return(datPlotQA)
+  ggarrange(stackedBar, countTotPlot, relAbund)
+
 }
+
+comboDat = rbind(allQAData, flowCamData)
+
+#levels(as.factor(comboDat$FlowCamID))
 
 
 # Create the charts. Pass in QA data (first item) and then Flowcam data (second)
-gulf20Charts = barChart(allQAData %>% subset(regionYear == "Gulf 2020"), flowCamData %>% subset(regionYear == "Gulf 2020"))
-pac21Charts = barChart(allQAData %>% subset(regionYear == "Pac 21"), flowCamData %>% subset(regionYear == "Pac 21"))
-nl20Charts = barChart(allQAData %>% subset(regionYear == "NL 2020"), flowCamData %>% subset(regionYear == "NL 2020"))
-nl21Charts = barChart(allQAData %>% subset(regionYear == "NL 2021"), flowCamData %>% subset(regionYear == "NL 2021"))
+gulf20Charts = barChart(comboDat %>% subset(regionYear == "Gulf 2020"))
+pac21Charts = barChart(comboDat %>% subset(regionYear == "Pac 21"))
+nl20Charts = barChart(comboDat %>% subset(regionYear == "NL 2020"))
+nl21Charts = barChart(comboDat %>% subset(regionYear == "NL 2021"))
 
 ################################################################################
 ################################################################################
 # Now compare abundances in seawater
 
 
-test =  allQAData %>% subset(regionYear == "Gulf 2020")
+test =  allQAData %>% subset(regionYear == "Pac 21")
 test2 = flowCamData %>% subset(regionYear == "Gulf 2020")
+
 
 
 test3 = rbind(test, test2)
