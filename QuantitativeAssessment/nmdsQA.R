@@ -15,7 +15,8 @@ source("QuantitativeAssessment/QAcodeMatches.R")
 
 
 ordPrepDf = fcQaDf %>%
-  select(newName, FlowCamID, regionYear, abund, type, qaSampleID)
+  select(newName, FlowCamID, regionYear, abund, type, qaSampleID) %>%
+  filter(newName != "EGG CHECK") 
   # Get the relative abundance for each sample
   # group_by(FlowCamID, type) %>%
   # mutate(relAbund = abund / sum(abund)*100) %>%
