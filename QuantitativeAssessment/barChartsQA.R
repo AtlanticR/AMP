@@ -135,34 +135,6 @@ pac21Charts = barChart(comboDat %>% subset(regionYear == "Pac 21"))
 nl20Charts = barChart(comboDat %>% subset(regionYear == "NL 2020"))
 nl21Charts = barChart(comboDat %>% subset(regionYear == "NL 2021"))
 
-################################################################################
-################################################################################
-# Now compare abundances in seawater
-
-
-test =  allQAData %>% subset(regionYear == "Pac 21")
-test2 = flowCamData %>% subset(regionYear == "Gulf 2020")
-
-
-
-test3 = rbind(test, test2)
-
-
-
-g1 = 
-ggplot()+
-  geom_col(data = test3, aes(x=type, y=abund, fill=newName)) + 
-  facet_grid(.~FlowCamID)
-
-g2 = 
-  ggplot()+
-  geom_col(data = test3, aes(x=type, y=countTot, fill=newName)) + 
-  facet_grid(.~FlowCamID)
-
-
-
-ggarrange(g1, g2)
-
 
 ################################################################################
 ################################################################################
