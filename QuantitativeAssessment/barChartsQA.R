@@ -184,12 +184,14 @@ barChartComparison = function(relData, regionYear, plotName) {
   
   # Make a plot that has 3 panels: present in both, present in flowcam only, present in microscopy only
   ggplot(relData, aes(x = meanAbund, y = newName, fill = type))+
-    # geom_errorbar(aes(xmin=meanAbund, xmax=meanAbund+sdAbund), width=.2,
-    #               position=position_dodge(.8), col = "black")+
+
     geom_col(position = position_dodge2(preserve = "single"), width = 0.8)+
     #facet_wrap(~presence, scales = "free_y", ncol = 1)+
     # facet_grid seems better for getting bar width the same, but panel sizes to be different
     facet_grid(presence~., scales = "free", space = "free", switch = "y")+ 
+    # Need an ifelse statement to remove error bars when the standard deviation is zero by making them NAs
+    geom_errorbar(aes(xmin=ifelse(sdAbund == 0, NA, meanAbund), xmax=ifelse(sdAbund == 0, NA, meanAbund+sdAbund)), width=.2,
+                  position=position_dodge(.8), col = "black", na.rm = T)+
     xlab("Average relative abundance (%)")+
     ggtitle(plotName)+
     scale_fill_discrete(labels=c('FlowCam', 'Microscopy'))+
