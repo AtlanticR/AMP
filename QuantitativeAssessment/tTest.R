@@ -19,14 +19,18 @@ test = fcQaDf %>%
   # Get the relative abundance for each sample
   group_by(FlowCamID, type) %>%
   mutate(relAbund = countTot / sum(countTot)*100) %>%
-
+  # Join with df that specifies whether taxa are observed in "both" FC/MC, just FC, or just MC for each regionYear
   left_join(sumWant) %>%
-  filter(presence == "Both") %>%
-  
+  # Need to ungroup or functions won't work
   ungroup() %>%
+  # Create all comparisons. when there's no data, put relAbund as zero
   complete(newName, regionYear, FlowCamID, type, fill = list(relAbund =0)) %>%
-
+  # I want to conduct t-tests between all taxa for each regionYear 
   group_by(newName, regionYear) %>%
-  do(t_test_result = tidy(t.test(relAbund~type, data = ., paired = T)))
+  
+  # Run the t-tests for each grouping listed above
+  do(t_test_result = tidy(t.test(relAbund~type, data = ., paired = T))) %>%
+  # If this isn't added, the t-test results get stored as lists instead of separate columns
+  unnest_wider(t_test_result)
      
   
