@@ -59,23 +59,52 @@ dfAllPairs = fcQaDf %>%
 ################################################################################
 # Start running the stats
 
-
-shWilk = dfAllPairs %>%
-  filter(presence == "Both") %>%
-  
 # Shapiro Wilk test
+# This tests if the data are normally distributed: http://www.sthda.com/english/wiki/paired-samples-t-test-in-r
+# Note: the data is normal if the p-value is ABOVE 0.05
+shWilk = dfAllPairs %>%
+  # Get an error message when the data from both pairs are all 0
+  # Therefore, only conduct for taxa that are present in each regionYear for both C/QA 
+  filter(presence == "Both") %>%
+  # I want to conduct t-tests between all taxa for each regionYear 
+  group_by(newName, regionYear) %>%
+  # But need >2 observations total or I get an error message
+  mutate(sample_size = n()) %>%
+  filter(sample_size >2) %>%
+  # Need to conduct on the DIFFERENCES between value (see point 5 just below References: https://statsandr.com/blog/wilcoxon-test-in-r-how-to-compare-2-groups-under-the-non-normality-assumption/#fnref5)
+  group_by(newName, regionYear, FlowCamID) %>%
+  summarize(dif = relAbund[type == "FC"] - relAbund[type =="QA"]) %>%
+  # Conduct the test
+  # summarize(p_value = shapiro.test(relAbund[type %in% c("FC", "QA")])$p.value, .groups = "drop") # idk why I made this so complicated lol
+  group_by(newName, regionYear) %>%
+  summarize(p_value = shapiro.test(dif)$p.value)
+  
+# Test: do I get the same results if I run it for just one taxa/regionYear
+testSh = dfAllPairs %>%
+  filter(newName == "Acartia spp." & regionYear == "Pac 21")
+# Yes, it matches what's in my df above
+shapiro.test(testSh$relAbund)
+
+
+# Some of the data are NOT normally distributed
+# Proceed with a Wilcoxon test instead of a t-test
+
+
+# Wilcoxon test
+wilcRes = dfAllPairs %>% 
+  filter(presence == "Both") %>%
   
   # I want to conduct t-tests between all taxa for each regionYear 
   group_by(newName, regionYear) %>%
   
-  mutate(sample_size = n()) %>%
-  filter(sample_size >2) %>%
-  summarize(p_value = shapiro.test(relAbund[type %in% c("FC", "QA")])$p.value, .groups = "drop")
-  
-    
+  # Run the t-tests for each grouping listed above
+  do(t_test_result = tidy(wilcox.test(relAbund~type, data = ., paired = T))) %>%
+  # If this isn't added, the t-test results get stored as lists instead of separate columns
+  unnest_wider(t_test_result)
+     
 
-
-
+wilcox.test(testSh$relAbund~testSh$type, paired =T)
+wilcox.test(testSh$relAbund~testSh$type, paired =T)
 
 # T-TEST 
 test = fcQaDf %>%
@@ -92,34 +121,12 @@ test = fcQaDf %>%
   group_by(newName, regionYear) %>%
   
   mutate(avg_relAbund = mean(relAbund, na.rm = T))
-  
-  # Run the t-tests for each grouping listed above
-  do(t_test_result = tidy(t.test(relAbund~type, data = ., paired = T))) %>%
+
+# Run the t-tests for each grouping listed above
+do(t_test_result = tidy(t.test(relAbund~type, data = ., paired = T))) %>%
   # If this isn't added, the t-test results get stored as lists instead of separate columns
   unnest_wider(t_test_result) %>%
   mutate(avg_relAbund = mean(relAbund, na.rm = T))
 
 
-# Wilcoxon test
-test = fcQaDf %>%
-  # Get the relative abundance for each sample
-  group_by(FlowCamID, type) %>%
-  mutate(relAbund = countTot / sum(countTot)*100) %>%
-  # Join with df that specifies whether taxa are observed in "both" FC/MC, just FC, or just MC for each regionYear
-  left_join(sumWant) %>%
-  # Need to ungroup or functions won't work
-  ungroup() %>%
-  # Create all comparisons. when there's no data, put relAbund as zero
-  complete(newName, regionYear, FlowCamID, type, fill = list(relAbund =0)) %>%
-  
-  filter(presence == "Both") %>%
-  
-  # I want to conduct t-tests between all taxa for each regionYear 
-  group_by(newName, regionYear) %>%
-  
-  # Run the t-tests for each grouping listed above
-  do(t_test_result = tidy(wilcox.test(relAbund~type, data = ., paired = T))) %>%
-  # If this isn't added, the t-test results get stored as lists instead of separate columns
-  unnest_wider(t_test_result)
-     
-  
+
