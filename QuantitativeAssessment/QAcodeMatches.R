@@ -220,3 +220,58 @@ allQAData = bind_rows(qaGulf2021, qaMar2021, qaNL2021, qaNLGulf2020, qaPac2021, 
   
 # Combine the FlowCam and QA data into 1 data frame
 fcQaDf = rbind(allQAData, flowCamData)
+
+
+
+########################################################
+### Adjustments to the taxa list
+
+# Things to fix:
+# From FLOWCAM: Possibly redistribute 'Zooplankton (unid)' and 'Calanoida (unid)'
+# From QA: redistribute damaged Acartia spp., Pseudocalanus spp., Temora spp.
+# Redistribute decapoda indet.
+# Remove egg mass
+
+redistribute_abundances = function(df, damaged_taxa, target_taxa, target_taxa2){
+
+  # filter the data frame for damaged Acartia
+  df_damaged = df %>%
+    filter(newName == damaged_taxa)
+  
+  # Calculate the total abunndance of damaged Acartia for each sample
+  df_damaged_total = df_damaged %>%
+    group_by(FlowCamID, type) %>%
+    summarize(total_abund_damaged = sum(abund))
+    
+  # Join the total abundances back tot he original dataframe
+  df = df %>%
+    left_join(df_damaged_total, by = c("FlowCamID", "type"))
+  
+  # Calculate the proportion of Acartia spp. and Calanoida ci-ciii within each sample
+  df_total = df %>%
+    filter(newName %in% c(target_taxa, target_taxa2)) %>%
+    group_by(FlowCamID, type) %>%
+    summarize(total_abund_total = sum(abund))
+    
+  # Join the total abundance back to the original dataframe
+  df = df %>%
+    left_join(df_total, by = c("FlowCamID","type"))
+  
+  # Calculate the relative abundance of regular Acartia and juvenile Calanoids
+  df = df %>%
+    mutate(prop_acartia = ifelse(newName == target_taxa, abund/total_abund_total, 0),
+           prop_calanoida_juv = if_else(newName == target_taxa2, abund/total_abund_total, 0))
+  
+  
+  # Calculate the redistributed abundances
+  df = df %>%
+    mutate(abund2 = if_else(newName == target_taxa & !is.na(total_abund_damaged), abund + prop_acartia*total_abund_damaged, 
+                            if_else(newName == target_taxa2 & !is.na(total_abund_damaged), abund + prop_calanoida_juv*total_abund_damaged, abund)))
+
+
+}
+
+
+df2= redistribute_abundances(fcQaDf, "Acartia spp. DAMAGED", "Acartia spp.", "Calanoida ci-ciii")
+df2= redistribute_abundances(fcQaDf, "Temora spp. DAMAGED", "Temora spp.")
+
