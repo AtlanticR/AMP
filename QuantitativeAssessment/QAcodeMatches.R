@@ -232,46 +232,112 @@ fcQaDf = rbind(allQAData, flowCamData)
 # Redistribute decapoda indet.
 # Remove egg mass
 
-redistribute_abundances = function(df, damaged_taxa, target_taxa, target_taxa2){
+# redistribute_abundances = function(df, damaged_taxa, target_taxa, target_taxa2){
+# 
+#   # filter the data frame for damaged Acartia
+#   df_damaged = df %>%
+#     filter(newName == damaged_taxa)
+#   
+#   # Calculate the total abunndance of damaged Acartia for each sample
+#   df_damaged_total = df_damaged %>%
+#     group_by(FlowCamID, type) %>%
+#     summarize(total_abund_damaged = sum(abund))
+#     
+#   # Join the total abundances back tot he original dataframe
+#   df = df %>%
+#     left_join(df_damaged_total, by = c("FlowCamID", "type"))
+#   
+#   # Calculate the proportion of Acartia spp. and Calanoida ci-ciii within each sample
+#   df_total = df %>%
+#     filter(newName %in% c(target_taxa, target_taxa2)) %>%
+#     group_by(FlowCamID, type) %>%
+#     summarize(total_abund_total = sum(abund))
+#     
+#   # Join the total abundance back to the original dataframe
+#   df = df %>%
+#     left_join(df_total, by = c("FlowCamID","type"))
+#   
+#   # Calculate the relative abundance of regular Acartia and juvenile Calanoids
+#   df = df %>%
+#     mutate(prop_acartia = ifelse(newName == target_taxa, abund/total_abund_total, 0),
+#            prop_calanoida_juv = if_else(newName == target_taxa2, abund/total_abund_total, 0))
+#   
+#   
+#   # Calculate the redistributed abundances
+#   df = df %>%
+#     mutate(abund2 = if_else(newName == target_taxa & !is.na(total_abund_damaged), abund + prop_acartia*total_abund_damaged, 
+#                             if_else(newName == target_taxa2 & !is.na(total_abund_damaged), abund + prop_calanoida_juv*total_abund_damaged, abund)))
+# 
+# 
+# }
+# 
+# 
+# df2= redistribute_abundances(fcQaDf, "Acartia spp. DAMAGED", "Acartia spp.", "Calanoida ci-ciii")
+# df2= redistribute_abundances(fcQaDf, "Temora spp. DAMAGED", "Temora spp.")
+# 
 
-  # filter the data frame for damaged Acartia
+
+
+#######
+# TEST
+
+redistribute_abundances <- function(df, damaged_taxa, target_taxa){
+  
+  # Filter the data frame for the damaged taxa
   df_damaged = df %>%
     filter(newName == damaged_taxa)
   
-  # Calculate the total abunndance of damaged Acartia for each sample
+  # Calculate the total abundance of the damaged taxa for each sample
   df_damaged_total = df_damaged %>%
     group_by(FlowCamID, type) %>%
     summarize(total_abund_damaged = sum(abund))
-    
-  # Join the total abundances back tot he original dataframe
+  
+  # Join the total abundance back to the original dataframe
   df = df %>%
     left_join(df_damaged_total, by = c("FlowCamID", "type"))
   
-  # Calculate the proportion of Acartia spp. and Calanoida ci-ciii within each sample
-  df_total = df %>%
-    filter(newName %in% c(target_taxa, target_taxa2)) %>%
+  # Calculate the total abundance of the target taxa for each sample
+  df_total <- df %>%
+    filter(newName %in% target_taxa) %>%
     group_by(FlowCamID, type) %>%
-    summarize(total_abund_total = sum(abund))
-    
+    summarize(total_abund_target = sum(abund))
+  
   # Join the total abundance back to the original dataframe
   df = df %>%
-    left_join(df_total, by = c("FlowCamID","type"))
+    left_join(df_total, by = c("FlowCamID", "type"))
   
-  # Calculate the relative abundance of regular Acartia and juvenile Calanoids
-  df = df %>%
-    mutate(prop_acartia = ifelse(newName == target_taxa, abund/total_abund_total, 0),
-           prop_calanoida_juv = if_else(newName == target_taxa2, abund/total_abund_total, 0))
-  
+  # Calculate the relative abundance of the target taxa within each sample
+  for (taxon in target_taxa) {
+    df = df %>%
+      mutate(!!paste0("prop_", taxon) := if_else(newName == taxon, abund / total_abund_target, 0))
+  }
   
   # Calculate the redistributed abundances
-  df = df %>%
-    mutate(abund2 = if_else(newName == target_taxa & !is.na(total_abund_damaged), abund + prop_acartia*total_abund_damaged, 
-                            if_else(newName == target_taxa2 & !is.na(total_abund_damaged), abund + prop_calanoida_juv*total_abund_damaged, abund)))
-
-
+  for (taxon in target_taxa) {
+    df = df %>%
+      mutate(abund = if_else(newName == taxon & !is.na(total_abund_damaged),
+                             abund + get(paste0("prop_", taxon)) * total_abund_damaged, abund))
+  }
+  
+  # Remove the damaged taxa from the dataframe
+  df = df %>% filter(newName != damaged_taxa)
+  
+  # Drop the unnecessary columns
+  df = df %>% select(-c(total_abund_damaged, total_abund_target, starts_with("prop_")))
+  
+  return(df)
 }
 
+# Example usage for multiple target taxa
+df2 = redistribute_abundances(fcQaDf, "Acartia spp. DAMAGED", c("Acartia spp.", "Calanoida ci-ciii"))
 
-df2= redistribute_abundances(fcQaDf, "Acartia spp. DAMAGED", "Acartia spp.", "Calanoida ci-ciii")
-df2= redistribute_abundances(fcQaDf, "Temora spp. DAMAGED", "Temora spp.")
+
+# Redistribute abundances of unidentified zooplankton between all other taxa present in the dataset
+df2 = redistribute_abundances(fcQaDf, "Zooplankton (unid)", unique(fcQaDf$newName[fcQaDf$newName != "Zooplankton (unid)"]))
+
+
+df2 = redistribute_abundances(df2, "Temora spp. DAMAGED", c("Temora spp.", "Calanoida ci-ciii"))
+
+
+fcQaDf = df2
 
