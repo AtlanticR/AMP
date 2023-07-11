@@ -224,62 +224,10 @@ fcQaDf = rbind(allQAData, flowCamData)
 
 
 ########################################################
-### Adjustments to the taxa list
-
-# Things to fix:
-# From FLOWCAM: Possibly redistribute 'Zooplankton (unid)' and 'Calanoida (unid)'
-# From QA: redistribute damaged Acartia spp., Pseudocalanus spp., Temora spp.
-# Redistribute decapoda indet.
-# Remove egg mass
-
-# redistribute_abundances = function(df, damaged_taxa, target_taxa, target_taxa2){
-# 
-#   # filter the data frame for damaged Acartia
-#   df_damaged = df %>%
-#     filter(newName == damaged_taxa)
-#   
-#   # Calculate the total abunndance of damaged Acartia for each sample
-#   df_damaged_total = df_damaged %>%
-#     group_by(FlowCamID, type) %>%
-#     summarize(total_abund_damaged = sum(abund))
-#     
-#   # Join the total abundances back tot he original dataframe
-#   df = df %>%
-#     left_join(df_damaged_total, by = c("FlowCamID", "type"))
-#   
-#   # Calculate the proportion of Acartia spp. and Calanoida ci-ciii within each sample
-#   df_total = df %>%
-#     filter(newName %in% c(target_taxa, target_taxa2)) %>%
-#     group_by(FlowCamID, type) %>%
-#     summarize(total_abund_total = sum(abund))
-#     
-#   # Join the total abundance back to the original dataframe
-#   df = df %>%
-#     left_join(df_total, by = c("FlowCamID","type"))
-#   
-#   # Calculate the relative abundance of regular Acartia and juvenile Calanoids
-#   df = df %>%
-#     mutate(prop_acartia = ifelse(newName == target_taxa, abund/total_abund_total, 0),
-#            prop_calanoida_juv = if_else(newName == target_taxa2, abund/total_abund_total, 0))
-#   
-#   
-#   # Calculate the redistributed abundances
-#   df = df %>%
-#     mutate(abund2 = if_else(newName == target_taxa & !is.na(total_abund_damaged), abund + prop_acartia*total_abund_damaged, 
-#                             if_else(newName == target_taxa2 & !is.na(total_abund_damaged), abund + prop_calanoida_juv*total_abund_damaged, abund)))
-# 
-# 
-# }
-# 
-# 
-# df2= redistribute_abundances(fcQaDf, "Acartia spp. DAMAGED", "Acartia spp.", "Calanoida ci-ciii")
-# df2= redistribute_abundances(fcQaDf, "Temora spp. DAMAGED", "Temora spp.")
-# 
+# Adjustments to the taxa list
 
 
 
-#######
-# TEST
 
 redistribute_abundances <- function(df, damaged_taxa, target_taxa){
   
@@ -328,15 +276,60 @@ redistribute_abundances <- function(df, damaged_taxa, target_taxa){
   return(df)
 }
 
-# Example usage for multiple target taxa
-df2 = redistribute_abundances(fcQaDf, "Acartia spp. DAMAGED", c("Acartia spp.", "Calanoida ci-ciii"))
+# Make this a new variable for testing
+test = fcQaDf
 
+### MAKE SPECIFIC ADJUSTMENTS TO THE QUANTITATIVE ASSESSMENT DATASET
+
+# Remove the EGG MASS taxa from the dataset
+test = test %>%
+  filter(newName != "EGG CHECK")
+
+# Fix the damaged taxa. Distribute either among the adults of that taxa, or the ci-ciii
+test = redistribute_abundances(test, "Acartia spp. DAMAGED", c("Acartia spp.", "Acartia spp. ci-ciii")) %>%
+  # Then change Acartia ci-ciii to Calanoida ci-ciii to be consistent with rest of the dataset
+  mutate(newName = ifelse(newName == "Acartia spp. ci-ciii", "Calanoida ci-ciii", newName))
+
+# Then do the same with damaged Temora spp.
+test = redistribute_abundances(test, "Temora spp. DAMAGED", c("Temora spp.", "Temora spp. ci-ciii")) %>%
+  mutate(newName = ifelse(newName == "Temora spp. ci-ciii", "Calanoida ci-ciii", newName))
+
+# Then redistribute the Decapoda that was unspecified
+test = redistribute_abundances(test, "Decapoda- CHECK", c("Decapoda- brachyura (larvae)", "Decapoda- non-brachyura (larvae)", "Caridea (larvae)", "Paguroidea (larvae)", "Porcellanidea (larvae)"))
+
+
+### MAKE SPECIFIC ADJUSTMENTS TO THE FLOWCAM DATASET
+
+# Redistribute Cyclopoida
+# NOTE: NEED TO MAKE A CHECK TO SEE WHAT HAPPENS IF NO CYLCOPOIDA CHILD
+test = redistribute_abundances(test, "Cyclopoida", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp."))
+
+# Redistribute Calanoida 
+test = redistribute_abundances(test, "Calanoida (unid)", c("Acartia spp.", "Calanoida ci-ciii", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
+                               "Metridia spp.", "Microcalanus spp.", "Paracalanus spp.", "Pseudocalanus spp.", "Pseudodiaptomus spp.", "Temora spp.", "Tortanus spp."))
+
+# Redistribute Copepoda among all possible MAKE THIS CLEARER
+test = redistribute_abundances(test, "Copepoda (unid)", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp.", "Harpacticoida- epibenthic", "Microsetella spp.", "Monstrillidae", "Acartia spp.", "Calanoida ci-ciii", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
+                                                           "Metridia spp.", "Microcalanus spp.", "Paracalanus spp.", "Pseudocalanus spp.", "Pseudodiaptomus spp.", "Temora spp.", "Tortanus spp."))
+
+
+# Redistribute zooplankton (unid)
+test = redistribute_abundances(test, "Zooplankton (unid)", unique(fcQaDf$newName[fcQaDf$newName != "Zooplankton (unid)"]))
+
+test = test %>%
+  group_by(newName, FlowCamID, regionYear, qaSampleID, type) %>%
+  summarize(abund = sum(abund))
+
+
+fcQaDf = test
 
 # Redistribute abundances of unidentified zooplankton between all other taxa present in the dataset
-df2 = redistribute_abundances(fcQaDf, "Zooplankton (unid)", unique(fcQaDf$newName[fcQaDf$newName != "Zooplankton (unid)"]))
 
 
-df2 = redistribute_abundances(df2, "Temora spp. DAMAGED", c("Temora spp.", "Calanoida ci-ciii"))
+
+
+
+
 
 
 fcQaDf = df2
