@@ -158,6 +158,8 @@ lemmensBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPD
 
 # Newfoundland
 seArmBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/SoutheastArm_final.shp"), sp::CRS("+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
+seArmBoundaryExtension = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/SoutheastArm_extension.kml"), sp::CRS("+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
+
 
 ################################################################################
 ## Read in shellfish lease shapefiles
