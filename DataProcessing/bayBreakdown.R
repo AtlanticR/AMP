@@ -21,7 +21,7 @@
 options(scipen = 999)
 
 # These are the stats 
-waterVolStats = read.csv("../AMPDataFiles/rarefactionWaterVol.csv") %>%
+waterVolStats = read.csv("../AMPDataFiles/extraFiles/rarefactionWaterVol.csv") %>%
   select(-c("waterVolume"))
 
 
