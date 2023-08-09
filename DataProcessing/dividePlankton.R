@@ -86,7 +86,7 @@ stPcyclProbs = calan_distribute %>%
   filter(facetFactor == "St. Peters") %>%
   filter(copepodType == "Cyclopoida child" | 
            (sampleCode == "20_09_01_Gulf_S04_Z38_1434_250" & class == "Cyclopoida parent"))
-# They are ALL Othiona spp.. Therefore I will convert Cyclopoida to Othiona (later step below)
+# They are ALL Oithona spp.. Therefore I will convert Cyclopoida to Oithona (later step below)
 
 # Find what the other Cyclopoida children are for the Pacific sample
 pacCycl = calan_distribute %>%
@@ -94,7 +94,7 @@ pacCycl = calan_distribute %>%
   filter(copepodType == "Cyclopoida child" | 
            (sampleCode == "AMMP_PA_S04_W01_20200830LT_236UM" & class == "Cyclopoida parent"))
 
-# It turns out there are 3 types of Cyclopoida in the Pac August 2020 dataset: Corycaeidae, Othiona spp. and Oncaeidae
+# It turns out there are 3 types of Cyclopoida in the Pac August 2020 dataset: Corycaeidae, Oithona spp. and Oncaeidae
 # So, we should find the relative abundance of each, and then redistribute the Cyclopoida among those
 relPacCycl = calan_distribute %>%
   filter(facetFactor == "August 2020" & copepodType == "Cyclopoida child") %>%
@@ -114,11 +114,11 @@ pacCyclReplace = pacCycl %>%
 # Now make the adjustments to the dataframe
 
 # Take calan_distribute, 
-# For St. Peters, rename that one Cyclopoida to Othiona
+# For St. Peters, rename that one Cyclopoida to Oithona
 # For Pacific, remove that cyclopoida entry, and then add the new rows just discovered, where things have been redistributed
 
 calan_distAdj = calan_distribute %>%
-  mutate(class = ifelse(sampleCode == "20_09_01_Gulf_S04_Z38_1434_250" & class == "Cyclopoida parent", "Othiona spp.", class)) %>%
+  mutate(class = ifelse(sampleCode == "20_09_01_Gulf_S04_Z38_1434_250" & class == "Cyclopoida parent", "Oithona spp.", class)) %>%
   filter(sampleCode != "AMMP_PA_S04_W01_20200830LT_236UM" | class != "Cyclopoida parent") %>% # remove the Cyclopoida from that one sample
   bind_rows(pacCyclReplace) # Now add the rows that had the redistributed Cyclopoida
 
