@@ -76,7 +76,7 @@ inextPrep = function(bayData, avTowVol, colourScheme, plotLetter){
   
   # Remove the taxa specified above
   # However, I need to check if they actually exist in the dataframe, otherwise I'll get an error
-  if(any(spp_to_remove %in% colnames(bayData))){
+  if(any(taxa_to_remove %in% colnames(bayData))){
     # If they are present, remove them
     bayData = bayData %>%
       select(-taxa_to_remove[taxa_to_remove %in% colnames(bayData)])
