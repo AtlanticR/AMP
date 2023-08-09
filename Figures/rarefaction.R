@@ -39,9 +39,6 @@
 
 # https://www.neonscience.org/resources/learning-hub/tutorials/aquatic-diversity-algae
 
-
-
-
 ###########################################################################################################################
 # SETUP
 
@@ -55,7 +52,6 @@ source("Figures/colourPchSchemes.R")
 install_github('AnneChao/iNEXT.4steps')
 library("iNEXT.4steps")
 
-# Test with updated token
 
 ###########################################################################################################################
 ### With the iNEXT package
@@ -218,82 +214,90 @@ plot_grid(seArm2020Inext[[1]], seArm2021Inext[[1]], align = "v", ncol = 1)
 
 ###############################################################################
 ###############################################################################
-###############################################################################
 
+## Create an extra figure that plots the Percent of estimated richness (y-axis) vs # of samples (x-axis)
 
-###############################################################################
+# Prep the data from each region
+# This really should have been a function, but I was in a rush
 
+# Lemmens Aug 2020
 iLemAug20 = pacAug2020Inext[[5]] %>%
   mutate(dataset = "Lemmens Aug 2020") %>%
-  mutate(percTax = y / pacAug2020Inext[[2]]$Estimator[[1]] * 100) %>%
+  mutate(percTax = y / pacAug2020Inext[[2]]$Estimator[[1]] * 100) %>% # percent of estimated richness
   mutate(region = "Pacific") %>%
   mutate(xVol = x * mean(pacAug2020$waterVolAnalyzed))
   
-
+# Lemmens June 2021
 iLemJun21 = pacJun2021Inext[[5]] %>%
   mutate(dataset = "Lemmens Jun 2021") %>%
   mutate(percTax = y / pacJun2021Inext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Pacific") %>%
   mutate(xVol = x * mean(pacJun2021$waterVolAnalyzed))
 
+# Lemmens Sept 2021
 iLemSep21 = pacSept2021Inext[[5]] %>%
   mutate(dataset = "Lemmens Sept 2021") %>%
   mutate(percTax = y / pacSept2021Inext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Pacific") %>%
   mutate(xVol = x * mean(pacSept2021$waterVolAnalyzed))
   
-
+# Cocagne
 iCoc = cocagneInext[[5]] %>%
   mutate(dataset = "Cocagne") %>%
   mutate(percTax = y / cocagneInext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Gulf") %>%
   mutate(xVol = x * mean(cocagne$waterVolAnalyzed))
 
+# Malpeque
 iMal = malpequeInext[[5]] %>%
   mutate(dataset = "Malpeque") %>%
   mutate(percTax = y / malpequeInext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Gulf") %>%
   mutate(xVol = x * mean(malpeque$waterVolAnalyzed))
 
-
+# St. Peters
 iStPeters = stPetersInext [[5]] %>%
   mutate(dataset = "St. Peters") %>%
   mutate(percTax = y / stPetersInext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Gulf") %>%
   mutate(xVol = x * mean(stPeters$waterVolAnalyzed))
 
-
+# Argyle
 iArgyle = argInext[[5]] %>%
   mutate(dataset = "Argyle") %>%
   mutate(percTax = y / argInext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Maritimes") %>%
   mutate(xVol = x * mean(argyle$waterVolAnalyzed))
 
-
+# Country Harbour
 iCountry = countryInext[[5]] %>%
   mutate(dataset = "Country Harbour") %>%
   mutate(percTax = y / countryInext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Maritimes") %>%
   mutate(xVol = x * mean(country$waterVolAnalyzed))
 
+# Sober Island
 iSober = soberInext[[5]] %>%
   mutate(dataset = "Sober Island") %>%
   mutate(percTax = y / soberInext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Maritimes") %>%
   mutate(xVol = x * mean(sober$waterVolAnalyzed))
 
+# Whitehead
 iWhitehead = whiteheadInext[[5]] %>%
   mutate(dataset = "Whitehead") %>%
   mutate(percTax = y / whiteheadInext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Maritimes") %>%
   mutate(xVol = x * mean(whitehead$waterVolAnalyzed))
 
+# South Arm Sept 2020
 iSEAsept = seArm2020Inext[[5]] %>%
   mutate(dataset = "Southeast Arm Sept 2020") %>%
   mutate(percTax = y / seArm2020Inext[[2]]$Estimator[[1]] * 100) %>%
   mutate(region = "Newfoundland") %>%
   mutate(xVol = x * mean(seArm2020$waterVolAnalyzed))
 
+# South Arm Oct 2021
 iSEAoct = seArm2021Inext[[5]] %>%
   mutate(dataset = "Southeast Arm Oct 2021") %>%
   mutate(percTax = y / seArm2021Inext[[2]]$Estimator[[1]] * 100) %>%
@@ -301,63 +305,30 @@ iSEAoct = seArm2021Inext[[5]] %>%
   mutate(xVol = x * mean(seArm2021$waterVolAnalyzed))
   
 
-
+# Get the "rarefied" part of the data (i.e., to plot as a solid line, up to the observed data point)
 datRar = rbind(iLemAug20, iLemJun21, iLemSep21, iCoc, iMal, iStPeters, iArgyle, iCountry, iSober, iWhitehead, iSEAsept, iSEAoct) %>%
   filter(Order.q == 0) %>%
   filter(Method != "Extrapolation")
 
+# Get the observed data (to plot as a single point)
 datObs = rbind(iLemAug20, iLemJun21, iLemSep21, iCoc, iMal, iStPeters, iArgyle, iCountry, iSober, iWhitehead, iSEAsept, iSEAoct) %>%
   filter(Order.q == 0) %>%
   filter(Method == "Observed")
 
+# Get the "extrapolated" part of the data (to plot as a dashed line)
 datExt = rbind(iLemAug20, iLemJun21, iLemSep21, iCoc, iMal, iStPeters, iArgyle, iCountry, iSober, iWhitehead, iSEAsept, iSEAoct) %>%
   filter(Order.q == 0) %>%
   filter(Method != "Rarefaction")
 
+# Set the colour scheme for each site
 colsRar = c("Argyle" = marColours[[1]], "Country Harbour" = marColours[[2]], "Sober Island" = marColours[[3]], "Whitehead" = marColours[[4]],
             "Lemmens Aug 2020" = pacColours[[1]], "Lemmens Jun 2021" = pacColours[[2]], "Lemmens Sept 2021" = pacColours[[3]],
             "Cocagne" = gulfColours[[1]], "Malpeque" = gulfColours[[2]], "St. Peters" = gulfColours[[3]],
             "Southeast Arm Sept 2020" = nlColours[[1]], "Southeast Arm Oct 2021" = "dark blue")
 
-### PLOT 1: richness (y-axis) vs number of samples (x-axis). All data
-ggplot()+
-  geom_line(data = datRar %>% filter(region == "Gulf"), mapping = aes(x = x, y=y, col = dataset), size = 1.5)+
-  geom_line(data = datExt %>% filter(region == "Gulf"), mapping = aes(x = x, y=y, col = dataset), size = 1.5, linetype = "dashed")+
-  geom_point(data = datObs %>% filter(region == "Gulf"), mapping = aes(x=x, y=y, col = dataset), size = 4)+
-  scale_colour_manual(values = colsRar, name = "Gulf", guide = guide_legend(order = 1))+
-  
-  new_scale_colour()+
-  geom_line(data = datRar %>% filter(region == "Maritimes"), mapping = aes(x = x, y=y, col = dataset), size = 1.5)+
-  geom_line(data = datExt %>% filter(region == "Maritimes"), mapping = aes(x = x, y=y, col = dataset), size = 1.5, linetype = "dashed")+
-  geom_point(data = datObs %>% filter(region == "Maritimes"), mapping = aes(x=x, y=y, col = dataset), size = 4)+
-  scale_colour_manual(values = colsRar, name = "Maritimes", guide = guide_legend(order = 2))+
-  
-  new_scale_colour()+
-  geom_line(data = datRar %>% filter(region == "Newfoundland"), mapping = aes(x = x, y=y, col = dataset), size = 1.5)+
-  geom_line(data = datExt %>% filter(region == "Newfoundland"), mapping = aes(x = x, y=y, col = dataset), size = 1.5, linetype = "dashed")+
-  geom_point(data = datObs %>% filter(region == "Newfoundland"), mapping = aes(x=x, y=y, col = dataset), size = 4)+
-  scale_colour_manual(values = colsRar, name = "Newfoundland", guide = guide_legend(order = 3))+
-  
-  new_scale_colour()+
-  geom_line(data = datRar %>% filter(region == "Pacific"), mapping = aes(x = x, y=y, col = dataset), size = 1.5)+
-  geom_line(data = datExt %>% filter(region == "Pacific"), mapping = aes(x = x, y=y, col = dataset), size = 1.5, linetype = "dashed")+
-  geom_point(data = datObs %>% filter(region == "Pacific"), mapping = aes(x=x, y=y, col = dataset), size = 4)+
-  scale_colour_manual(values = colsRar, name = "Pacific", guide = guide_legend(order = 4))+
-  
-  xlab("Number of samples")+
-  ylab("Richness")+
-  theme_bw()+
-  theme(
-    axis.text = element_text(size = 12),
-    axis.title = element_text(size = 14),
-    legend.text = element_text(size = 12),
-    legend.title = element_text(size = 13)
-  )
 
 
-
-
-### PLOT 2: percent of estimated richness (y-axis) vs number of samples (x-axis)
+### Make the plot: percent of estimated richness (y-axis) vs number of samples (x-axis)
 ggplot()+
   geom_line(data = datRar %>% filter(region == "Gulf"), mapping = aes(x = x, y=percTax, col = dataset), size = 1.5)+
   geom_line(data = datExt %>% filter(region == "Gulf"), mapping = aes(x = x, y=percTax, col = dataset), size = 1.5, linetype = "dashed")+
@@ -395,8 +366,47 @@ ggplot()+
 
 
 
+#######
+# Alternative plots
 
-### PLOT 3: richness (y-axis) vs water (x-axis)
+
+### Richness (y-axis) vs number of samples (x-axis). All data
+ggplot()+
+  geom_line(data = datRar %>% filter(region == "Gulf"), mapping = aes(x = x, y=y, col = dataset), size = 1.5)+
+  geom_line(data = datExt %>% filter(region == "Gulf"), mapping = aes(x = x, y=y, col = dataset), size = 1.5, linetype = "dashed")+
+  geom_point(data = datObs %>% filter(region == "Gulf"), mapping = aes(x=x, y=y, col = dataset), size = 4)+
+  scale_colour_manual(values = colsRar, name = "Gulf", guide = guide_legend(order = 1))+
+  
+  new_scale_colour()+
+  geom_line(data = datRar %>% filter(region == "Maritimes"), mapping = aes(x = x, y=y, col = dataset), size = 1.5)+
+  geom_line(data = datExt %>% filter(region == "Maritimes"), mapping = aes(x = x, y=y, col = dataset), size = 1.5, linetype = "dashed")+
+  geom_point(data = datObs %>% filter(region == "Maritimes"), mapping = aes(x=x, y=y, col = dataset), size = 4)+
+  scale_colour_manual(values = colsRar, name = "Maritimes", guide = guide_legend(order = 2))+
+  
+  new_scale_colour()+
+  geom_line(data = datRar %>% filter(region == "Newfoundland"), mapping = aes(x = x, y=y, col = dataset), size = 1.5)+
+  geom_line(data = datExt %>% filter(region == "Newfoundland"), mapping = aes(x = x, y=y, col = dataset), size = 1.5, linetype = "dashed")+
+  geom_point(data = datObs %>% filter(region == "Newfoundland"), mapping = aes(x=x, y=y, col = dataset), size = 4)+
+  scale_colour_manual(values = colsRar, name = "Newfoundland", guide = guide_legend(order = 3))+
+  
+  new_scale_colour()+
+  geom_line(data = datRar %>% filter(region == "Pacific"), mapping = aes(x = x, y=y, col = dataset), size = 1.5)+
+  geom_line(data = datExt %>% filter(region == "Pacific"), mapping = aes(x = x, y=y, col = dataset), size = 1.5, linetype = "dashed")+
+  geom_point(data = datObs %>% filter(region == "Pacific"), mapping = aes(x=x, y=y, col = dataset), size = 4)+
+  scale_colour_manual(values = colsRar, name = "Pacific", guide = guide_legend(order = 4))+
+  
+  xlab("Number of samples")+
+  ylab("Richness")+
+  theme_bw()+
+  theme(
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.text = element_text(size = 12),
+    legend.title = element_text(size = 13)
+  )
+
+
+### Richness (y-axis) vs water (x-axis)
 ggplot()+
   geom_line(data = datRar %>% filter(region == "Gulf"), mapping = aes(x = xVol, y=y, col = dataset), size = 1.5)+
   geom_line(data = datExt %>% filter(region == "Gulf"), mapping = aes(x = xVol, y=y, col = dataset), size = 1.5, linetype = "dashed")+
@@ -432,8 +442,7 @@ ggplot()+
   )
 
 
-
-### PLOT 4: percent of estimated richness (y-axis) vs water (x-axis)
+### Percent of estimated richness (y-axis) vs water (x-axis)
 ggplot()+
   geom_line(data = datRar %>% filter(region == "Gulf"), mapping = aes(x = xVol, y=percTax, col = dataset), size = 1.5)+
   geom_line(data = datExt %>% filter(region == "Gulf"), mapping = aes(x = xVol, y=percTax, col = dataset), size = 1.5, linetype = "dashed")+
@@ -467,18 +476,6 @@ ggplot()+
     legend.text = element_text(size = 12),
     legend.title = element_text(size = 13)
   )
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
