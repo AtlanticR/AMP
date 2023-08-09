@@ -236,6 +236,9 @@ pacMerge = pac
 ################################################################################
 ## Test the redistributed data to make sure it works
 # 
+
+
+
 # nmdsBay = function(regionData, stationCol) {
 # 
 #     # alter the dataframe so it is in appropriate format for NMDS
