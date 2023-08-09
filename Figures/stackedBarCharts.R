@@ -4,7 +4,7 @@
 ################################################################################
 
 ## Get things set up
-source("DataProcessing/zooplanktonCounts.R")
+source("DataProcessing/dividePlankton.R")
 
 # facet_nested is breaking for people? See here:
 # https://github.com/teunbrand/ggh4x/issues/81
@@ -63,7 +63,7 @@ stackedBarChart = function(bayData, plotTitle){
     geom_bar(stat = "identity", position = "fill", col = "black", linewidth = 0.05) +
     scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
     
-   # facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
+    facet_nested(. ~myLabel + tidePhase, scales = "free_x", space = "free_x")+
     # facet_grid(cols = vars(myLabel), scales = "free_x", space = "free_x")+
     scale_x_discrete(name = "Sample")+
     scale_fill_brewer(palette = "Set3", name = "Zooplankton Class")+
@@ -113,7 +113,7 @@ stPetersProcess = stackedBarChart(gulf %>% subset(facetFactor=="St. Peters"), "(
 # Will add dummy grobs to fill the extra space. Want all plots for all regions to be approx. same size
 ggarrange(cocagneProcess, cocagneProcess, malpequeProcess, stPetersProcess, ncol = 1)
 
-ggsave("test.png", width = 10.11, height = 10.56, units = "in", dpi = 300)
+# ggsave("test.png", width = 10.11, height = 10.56, units = "in", dpi = 300)
 
 # Newfoundland (only one bay)
 seArmSept2020 = stackedBarChart(nl %>% subset(facetFactor == "Sept 2020"), "Sept 2020")
@@ -198,18 +198,20 @@ ggplot(bayPlotDf, aes(x=sampleCode, y=sumCount, fill=classNew)) +
   )+
   guides(fill=guide_legend(ncol=2)) # Break the legend into 2 columns
 
+
 ###############################################################################
+## Get a few summary stats
 
-# Find the relative abundance of each taxa PER SAMPLE (helpful for tech report)
-test = gulf %>% subset(facetFactor == "St. Peters") %>%
-  # Want counts per taxa (class) for the whole bay, not by tow
-  group_by(sampleCode, class) %>%
-  summarize(countPerClass = sum(abund)) %>%
-  mutate(relAbund = countPerClass/sum(countPerClass)*100)
-
-
-test2 = allRegionsWide %>%
-  rowwise() %>%
-  mutate(totAbund = sum(c_across(21:last_col())))
+# # Find the relative abundance of each taxa PER SAMPLE (helpful for tech report)
+# test = gulf %>% subset(facetFactor == "St. Peters") %>%
+#   # Want counts per taxa (class) for the whole bay, not by tow
+#   group_by(sampleCode, class) %>%
+#   summarize(countPerClass = sum(abund)) %>%
+#   mutate(relAbund = countPerClass/sum(countPerClass)*100)
+# 
+# 
+# test2 = allRegionsWide %>%
+#   rowwise() %>%
+#   mutate(totAbund = sum(c_across(21:last_col())))
 
 
