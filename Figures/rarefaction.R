@@ -483,236 +483,239 @@ ggplot()+
 
 
 
-
+################################################################################
+################################################################################
+################################################################################
+################################################################################
 
 #### Everything below this point is just drafts of things, and me testing stuff
 
 
 
-# Estimate the number of samples it would take to obtain 95%, 90% and 80% of taxa
-# within a bay: the long way
-# There must be an easier way to do this, but I can't see one?
-# I figured it out! It's written into the function above
-# But I am keeping this as a reference just in case
-
-# Argyle
-argInext[[4]]$Estimator[1] # asymptotic diversity ie Chao2
-
-# What's the diversity at 2x the sample size (up to extrapolation point)
-estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 30)$qD
-# Gives same answer as 
-estimateD(argInext[[3]], q = 0, datatype = "incidence_freq")$qD # does sampling 2x the # of samples hit the 95% mark?
-
-# Figure out 80%
-estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 17)$qD # does sampling 2x the # of samples hit the 95% mark?
-
-
-pacSept2021Inext[[4]]$Estimator[1]*0.95
-estimateD(pacSept2021Inext[[3]], q = 0, datatype = "incidence_freq", level = 58)$qD
-
-
-###########################################################################################################################
-### Practice with the vegan package
-# The vegan package also creates rarefaction curves but it is only for richness. And does not do extrapolation although asymptotic estimators can be calculated
-
-# I think I finally get it
-# "exact" is "sample-based rarefaction". Some say that sample-based is not true rarefaction, it is averaged species accumulation curves
-# They also state that "rarefaction" is "individual-based rarefaction". This is the distinction the vegan package makes and it's why it's so confusing
-# Others say this distinction is dumb and both count as "rarefaction". I am going to call them both "rarefaction"
-
-# use the specaccum function for both individual-based and sample-based rarefaction
-# The "exact" method is for sample-based rarefaction. It is also called the "Mao Tau" estimator 
-# see https://academic.oup.com/jpe/article/5/1/3/1296712 and vegan help for specaccum
-
-# Make a plot for the Argyle data just to test it
-
-# Think about this some more: I think rounding (especially if close to zero) causes slightly different plots
-# But I will be using sample-based rarefaction where it's just presence-absence. So... it's not a huge issue?
-
-# Make plots of both sample-based and individual-based
-plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method= "exact")) # sample-based
-
-# Plot individual-based rarefaction over top. Data need to be rounded. (individual-based should be higher)
-lines(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method = "rarefaction"), lty = 4)
-
-# I think it would make sense if individual-based rarefaction was instead plotted with xvar = "individuals" as default
-# It is odd to me that is not the default (it scales the x-axis to "Sites" which is confusing)
-plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method = "rarefaction"), xvar = "individuals")
-
-x = as.matrix(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi) (civ-vi)"): ncol(argyle)])
-
-plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi) (civ-vi)"): ncol(argyle)]), method= "random", weights = argyle$waterVolume))
-
-
-sp1 = specaccum(x)
-sp2 = specaccum(x, "random", weights = argyle$waterVolume)
-plot(sp2)
-
-mod1 = fitspecaccum(x, "lomolino")
-
-mod1 = fitspecaccum(sp1, "lomolino")
-
-plot(sp1)
-plot(mod1, add = T, col = 2, lwd = 2)
-
-
-mods = fitspecaccum(sp2, "arrh")
-plot(mods, col = "hotpink")
-boxplot(sp2, col = "yellow", border = "blue", lty = 1, cex = 0.3, add = T)
-
-sapply(mods$models, AIC)
-
-
-
-###########################################################################################################################
-# FOR PRESENTATIONS
-# For CSRF meeting I only want Newfoundland (poorly-sampled, curve doesn't level off) and St. Peters data (well-sampled, curve levels off)
-
-inextCSRF = function(bayData, colourScheme, plotLetter){
-  
-  # I do not want these higher-order taxa to be included
-  taxa_to_remove = c("Cnidaria (larvae)", "Copepoda (nauplii)", "Invertebrate (egg, trochophore larvae)")
-  
-  # Remove the taxa specified above
-  # However, I need to check if they actually exist in the dataframe, otherwise I'll get an error
-  if(any(spp_to_remove %in% colnames(bayData))){
-    # If they are present, remove them
-    bayData = bayData %>%
-      select(-taxa_to_remove[taxa_to_remove %in% colnames(bayData)])
-  }
-  
-  # First, just extract only the taxa info:
-  # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
-  bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp. (civ-vi)"): ncol(bayData)]
-  
-  # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
-  bayTaxa[bayTaxa>0] = 1
-  
-  # I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
-  # It never works!!! Instead, convert to incidence_freq lol
-  # Need to get incidence freqncies by summing the columns
-  baySums = as.vector(colSums(bayTaxa))
-  
-  # It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
-  baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
-  
-  # Create the iNEXT object! Calculate for richness only
-  bay.inext = iNEXT(baySumsList, q = c(0), datatype = "incidence_freq")
-  # Plot the graph of diversity vs sampling units
-  
-  # Calculate 80%, 90% and 95% of asymptotic estimator for richness only
-  chao2_est = bay.inext$AsyEst$Estimator[1] # Get the asymptotic est for richness (the 1st of the 3 listed)
-  
-  ggiNEXT(bay.inext, color.var = "Order.q")+
-    scale_colour_manual(values=colourScheme) +
-    scale_fill_manual(values=colourScheme)+
-    #scale_y_continuous(limits = c(13, 40))+
-    xlab("Number of samples")+
-    ylab("Taxa richness")+
-    geom_hline(aes(yintercept = chao2_est), col = "red", linetype = "dashed")+
-    # geom_text(aes( 0, chao2_est, label = chao2_est, vjust = -1), size = 3)+
-    ggtitle(plotLetter)+
-    theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
-    theme(
-      #axis.title.x = element_blank(),
-      legend.position = "none",
-      plot.margin=unit(c(0.1, 1, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
-      plot.title = element_text(size = 15),
-      plot.title.position = "plot")
-  
-}
- 
-# Pass in the dataframe of species counts, colour, and label
-argCSRF = inextCSRF(argyle, marColours[[1]], "(A) Argyle")
-countryCSRF = inextCSRF(country, marColours[[2]], "(B) Country Harbour")
-soberCSRF = inextCSRF(sober, marColours[[3]], "(C) Sober Island")
-whiteheadCSRF = inextCSRF(whitehead, marColours[[4]], "(D) Whitehead")
-
-#  Plot them both together
-plot_grid(argCSRF, countryCSRF, soberCSRF, whiteheadCSRF, ncol = 4)
-
-cocagneCSRF = inextCSRF(cocagne, gulfColours[[1]], "(A) Cocagne")
-malpequeCSRF = inextCSRF(malpeque, gulfColours[[2]], "(B) Malpeque")
-stPetersCSRF = inextCSRF(stPeters, gulfColours[[3]], "(C) St. Peters")
-plot_grid(cocagneCSRF, malpequeCSRF, stPetersCSRF, ncol = 3)
-
-
-pacAug2020CSRF = inextCSRF(pacAug2020, pacColours[[1]], "(A) August 2020")
-pacJun2021CSRF = inextCSRF(pacJun2021, pacColours[[3]], "(B) June 2021")
-pacSept2021CSRF = inextCSRF(pacSept2021, pacColours[[4]], "(C) September 2021")
-plot_grid(pacAug2020CSRF, pacJun2021CSRF, pacSept2021CSRF, ncol = 3)
-
-seArm2020CSRF = inextCSRF(seArm2020, nlColours[[1]], "(A) September 2020")
-seArm2021CSRF = inextCSRF(seArm2021, "dark blue", "(B) October 2021")
-plot_grid(seArm2020CSRF, seArm2021CSRF, ncol = 2)
-
-
-
-###########################################################################################################################
-# Play around with HT vs LT data to see if either is adequately sampled
-
-# Test breaking up HT/LT data
-
-argHT = argyle %>%
-  subset(tidePhase == "High")
-
-argLT = argyle %>%
-  subset(tidePhase == "Low")
-
-
-argHTtaxa = argHT[,which(colnames(argHT)== "Acartia spp. (civ-vi)"): ncol(argHT)]
-argLTtaxa = argLT[,which(colnames(argLT)== "Acartia spp. (civ-vi)"): ncol(argLT)]
-
-argHTtaxa[argHTtaxa>0] = 1
-argLTtaxa[argLTtaxa>0] = 1
-
-argHTsums = as.vector(colSums(argHTtaxa))
-argLTsums = as.vector(colSums(argLTtaxa))
-
-argTides = list("High Tide" = append(argHTsums, nrow(argHTtaxa), after = 0),
-                   "Low Tide" = append(argLTsums, nrow(argLTtaxa), after = 0))
-
-hi = iNEXT(argTides, q = c(0,1,2), datatype = "incidence_freq")
-
-ggiNEXT(hi, facet.var = "Order.q", type = 1)
-
-
-
-###########################################################################################################################
-### Using the iNEXT4steps methods i.e., Chao et al. (2020)
-# Recall that iNEXT.4steps is not in CRAN yet!!
-
-argTaxa = argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]
-
-# Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
-argTaxa[argTaxa>0] = 1
-
-# I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
-# It never works!!! Instead, convert to incidence_freq lol
-# Need to get incidence freqncies by summing the columns
-argSums = as.vector(colSums(argTaxa))
-
-# It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
-argSumsList = list(append(argSums, nrow(argTaxa), after = 0))
-
-
-# I need to play around with this, but I think my data needs to be in data frame format
-arg4StepsPrep = as.data.frame(argSumsList)
-
-# Computes everything
-arg4Steps = iNEXT4steps(arg4StepsPrep, datatype = "incidence_freq", diversity = "TD")
-
-arg4Steps$summary # gives summary data
-arg4Steps$figure # gives all the figures together
-
-# Note: There are ways to get the figures separate. But that is for another day!!
-
-cocagneInext[[1]]
-
-estimateD(cocagneInext[[3]], q = 0, datatype = "incidence_freq")
-
-
-estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 1000)
-
-factorial(8)
-(factorial(4))^2
+# # Estimate the number of samples it would take to obtain 95%, 90% and 80% of taxa
+# # within a bay: the long way
+# # There must be an easier way to do this, but I can't see one?
+# # I figured it out! It's written into the function above
+# # But I am keeping this as a reference just in case
+# 
+# # Argyle
+# argInext[[4]]$Estimator[1] # asymptotic diversity ie Chao2
+# 
+# # What's the diversity at 2x the sample size (up to extrapolation point)
+# estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 30)$qD
+# # Gives same answer as 
+# estimateD(argInext[[3]], q = 0, datatype = "incidence_freq")$qD # does sampling 2x the # of samples hit the 95% mark?
+# 
+# # Figure out 80%
+# estimateD(argInext[[3]], q = 0, datatype = "incidence_freq", level = 17)$qD # does sampling 2x the # of samples hit the 95% mark?
+# 
+# 
+# pacSept2021Inext[[4]]$Estimator[1]*0.95
+# estimateD(pacSept2021Inext[[3]], q = 0, datatype = "incidence_freq", level = 58)$qD
+# 
+# 
+# ###########################################################################################################################
+# ### Practice with the vegan package
+# # The vegan package also creates rarefaction curves but it is only for richness. And does not do extrapolation although asymptotic estimators can be calculated
+# 
+# # I think I finally get it
+# # "exact" is "sample-based rarefaction". Some say that sample-based is not true rarefaction, it is averaged species accumulation curves
+# # They also state that "rarefaction" is "individual-based rarefaction". This is the distinction the vegan package makes and it's why it's so confusing
+# # Others say this distinction is dumb and both count as "rarefaction". I am going to call them both "rarefaction"
+# 
+# # use the specaccum function for both individual-based and sample-based rarefaction
+# # The "exact" method is for sample-based rarefaction. It is also called the "Mao Tau" estimator 
+# # see https://academic.oup.com/jpe/article/5/1/3/1296712 and vegan help for specaccum
+# 
+# # Make a plot for the Argyle data just to test it
+# 
+# # Think about this some more: I think rounding (especially if close to zero) causes slightly different plots
+# # But I will be using sample-based rarefaction where it's just presence-absence. So... it's not a huge issue?
+# 
+# # Make plots of both sample-based and individual-based
+# plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method= "exact")) # sample-based
+# 
+# # Plot individual-based rarefaction over top. Data need to be rounded. (individual-based should be higher)
+# lines(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method = "rarefaction"), lty = 4)
+# 
+# # I think it would make sense if individual-based rarefaction was instead plotted with xvar = "individuals" as default
+# # It is odd to me that is not the default (it scales the x-axis to "Sites" which is confusing)
+# plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]), method = "rarefaction"), xvar = "individuals")
+# 
+# x = as.matrix(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi) (civ-vi)"): ncol(argyle)])
+# 
+# plot(specaccum(round(argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi) (civ-vi)"): ncol(argyle)]), method= "random", weights = argyle$waterVolume))
+# 
+# 
+# sp1 = specaccum(x)
+# sp2 = specaccum(x, "random", weights = argyle$waterVolume)
+# plot(sp2)
+# 
+# mod1 = fitspecaccum(x, "lomolino")
+# 
+# mod1 = fitspecaccum(sp1, "lomolino")
+# 
+# plot(sp1)
+# plot(mod1, add = T, col = 2, lwd = 2)
+# 
+# 
+# mods = fitspecaccum(sp2, "arrh")
+# plot(mods, col = "hotpink")
+# boxplot(sp2, col = "yellow", border = "blue", lty = 1, cex = 0.3, add = T)
+# 
+# sapply(mods$models, AIC)
+# 
+# 
+# 
+# ###########################################################################################################################
+# # FOR PRESENTATIONS
+# # For CSRF meeting I only want Newfoundland (poorly-sampled, curve doesn't level off) and St. Peters data (well-sampled, curve levels off)
+# 
+# inextCSRF = function(bayData, colourScheme, plotLetter){
+#   
+#   # I do not want these higher-order taxa to be included
+#   taxa_to_remove = c("Cnidaria (larvae)", "Copepoda (nauplii)", "Invertebrate (egg, trochophore larvae)")
+#   
+#   # Remove the taxa specified above
+#   # However, I need to check if they actually exist in the dataframe, otherwise I'll get an error
+#   if(any(spp_to_remove %in% colnames(bayData))){
+#     # If they are present, remove them
+#     bayData = bayData %>%
+#       select(-taxa_to_remove[taxa_to_remove %in% colnames(bayData)])
+#   }
+#   
+#   # First, just extract only the taxa info:
+#   # Remember: extracting data is df[rows, cols]. If left blank, it includes all the data
+#   bayTaxa = bayData[,which(colnames(bayData)== "Acartia spp. (civ-vi)"): ncol(bayData)]
+#   
+#   # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
+#   bayTaxa[bayTaxa>0] = 1
+#   
+#   # I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
+#   # It never works!!! Instead, convert to incidence_freq lol
+#   # Need to get incidence freqncies by summing the columns
+#   baySums = as.vector(colSums(bayTaxa))
+#   
+#   # It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
+#   baySumsList = list(append(baySums, nrow(bayTaxa), after = 0))
+#   
+#   # Create the iNEXT object! Calculate for richness only
+#   bay.inext = iNEXT(baySumsList, q = c(0), datatype = "incidence_freq")
+#   # Plot the graph of diversity vs sampling units
+#   
+#   # Calculate 80%, 90% and 95% of asymptotic estimator for richness only
+#   chao2_est = bay.inext$AsyEst$Estimator[1] # Get the asymptotic est for richness (the 1st of the 3 listed)
+#   
+#   ggiNEXT(bay.inext, color.var = "Order.q")+
+#     scale_colour_manual(values=colourScheme) +
+#     scale_fill_manual(values=colourScheme)+
+#     #scale_y_continuous(limits = c(13, 40))+
+#     xlab("Number of samples")+
+#     ylab("Taxa richness")+
+#     geom_hline(aes(yintercept = chao2_est), col = "red", linetype = "dashed")+
+#     # geom_text(aes( 0, chao2_est, label = chao2_est, vjust = -1), size = 3)+
+#     ggtitle(plotLetter)+
+#     theme_bw(base_size = 18)+ # cool trick so I don't have to adjust the size of everything manually
+#     theme(
+#       #axis.title.x = element_blank(),
+#       legend.position = "none",
+#       plot.margin=unit(c(0.1, 1, 0.6, 0.5),"cm"), # add spacing around plots: top, right, bottom, left
+#       plot.title = element_text(size = 15),
+#       plot.title.position = "plot")
+#   
+# }
+#  
+# # Pass in the dataframe of species counts, colour, and label
+# argCSRF = inextCSRF(argyle, marColours[[1]], "(A) Argyle")
+# countryCSRF = inextCSRF(country, marColours[[2]], "(B) Country Harbour")
+# soberCSRF = inextCSRF(sober, marColours[[3]], "(C) Sober Island")
+# whiteheadCSRF = inextCSRF(whitehead, marColours[[4]], "(D) Whitehead")
+# 
+# #  Plot them both together
+# plot_grid(argCSRF, countryCSRF, soberCSRF, whiteheadCSRF, ncol = 4)
+# 
+# cocagneCSRF = inextCSRF(cocagne, gulfColours[[1]], "(A) Cocagne")
+# malpequeCSRF = inextCSRF(malpeque, gulfColours[[2]], "(B) Malpeque")
+# stPetersCSRF = inextCSRF(stPeters, gulfColours[[3]], "(C) St. Peters")
+# plot_grid(cocagneCSRF, malpequeCSRF, stPetersCSRF, ncol = 3)
+# 
+# 
+# pacAug2020CSRF = inextCSRF(pacAug2020, pacColours[[1]], "(A) August 2020")
+# pacJun2021CSRF = inextCSRF(pacJun2021, pacColours[[3]], "(B) June 2021")
+# pacSept2021CSRF = inextCSRF(pacSept2021, pacColours[[4]], "(C) September 2021")
+# plot_grid(pacAug2020CSRF, pacJun2021CSRF, pacSept2021CSRF, ncol = 3)
+# 
+# seArm2020CSRF = inextCSRF(seArm2020, nlColours[[1]], "(A) September 2020")
+# seArm2021CSRF = inextCSRF(seArm2021, "dark blue", "(B) October 2021")
+# plot_grid(seArm2020CSRF, seArm2021CSRF, ncol = 2)
+# 
+# 
+# 
+# ###########################################################################################################################
+# # Play around with HT vs LT data to see if either is adequately sampled
+# 
+# # Test breaking up HT/LT data
+# 
+# argHT = argyle %>%
+#   subset(tidePhase == "High")
+# 
+# argLT = argyle %>%
+#   subset(tidePhase == "Low")
+# 
+# 
+# argHTtaxa = argHT[,which(colnames(argHT)== "Acartia spp. (civ-vi)"): ncol(argHT)]
+# argLTtaxa = argLT[,which(colnames(argLT)== "Acartia spp. (civ-vi)"): ncol(argLT)]
+# 
+# argHTtaxa[argHTtaxa>0] = 1
+# argLTtaxa[argLTtaxa>0] = 1
+# 
+# argHTsums = as.vector(colSums(argHTtaxa))
+# argLTsums = as.vector(colSums(argLTtaxa))
+# 
+# argTides = list("High Tide" = append(argHTsums, nrow(argHTtaxa), after = 0),
+#                    "Low Tide" = append(argLTsums, nrow(argLTtaxa), after = 0))
+# 
+# hi = iNEXT(argTides, q = c(0,1,2), datatype = "incidence_freq")
+# 
+# ggiNEXT(hi, facet.var = "Order.q", type = 1)
+# 
+# 
+# 
+# ###########################################################################################################################
+# ### Using the iNEXT4steps methods i.e., Chao et al. (2020)
+# # Recall that iNEXT.4steps is not in CRAN yet!!
+# 
+# argTaxa = argyle[,which(colnames(argyle)== "Acartia spp. (civ-vi)"): ncol(argyle)]
+# 
+# # Convert it to a presence/absence matrix (data need to be incidence data for sample-based rarefaction)
+# argTaxa[argTaxa>0] = 1
+# 
+# # I feel like this could be an incidence_raw matrix but TRULY I have NO IDEA how the want the data to be formatted
+# # It never works!!! Instead, convert to incidence_freq lol
+# # Need to get incidence freqncies by summing the columns
+# argSums = as.vector(colSums(argTaxa))
+# 
+# # It then needs to be converted to a list. The first value must also be the # of sampling units (i.e., number of nets)
+# argSumsList = list(append(argSums, nrow(argTaxa), after = 0))
+# 
+# 
+# # I need to play around with this, but I think my data needs to be in data frame format
+# arg4StepsPrep = as.data.frame(argSumsList)
+# 
+# # Computes everything
+# arg4Steps = iNEXT4steps(arg4StepsPrep, datatype = "incidence_freq", diversity = "TD")
+# 
+# arg4Steps$summary # gives summary data
+# arg4Steps$figure # gives all the figures together
+# 
+# # Note: There are ways to get the figures separate. But that is for another day!!
+# 
+# cocagneInext[[1]]
+# 
+# estimateD(cocagneInext[[3]], q = 0, datatype = "incidence_freq")
+# 
+# 
+# estimateD(whiteheadInext[[3]], q = 0, datatype = "incidence_freq", level = 1000)
+# 
+# factorial(8)
+# (factorial(4))^2
