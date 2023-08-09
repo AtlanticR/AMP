@@ -103,7 +103,7 @@ source("DataProcessing/metadataProcessing.R")
 # Note that this is basically the same as ZooplanktonCount.R from previous project
 # But I've just made a few minor adjustments to only give COUNTS, not abundances
 # Also I don't want to mess up that old script! 
-source("QuantitativeAssessment/flowcamCountQA.R")
+source("QuantitativeAssessment/dataProcessing/flowcamCountQA.R")
 
 # Remove scientific notation
 options(scipen=999)
