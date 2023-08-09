@@ -39,7 +39,7 @@ source("DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sam
 source("DataProcessing/metadataProcessing.R") # get metadata
 
 # Read in spreadsheet with adjustments to taxa names
-taxaFixes = read.csv("../AMPDataFiles/taxaCorrectionsDraft.csv")
+taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
 
 ################################################################################
 ## GET THE DATA FILE NAMES
