@@ -243,7 +243,7 @@ taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun2
 # Chaetognath data for Newfoundland 2021 and 2022 were hand counted
 # Some were also run through the FlowCam, but many broke. So these hand-counted values need 
 # to be added to the 5mm counts of each file
-nl21ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_2021.xlsx")) %>%
+nl21ChaetData = suppress_warnings(read_excel("../AMPDataFiles/extraFiles/NL_Chaetognath_2021.xlsx")) %>%
   # For everything except the first row: if a value is NA, put 0. If it's not, put 1.
   # This is because chaetognath lengths were recorded. But I am only interested in counts. So if there is any text, it's a count of 1
   mutate(across(-1, ~ifelse(!is.na(.), 1, 0))) %>%
@@ -262,7 +262,7 @@ nl21ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_202
          copepodType = "",
          sample = str_replace(sample, "_5mm", "_250")) # Need to replace last bit of the sample ID so 250 um and 5mm fractions add together properly
 
-nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/NL_Chaetognath_2022.xlsx")) %>%
+nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/extraFiles/NL_Chaetognath_2022.xlsx")) %>%
   # For everything except the first row: if a value is NA, put 0. If it's not, put 1.
   # This is because chaetognath lengths were recorded. But I am only interested in counts. So if there is any text, it's a count of 1
   mutate(across(-1, ~ifelse(!is.na(.), 1, 0))) %>%
