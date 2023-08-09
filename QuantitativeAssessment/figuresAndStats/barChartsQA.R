@@ -14,7 +14,7 @@
 ################################################################################
 
 # Read in the script that puts together the QA (microscopy) and Flowcam data
-source("QuantitativeAssessment/QAcodeMatches.R")
+source("QuantitativeAssessment/dataProcessing/QAcodeMatches.R")
 
 ################################################################################
 
