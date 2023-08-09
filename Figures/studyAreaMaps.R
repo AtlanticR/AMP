@@ -205,7 +205,7 @@ ggArgMap = ggplot()+
   # Add the eelLakeBoundary file in white first, otherwise it'll overlay on grey and this will look incorrect when alpha is set to 0.1
   # Then, add the eelLakeBoundary in blue with the alpha set to 0.1
   geom_polygon(eelLakeBoundary, mapping = aes(x = long, y = lat, group=group), fill = "white", col = "black", linewidth = 0.1)+
-  # geom_polygon(eelLakeBoundary, mapping = aes(x = long, y = lat, group=group), fill = "blue", col = "black", linewidth = 0.1, alpha = 0.1)+
+  geom_polygon(eelLakeBoundary, mapping = aes(x = long, y = lat, group=group), fill = "blue", col = "black", linewidth = 0.1, alpha = 0.1)+
   # Then, add the islands
   geom_polygon(eelLakeIslands, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   geom_polygon(nsLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
@@ -365,12 +365,13 @@ ggStPMap =
 ggSeArmMap = 
   ggplot()+
   geom_polygon(seArmBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
-    geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
+  geom_polygon(seArmBoundaryExtension, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
+  geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
     geom_sf(data = lease1Sf, col = "#cc3d6f", fill = "pink")+
     geom_sf(data = lease2Sf, col = "#cc3d6f", fill = "pink")+
     geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
     # coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+ # UTM zone 21N
-    coord_sf(xlim = c(618447, 626387), ylim = c(5462394, 5469127), crs = 32621)+
+    coord_sf(xlim = c(618447, 626387), ylim = c(5462394, 5469827), crs = 32621)+
     annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
     # Add a north arrow to map
     annotation_north_arrow(location = "tr", which_north = "true",
