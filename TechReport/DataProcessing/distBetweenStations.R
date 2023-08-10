@@ -5,7 +5,7 @@
 ###############################################################################
 
 # This has all the station info
-source("DataProcessing/studyAreaDataPrep.R")
+source("TechReport/DataProcessing/studyAreaDataPrep.R")
 
 # The punctual stations include
 # Maritimes: WhiteHead, Country Harbour
