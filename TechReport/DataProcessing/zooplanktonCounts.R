@@ -35,8 +35,8 @@
 ################################################################################
 ## Read in other scripts
 
-source("DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
-source("DataProcessing/metadataProcessing.R") # get metadata
+source("TechReport/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
+source("TechReport/DataProcessing/metadataProcessing.R") # get metadata
 
 # Read in spreadsheet with adjustments to taxa names
 taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
