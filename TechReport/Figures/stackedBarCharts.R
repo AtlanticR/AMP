@@ -4,7 +4,7 @@
 ################################################################################
 
 ## Get things set up
-source("DataProcessing/dividePlankton.R")
+source("TechReport/DataProcessing/dividePlankton.R")
 
 # facet_nested is breaking for people? See here:
 # https://github.com/teunbrand/ggh4x/issues/81
