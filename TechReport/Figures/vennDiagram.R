@@ -6,7 +6,7 @@
 
 # Add nmds script since this is where I have done basic dataframe manipulation
 # for each spatial scale 
-source("DataProcessing/zooplanktonCounts.R")
+source("TechReport/DataProcessing/zooplanktonCounts.R")
 
 # Don't include this in DataProcess/rPackages.R are there are issues when reading in shapefiles 
 # I think this has to do with both having an sp() function
