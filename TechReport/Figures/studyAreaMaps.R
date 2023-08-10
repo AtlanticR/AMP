@@ -21,8 +21,8 @@
 ################################################################################
 
 # Set up
-source("DataProcessing/studyAreaDataPrep.R") # preps all the data for plotting
-source("Figures/colourPchSchemes.R") # defines colour schemes for the region map
+source("TechReport/DataProcessing/studyAreaDataPrep.R") # preps all the data for plotting
+source("TechReport/Figures/colourPchSchemes.R") # defines colour schemes for the region map
 
 ################################################################################
 # Create the top panel of my maps
