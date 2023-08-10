@@ -13,9 +13,9 @@
 #################################################################################
 
 # This has all the plankton data with counts for each file
-source("DataProcessing/zooplanktonCounts.R")
+source("TechReport/DataProcessing/zooplanktonCounts.R")
 # This sets the colours schemes and symbology for bays, regions, etc
-source("Figures/colourPchSchemes.R")
+source("TechReport/Figures/colourPchSchemes.R")
 
 #################################################################################
 
