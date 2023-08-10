@@ -427,10 +427,6 @@ plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 # NL 2021 and 2022 only NMDS
 # This is the one that has the arrows connecting between sampling month centroids
 
-####### I NEED TO FIX THIS SO VARIABLES WITH THE TWO PLOTS DO NOT HAVE THE SAME NAME
-# H/E THAT'S A LOT OF WORK. AND I THINK I WILL BE REMOVING ONE OF THE PLOTS
-# LEAVE IT FOR NOW AND COME BACK TO IT
-
 # Switch format of Newfoundland data so each row represents a sample
 nlMergeWide = nl %>% 
   pivot_wider(names_from = class, values_from = abund) %>%
@@ -462,7 +458,9 @@ ordStress.nl = paste("2D Stress: ", format(round(ord.nl$stress, digits=2), nsmal
 centMonth = aggregate(cbind(NMDS1, NMDS2)~month+year, data = ordCoords.nl, FUN = mean) %>%  # centroid of the oceans
   # Add a column called "year" and make each entry equal "centroid". I will use this to filter out what to plot on the ggplot 
   mutate(year = "centroid") %>%
-  mutate(monthAbb = month.abb[month]) %>%
+  mutate(monthAbb = month.abb[month]) 
+
+centMonth = centMonth %>%
   # Add index that shows the order of data collection
   mutate(orderCollect = 1:nrow(centMonth)) %>%
   # Not great programming, but it's the fastest way to do this. The first 7 entries are from 2021, the rest are from 2022
@@ -559,13 +557,13 @@ ordCoords.nl = as.data.frame(scores(ord.nl, display="sites")) %>%
 # Calculate the 2D stress of the ordination. Round to 2 decimal places and make sure 2 decimal places show up is second is a zero
 ordStress.nl = paste("2D Stress: ", format(round(ord.nl$stress, digits=2), nsmall=2))
 
-
-
 # Compute the group centroids for each month of each year (i.e., centroid of July 2021 is different from centroid of July 2022)
 centMonth = aggregate(cbind(NMDS1, NMDS2)~month, data = ordCoords.nl, FUN = mean) %>%  # centroid of the oceans
   # Add a column called "year" and make each entry equal "centroid". I will use this to filter out what to plot on the ggplot 
   mutate(centroid = "centroid") %>%
-  mutate(monthAbb = month.abb[month]) %>%
+  mutate(monthAbb = month.abb[month]) 
+
+centMonth = centMonth %>%
   # Add index that shows the order of data collection
   mutate(orderCollect = 1:nrow(centMonth)) %>%
   # Not great programming, but it's the fastest way to do this. The first 7 entries are from 2021, the rest are from 2022
