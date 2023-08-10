@@ -20,7 +20,7 @@
 ################################################################################
 
 # read in all required R packages
-source("DataProcessing/rPackages.R") 
+source("TechReport/DataProcessing/rPackages.R") 
 
 ################################################################################
 ## Load the data
