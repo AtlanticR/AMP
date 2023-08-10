@@ -91,7 +91,7 @@
 ################################################################################
 
 # Set up
-source("DataProcessing/rPackages.R")
+source("TechReport/DataProcessing/rPackages.R")
 
 # Install this extra library which contains a Canadian province shapefile
 devtools::install_github("ropensci/rnaturalearthhires")
