@@ -43,9 +43,9 @@
 # SETUP
 
 # Read in data with counts per bay
-source("DataProcessing/bayBreakdown.R")
+source("TechReport/DataProcessing/bayBreakdown.R")
 # This sets the colours schemes and symbology for bays, regions, etc
-source("Figures/colourPchSchemes.R")
+source("TechReport/Figures/colourPchSchemes.R")
 
 # Install necessary packages
 # iNEXT.4steps is not in CRAN yet!!
