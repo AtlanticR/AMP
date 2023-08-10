@@ -17,8 +17,8 @@
 ### Set up
 
 # Read in the appropriate scripts
-source("Figures/permanovaRegions.R") # for permanova, dispersion & simper between regions
-source("Figures/permanovaBays.R") # for permanova & dispersion for bays
+source("TechReport/Figures/permanovaRegions.R") # for permanova, dispersion & simper between regions
+source("TechReport/Figures/permanovaBays.R") # for permanova & dispersion for bays
 
 ## DISPERSION
 
@@ -325,7 +325,7 @@ jun2021SimperTableStn = rbind(
 
 # write.csv(argyleSimperTableTide, "argyleSimperTableTide.csv")
 # write.csv(argyleSimperTableStn, "argyleSimperTableStn.csv")
-write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
+# write.csv(stPSimperTableStn, "stPSimperTableStn.csv")
 # write.csv(nl21SimperTableStn, "nl21SimperTableStn.csv")
 # write.csv(aug2020SimperTableStn, "aug2020SimperTableStn.csv")
 # write.csv(jun2021SimperTableStn, "jun2021SimperTableStn.csv")
