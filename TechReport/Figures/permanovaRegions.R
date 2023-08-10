@@ -40,7 +40,7 @@
 
 # Add nmds script since this is where I have done basic dataframe manipulation
 # for each spatial scale 
-source("Figures/nmdsRegions.R")
+source("TechReport/Figures/nmdsRegions.R")
 
 # Install this package to get the pairwise.adonis2 function
 remotes::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
