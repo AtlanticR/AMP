@@ -41,7 +41,7 @@
 ### Set-up
 
 # Read in script that has the plankton counts in each bay
-source("DataProcessing/bayBreakdown.R")
+source("TechReport/DataProcessing/bayBreakdown.R")
 
 # Install this package to get the pairwise.adonis2 function
 remotes::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
