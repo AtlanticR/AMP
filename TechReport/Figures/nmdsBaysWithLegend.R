@@ -24,7 +24,7 @@
 # Access each individual using the command (e.g.):
 # marNMDSbays[[1]] # gets Argyle
 # This also reads in colour schemes/symbology for tide phases & stations
-source("Figures/nmdsBays.R")
+source("TechReport/Figures/nmdsBays.R")
 
 ###############################################################################
 ###############################################################################
