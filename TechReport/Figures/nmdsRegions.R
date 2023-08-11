@@ -1,20 +1,26 @@
 ################################################################################
 ################################################################################
-### NMDS Ordinations for regional FlowCam data
-# But in this script I'm going to add symbols to distinguish each plot
+### NMDS ordinations for macro FlowCam data
 
-# This makes NMDS ordinations when data are displayed by REGIONS
+## Purpose:
+# This script makes NMDS ordinations for data within different regions
 # Likely, not all plots will be used in Tech Report
+
 # There is code to make ordinations for:
-# All regions together, just the Atlantic Ocean, and each region separately
-# (with data by bays identified)
+# All data together, coloured by region (e.g., Gulf, Maritimes, Newfoundland, Pacific)
+# All data together, coloured by sampling month (with regions as symbols)
+# All data from the Atlantic Ocean. Coloured by region.
+# Data from the Maritimes & Gulf region
+
+# Data for each of the regions, coloured by site:
+# e.g., Maritimes only with Argyle, Country Harbour, Sober Island, Whitehead
+# Data from the Newfoundland region. These plots are a bit different because they 
+# had monthly sampling. 
 
 ################################################################################
-## Read in other scripts
+## Setupd
 
 # This has all the plankton data with counts for each file
-# source("DataProcessing/zooplanktonCounts.R")
-
 source("TechReport/DataProcessing/dividePlankton.R")
 # This sets the colours schemes and symbology for bays, regions, etc
 source("TechReport/Figures/colourPchSchemes.R")
@@ -31,10 +37,6 @@ source("TechReport/Figures/colourPchSchemes.R")
 # 2. Get the Legend (only) from Pacific data
 # 3. Plot (with no legend) of both Pacific and Atlantic data
 # All three will then be combined with grid.arrange()
-
-
-# This will display each DFO region (Gulf, Maritimes, Newfoundland, Pacific) with a different colour
-# Possibly different symbols for each ocean (Pacific, Atlantic). TBD how I handle this.
 
 # Combine all the data together
 allRegions = rbind(marMerge, nlMerge, pacMerge, gulfMerge)
@@ -69,7 +71,6 @@ regionArray = c(21:(20+length(unique(allRegions$region))))
 ordCoordsAll = ordCoordsAll %>%
   mutate(region = allRegionsWide$region, ocean = allRegionsWide$ocean) %>%
   mutate(month = allRegionsWide$monthStart)
-
 
 # Compute the group centroids
 centOcean = aggregate(cbind(NMDS1, NMDS2)~ocean, data = ordCoordsAll, FUN = mean) # centroid of the oceans
@@ -145,7 +146,6 @@ ggRegMonths = ggplot() +
 ggarrange(ggRegs, ggRegMonths, ncol = 1)
 
 
-#################################################################################
 #################################################################################
 ## Now do the same thing for Atlantic ocean
 
@@ -248,8 +248,8 @@ marLegend = as_grob(get_legend(ggMaritimes))
 #                                    c(1,1,1,NA)))
 
 #################################################################################
-# Actually I think what I want more than Maritimes, Gulf and Newfoundland is just Maritimes & Gulf
-# Here is the code for putting just those two together
+## Create NMDS with Maritimes and Gulf data on sample ordination
+# For this, I don't want Newfoundland included in the data. 
 # Note that I don't need to make new legend items for Mar & Gulf because that was done above
 
 # Get only the Maritimes and Gulf data
@@ -311,11 +311,10 @@ grid.arrange(ggGulfMar, gulfLegend, marLegend, nrow=2, ncol = 2,
 
 
 #################################################################################
-## Now Plot each bay separately
-# This is easier because there is only one legend item
-# Run as a function and pass in the various  
+## Make NMDS ordination for each region (Gulf, Maritimes, Pacific) separately 
+# Newfoundland is unique, and done separately below
 
-
+# Create function to create NMDS with regional data. Each site (bay) is a different symbol/colour
 nmdsPrep = function(mergeData, bayColours, breakVals) {
   # alter the dataframe so it is in appropriate format for NMDS
   # names_from: The column whose values will be used as column names
@@ -401,8 +400,6 @@ gulfNMDS = nmdsPrep(gulf, gulfColours, waiver())
 # Remember to make sure the graph you want is in the plotting window before saving
 # ggsave("test.png", width = 6.80, height = 3.98, units = "in", dpi = 300)
 
-
-
 # This works better than grid.arrange! It aligns all the plots with unequal legends
 # plot_grid(marNMDS, nlNMDS, pacNMDS, gulfNMDS, align = "v")
 plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
@@ -410,15 +407,14 @@ plot_grid(marNMDS, gulfNMDS, ncol = 1, align = "v")
 ########################################################################################################################
 ########################################################################################################################
 ## Make NMDS of Newfoundland 
-# EXPLANATION:
 # Newfoundland had a slightly different sampling design
-# They sampled a lot in Oct 2020. Then they sampled Jun 2021 --> July 2022, every month (except Jan 2022) with ~ 3 samples/month
+# They sampled a lot in Oct 2020. Then they sampled Jun 2021 --> July 2022, every month (except Jan 2022) with 2-3 samples/month
 # They took many samples in Sept 2021 to study tide effects a bit more
 
 # Here, I am showing all data. Shape is year, colour represents months.
 # Below, I am making 2 NMDS ordinations: one with all data (2020, 2021, 2022)
 # Because 2020 data is quite distinct (and there's a large temporal sampling gap), I am making a second ordination of just 2021--> 2022 data
-# In the other NMDS of 2021 --> 2022 I am including the centroid of each sampling month, and connecting them with arrows.
+# In the NMDS of 2021 --> 2022 I am including the centroid of each sampling month, and connecting them with arrows.
 # This helps show how zooplankton composition changed over time
 
 # Note that in nmdsBay.R, I am creating two NMDS for NL data: one of Oct 2020 and the other of Sept 2021. For those, symbols are tide phases and colours are stations.
@@ -527,11 +523,8 @@ ggplot() +
   guides(colour = "none", fill = "none")
 
 ########################################################################################################################
-# NMDS of 2020, 2021 and 2022 data
-
-# This is not the best way to code it.
-# But, rerun everything above and don't include the filter(yearStart != 2020) part of the code
-
+## NMDS of 2020, 2021 and 2022 data
+# I know it's bad I'm using many of the same variable names. Oh well.
 
 # Switch format of Newfoundland data so each row represents a sample
 nlMergeWide = nl %>% 
@@ -554,6 +547,7 @@ ordCoords.nl = as.data.frame(scores(ord.nl, display="sites")) %>%
   mutate(myLabel = nlMergeWide$myLabel) %>%
   mutate(month = nlMergeWide$monthStart) %>%
   mutate(year = as.factor(nlMergeWide$yearStart)) 
+
 # Calculate the 2D stress of the ordination. Round to 2 decimal places and make sure 2 decimal places show up is second is a zero
 ordStress.nl = paste("2D Stress: ", format(round(ord.nl$stress, digits=2), nsmall=2))
 
@@ -592,7 +586,7 @@ centroidSegs = tibble(start = centMonth$orderCollect, end = centMonth$orderColle
   # Remove the final row because I don't want the last sampling event to connect to the first
   #filter(row_number() <= n()-1) 
 
-
+# Create plot with all 3 years of data
 ggNLAllYears = 
 ggplot() + 
   # Add the first set of points: actual NMDS data for each sample, but remove the centroid data. Symbol will be year, fill is month
