@@ -10,8 +10,9 @@
 # nmdsBaysWithLegend.R
 # Those could have been added here, but it would be too long
 
-# Instead, this creates the plots, stores them as a list, and the other script
+# Instead, this script creates the plots, stores them as a list, and the other script
 # makes custom legends for each bay.
+# Use nmdsBaysWithLegend.R for making final plots for Tech Report
 
 #################################################################################
 ## Set-up
@@ -21,7 +22,6 @@ source("TechReport/DataProcessing/dividePlankton.R")
 # This sets the colours schemes and symbology for bays, regions, etc
 source("TechReport/Figures/colourPchSchemes.R")
 
-#################################################################################
 #################################################################################
 ### Create NMDS ordinations for each bay
 
@@ -150,11 +150,6 @@ nlNMDSbays = nmdsBay(nl %>%
 # Pacific: remove March data because it only has 2 data points and can't do NMDS on that
 pacNMDSbays = nmdsBay(pac  %>% filter(facetFactor != "March 2021"), stationCol) # without removing outliers
 
-# May also need to remove the two "outliers" (from Pacific June 2021) because otherwise distorts individual NMDS
-# However, after fixing typos in November, this may not be needed anymore
-nmdsBay(pac %>% filter(facetFactor != "March 2021") %>%
-          filter(sampleCode != c("AMMP_PA_S04W15_20210610HT_250um"))%>%
-          filter(sampleCode != c("AMMP_PA_S04W01_20210611HT_250um")), pacColours)
 
 # Note, this combines all ggplots for each bay into a list. To access, do this:
 # marNMDSbays[[1]] # e.g., for Argyle (the first one)
