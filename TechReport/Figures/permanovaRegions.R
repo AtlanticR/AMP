@@ -1,24 +1,25 @@
 ################################################################################
 ################################################################################
-#### BETADISPER, PERMANOVA and SIMPER analysis
+#### Run multivariate statistics among different regions
 
-# Created by Stephen Finnis 2022
+# This runs the stats within bays (e.g., PERMANOVA, dispersion, SIMPER)
+# These stats return data in a gross format. So, permanovaTables.R was created to 
+# organize everything in a nicer tabular format.
 
+################################################################################
 ### Background:
 # This script is for testing for significant differences in zooplankton community structure between groups
 # We are testing for differences at multiple spatial scales:
 # Between oceans (Pacific vs Atlantic)
 # Between DFO regions (Pacific, Maritimes, Gulf, Newfoundland)
 # Between bays
-# Between locations within bay (mid, inner, outer)
-# Different days
 
 ### Approach:
 ## 1a. At each spatial scale, conduct BETADISPER test to determine if there are significant
 # differences in dispersion between groups
 # Dispersion gives interesting information on its own. No differences in dispersion is also
 # an assumption for PERMANOVAs
-## 1b. Conduct pairwise tests in dispersion at each spatial scale (get t-statistic and permuted significances)
+## 1b. Conduct pairwise tests in dispersion at each spatial scale (get t-statistic and permuted significance)
 
 ## 2a. At each spatial scale, conduct a PERMANOVA to determine if significant differences exist between groups
 ## 2b. Conduct pairwise comparisons to find out which groups are significantly different 
@@ -382,11 +383,14 @@ summary(simPac)
 
 # No significance tests since only one bay and one field season (so far)
 
+
+
+
+#################################################################################
+#################################################################################
+#################################################################################
 #################################################################################
 # Things to delete but keeping just in case
-
-################################################################################
-### ALTERNATIVE METHODS 
 
 
 #### NMDS of SIMPER
