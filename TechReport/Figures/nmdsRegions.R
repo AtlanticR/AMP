@@ -18,7 +18,7 @@
 # had monthly sampling. 
 
 ################################################################################
-## Setupd
+## Setup
 
 # This has all the plankton data with counts for each file
 source("TechReport/DataProcessing/dividePlankton.R")
@@ -620,5 +620,6 @@ ggplot() +
   #guides(fill = guide_legend(override.aes = list(shape=c(21)))) # This is to get the legend to work properly. But I might remove the legend
   guides(colour = "none", fill = "none")
 
+# Put both plots together
 ggarrange(ggNL2122, ggNLAllYears, ncol = 1)
 
