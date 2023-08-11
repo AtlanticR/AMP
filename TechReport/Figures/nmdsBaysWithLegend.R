@@ -1,6 +1,8 @@
 ###############################################################################
 #### Add legends for NMDS by bays
-# I want these to show tide phases by shape and stations by colour
+
+## Background
+# I want NMDS ordinations for each bay (site) to display tide phases by shape and stations by colour
 # But I want the legend to show that as a grid, not separate items
 # e.g., see Anderson (2007) Fig. 3b for an example:
 # https://onlinelibrary.wiley.com/doi/full/10.1002/9781118445112.stat07841
@@ -19,12 +21,13 @@
 
 ###############################################################################
 ## Run script to get each NMDS ordinations for each bay
+# Note these have the ordinations but NOT the fancy legend that I want
 # This returns 4 important items:
 # marNMDSbays, gulfNMDSbays, nlNMDSbays, pacNMDSbays
 # Access each individual using the command (e.g.):
 # marNMDSbays[[1]] # gets Argyle
 # This also reads in colour schemes/symbology for tide phases & stations
-source("TechReport/Figures/nmdsBays.R")
+source("TechReport/DataProcessing/nmdsBaysDataPrep.R")
 
 ###############################################################################
 ###############################################################################
