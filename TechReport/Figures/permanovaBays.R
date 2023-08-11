@@ -1,9 +1,16 @@
 ################################################################################
 ################################################################################
-#### Run the multivariate statistics within each bay
+#### Run multivariate statistics within each bay
 
-# For each bay I am testing the effects of tide and station (myLabel, i.e., "inner, mid, outer"
-# locations) on zooplankton composition
+# This runs the stats within bays (e.g., PERMANOVA, dispersion, SIMPER)
+# These stats return data in a gross format. So, permanovaTables.R was created to 
+# organize everything in a nicer tabular format.
+
+################################################################################
+
+### Background
+
+# For each bay I am testing the effects of tide and station (e.g., "inner, mid, outer" locations) on zooplankton composition
 
 # This includes running three tests:
 # 1. betadisper aka PERMDISP (what's called in PRIMER)
@@ -18,6 +25,8 @@
 # I am therefore only running these tests on a few bays. More info will be provided in the Methods of the Tech Report
 # I will also not be conducting post-hoc pairwise comparisons with the pairwise.adonis2 function
 # In these instances, NMDS ordinations will be used to visualize if an effect of tide or station is present
+
+# As a result, I am not running these tests in ALL bays. Only in select bays.
 
 # This code is very similar to that in permanova.R
 # I have broken up the tests for each bay since the approach is very slightly different. And to avoid one huge script
@@ -154,9 +163,6 @@ ggplot(disStPdf, aes(x = group, y = distances), fill = "white")+
         axis.title.y = element_text(size = 12.5, margin = unit(c(0, 3, 0, 0), "mm")),
         strip.text.x = element_text(size = 13),
         legend.position = "none")
-
-
-
 
 ## PERMANOVA
 set.seed(13)
