@@ -36,6 +36,14 @@
 ################################################################################
 #### NOTES ABOUT THE QA SAMPLES
 
+# Note that for this project, only 10 samples from each region are being analyzed:
+# 10 from St. Peters, 10 from NL (2020), 10 from NL (2021), and 10 from Pacific
+# These are identified in the 'selectForAnalysis' column in QA Pairings spreadsheet
+
+###
+## I'm including more background about all the other samples, in case the matches
+## between ALL QA and FlowCam samples are ever needed:
+
 ### Newfoundland
 
 ## 2020
@@ -88,16 +96,11 @@
 # Be careful when matching these, because tide phase and date were not included in QA IDs
 # They were added as separate columns. Need to be included
 
-## NOTE: As of June 9, 2023 we will only be using a select few samples
-# 10 from St. Peters, 10 from NL (2020), 10 from NL (2021), and 10 from Pacific
-# To make analysis more consistent
-# These are identified in the 'selectForAnalysis' column in QA Pairings spreadsheet
-
 ################################################################################
 #### SETUP
 
 # Read in all required R packages
-source("DataProcessing/metadataProcessing.R") 
+source("TechReport/DataProcessing/metadataProcessing.R") 
 
 # Read in data of FlowCam Counts
 # Note that this is basically the same as ZooplanktonCount.R from previous project
@@ -109,7 +112,6 @@ source("QuantitativeAssessment/dataProcessing/flowcamCountQA.R")
 options(scipen=999)
 
 # Read in the Excel spreadsheet with the QA IDs
-# Read in spreadsheet with adjustments to taxa names
 
 # Files are read relative to my R Project (within "AMP"), which is separate from where the data files are stored (AMPDataFiles)
 # ".." means "go back a directory"
@@ -122,7 +124,7 @@ qaID = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/selec
 
 # Read in the file that has the adjustments to the QA taxa names (to make sure they're consistent)
 qaTaxaChanges = read_xlsx("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/quantAssess_taxaChanges.xlsx") %>%
-  # Only keep the important column names (not all my draft labelling)
+  # Only keep the important column names (not all my draft labeling)
   select(taxStage, newName)
 
 # Read in the file that has the adjustments to the FLOWCAM taxa names
@@ -229,7 +231,7 @@ fcQaDf = rbind(allQAData, flowCamData)
 
 
 
-redistribute_abundances <- function(df, damaged_taxa, target_taxa){
+redistribute_abundances = function(df, damaged_taxa, target_taxa){
 
   # Filter the data frame for the damaged taxa
   df_damaged = df %>%
@@ -245,7 +247,7 @@ redistribute_abundances <- function(df, damaged_taxa, target_taxa){
     left_join(df_damaged_total, by = c("FlowCamID", "type"))
 
   # Calculate the total abundance of the target taxa for each sample
-  df_total <- df %>%
+  df_total = df %>%
     filter(newName %in% target_taxa) %>%
     group_by(FlowCamID, type) %>%
     summarize(total_abund_target = sum(abund))
@@ -270,10 +272,12 @@ redistribute_abundances <- function(df, damaged_taxa, target_taxa){
   }
 
   # Remove the damaged taxa from the dataframe
-  df = df %>% filter(newName != damaged_taxa)
+  df = df %>% 
+    filter(newName != damaged_taxa)
 
   # Drop the unnecessary columns
-  df = df %>% select(-c(total_abund_damaged, total_abund_target, starts_with("prop_")))
+  df = df %>% 
+    select(-c(total_abund_damaged, total_abund_target, starts_with("prop_")))
 
   return(df)
 }
@@ -326,39 +330,4 @@ test = test %>%
 
 
 fcQaDf = test
-# 
-# # Redistribute abundances of unidentified zooplankton between all other taxa present in the dataset
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# fcQaDf = df2
-
-
-
-
-
-
-
-
-
-
-##### TESTING TESTING 
-target_species = "Acartia spp."
-
-
-exclude_species = c("Evadne spp.")
-
-
-desired_samples = fcQaData %>%
-  filter(newName == target_species) %>%
-  group_by(FlowCamID) %>%
-  filter(all(!(newName %in% exclude_species))) %>%
-  distinct(FlowCamID)
-  
-
 
