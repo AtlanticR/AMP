@@ -11,31 +11,50 @@
 # that need to be dealt with
 
 # From the FlowCam list, these include:
-# 
+# Zooplankton (unid), Calanoida (unid) and Copepoda (unid)
+# These will be distributed among the possible taxa within each group
+
+# I will be using the DPAC-S method described more in Cuffney et al. (2007):
+# https://www.journals.uchicago.edu/doi/full/10.1899/0887-3593%282007%2926%5B286%3AATEOTC%5D2.0.CO%3B2
+
+# I also used this approach in the Tech Report under TechReport/DataProcessing/dividePlankton.R
+# But the code was a bit messy so I'm fixing it up here
+
+# There are also a few taxa from the Quantitative Assessment that need to be "fixed" in some capacity
+
+################################################################################
+### Set up
+
+# Run the script that compiles the data
+source("QuantitativeAssessment/dataProcessing/QAcodeMatches.R") 
+
 
 ################################################################################
 
 
-########################################################
 ### Adjustments to the taxa list
 
+# Need to redistribute some of the higher level taxa (i.e., "parent taxa"/"problem_taxa") 
+# between lower level taxa (i.e., "child taxa" "target_taxa")
+# This is based on the relative abundance of child taxa. e.g., if Acartia form 50% of Calanoida, then 50% of abundances
+# will be distributed to them
 
-
-
-redistribute_abundances = function(df, damaged_taxa, target_taxa){
+# Function accepts the dataframe with the counts, and specifies the "problem" taxa to be distributed, and the "target" taxa
+# they should be distributed amongst
+redistribute_abundances = function(df, problem_taxa, target_taxa){
   
-  # Filter the data frame for the damaged taxa
-  df_damaged = df %>%
-    filter(newName == damaged_taxa)
+  # Filter the data frame for the problem taxa
+  df_problem = df %>%
+    filter(newName == problem_taxa)
   
-  # Calculate the total abundance of the damaged taxa for each sample
-  df_damaged_total = df_damaged %>%
+  # Calculate the total abundance of the problem taxa for each sample
+  df_problem_total = df_problem %>%
     group_by(FlowCamID, type) %>%
-    summarize(total_abund_damaged = sum(abund))
+    summarize(total_abund_problem = sum(abund))
   
   # Join the total abundance back to the original dataframe
   df = df %>%
-    left_join(df_damaged_total, by = c("FlowCamID", "type"))
+    left_join(df_problem_total, by = c("FlowCamID", "type"))
   
   # Calculate the total abundance of the target taxa for each sample
   df_total = df %>%
@@ -58,17 +77,17 @@ redistribute_abundances = function(df, damaged_taxa, target_taxa){
   # Calculate the redistributed abundances
   for (taxon in target_taxa) {
     df = df %>%
-      mutate(abund = if_else(newName == taxon & !is.na(total_abund_damaged),
-                             abund + get(paste0("prop_", taxon)) * total_abund_damaged, abund))
+      mutate(abund = if_else(newName == taxon & !is.na(total_abund_problem),
+                             abund + get(paste0("prop_", taxon)) * total_abund_problem, abund))
   }
   
   # Remove the damaged taxa from the dataframe
   df = df %>% 
-    filter(newName != damaged_taxa)
+    filter(newName != problem_taxa)
   
   # Drop the unnecessary columns
   df = df %>% 
-    select(-c(total_abund_damaged, total_abund_target, starts_with("prop_")))
+    select(-c(total_abund_problem, total_abund_target, starts_with("prop_")))
   
   return(df)
 }
