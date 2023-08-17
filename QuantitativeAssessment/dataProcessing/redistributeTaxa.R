@@ -16,11 +16,19 @@
 
 # I will be using the DPAC-S method described more in Cuffney et al. (2007):
 # https://www.journals.uchicago.edu/doi/full/10.1899/0887-3593%282007%2926%5B286%3AATEOTC%5D2.0.CO%3B2
+# This well help distribute the abundances between these 3 unid groups between the lower-level taxa
+# e.g., if Acartia form 50% of Calanoida, then 50% of abundances from Calanoida (unid) in the sample
+# will be distributed to them. See the paper above for more of an explanation.
 
 # I also used this approach in the Tech Report under TechReport/DataProcessing/dividePlankton.R
 # But the code was a bit messy so I'm fixing it up here
 
 # There are also a few taxa from the Quantitative Assessment that need to be "fixed" in some capacity
+# This includes:
+# Convert all Decapoda to either "brachyura" or "non-brachyura". Many taxa in the Pacific (QA data) were to higher taxonomic
+# levels and that gets too complicated. So switch ALL to that. Including the few from the FlowCam data that were also to higher levels 
+# Check about Porcellanidae- but honestly I think just make it non-brachyura.
+# Based on advice of taxonomist, "Damaged" taxa in QA dataset, was just classified into the adult taxa (not split into that vs ci-ciii)
 
 ################################################################################
 ### Set up
@@ -28,17 +36,22 @@
 # Run the script that compiles the data
 source("QuantitativeAssessment/dataProcessing/QAcodeMatches.R") 
 
+### Initial data prep
+
+# Make this a new variable for testing
+test = fcQaDf
+
+# Remove the "egg mass" taxa from the dataset. There are WAY too many of them in the Pacific dataset
+# Asked the lead taxonomist. Said these could be "Invertebrate egg/trochophore" but I think they must
+# have counted them differently. Also remove "Invertebrate egg/trochophore" for consistency
+test = test %>%
+  filter(newName != "EGG CHECK" & newName != "Invertebrate (egg, trochophore larvae)")
 
 ################################################################################
+### Create the function 
 
-
-### Adjustments to the taxa list
-
-# Need to redistribute some of the higher level taxa (i.e., "parent taxa"/"problem_taxa") 
+# Distribute some of the higher level taxa (i.e., "parent taxa"/"problem_taxa") 
 # between lower level taxa (i.e., "child taxa" "target_taxa")
-# This is based on the relative abundance of child taxa. e.g., if Acartia form 50% of Calanoida, then 50% of abundances
-# will be distributed to them
-
 # Function accepts the dataframe with the counts, and specifies the "problem" taxa to be distributed, and the "target" taxa
 # they should be distributed amongst
 redistribute_abundances = function(df, problem_taxa, target_taxa){
@@ -66,8 +79,6 @@ redistribute_abundances = function(df, problem_taxa, target_taxa){
   df = df %>%
     left_join(df_total, by = c("FlowCamID", "type"))
   
-  
-  
   # Calculate the relative abundance of the target taxa within each sample
   for (taxon in target_taxa) {
     df = df %>%
@@ -81,7 +92,7 @@ redistribute_abundances = function(df, problem_taxa, target_taxa){
                              abund + get(paste0("prop_", taxon)) * total_abund_problem, abund))
   }
   
-  # Remove the damaged taxa from the dataframe
+  # Remove the problem taxa from the dataframe
   df = df %>% 
     filter(newName != problem_taxa)
   
@@ -90,28 +101,14 @@ redistribute_abundances = function(df, problem_taxa, target_taxa){
     select(-c(total_abund_problem, total_abund_target, starts_with("prop_")))
   
   return(df)
+  
 }
 
-# Make this a new variable for testing
-test = fcQaDf
-
-### MAKE SPECIFIC ADJUSTMENTS TO THE QUANTITATIVE ASSESSMENT DATASET
-
-# Remove the EGG MASS taxa from the dataset
-test = test %>%
-  filter(newName != "EGG CHECK")
-
-# Fix the damaged taxa. Distribute either among the adults of that taxa, or the ci-ciii
-test = redistribute_abundances(test, "Acartia spp. DAMAGED", c("Acartia spp.", "Acartia spp. ci-ciii")) %>%
-  # Then change Acartia ci-ciii to Calanoida ci-ciii to be consistent with rest of the dataset
-  mutate(newName = ifelse(newName == "Acartia spp. ci-ciii", "Calanoida ci-ciii", newName))
-
-# Then do the same with damaged Temora spp.
-test = redistribute_abundances(test, "Temora spp. DAMAGED", c("Temora spp.", "Temora spp. ci-ciii")) %>%
-  mutate(newName = ifelse(newName == "Temora spp. ci-ciii", "Calanoida ci-ciii", newName))
+################################################################################
+### Run the function
 
 # Then redistribute the Decapoda that was unspecified
-test = redistribute_abundances(test, "Decapoda- CHECK", c("Decapoda- brachyura (larvae)", "Decapoda- non-brachyura (larvae)", "Caridea (larvae)", "Paguroidea (larvae)", "Porcellanidea (larvae)"))
+test = redistribute_abundances(test, "Decapoda- CHECK", c("Decapoda- brachyura (larvae)", "Decapoda- non-brachyura (larvae)"))
 
 
 ### MAKE SPECIFIC ADJUSTMENTS TO THE FLOWCAM DATASET
