@@ -12,11 +12,12 @@
 # Run the script that preps the QA and FlowCam data
 source("QuantitativeAssessment/QAcodeMatches.R")
 
+# If I want to use redistributed abundances (from redistributeTaxa.R), just set this:
+fcQaDf = fcQaDf.redist
 
-
+# Adjust dataframe, calculate rel abundances
 ordPrepDf = fcQaDf %>%
   select(newName, FlowCamID, regionYear, abund, type, qaSampleID) %>%
-  # filter(newName != "EGG CHECK" & newName != "Calanoida (unid)") %>%
   # Get the relative abundance for each sample
   group_by(FlowCamID, type) %>%
   mutate(relAbund = abund / sum(abund)*100)
@@ -84,13 +85,13 @@ nmdsMaker = function(df, regYearSelect, plotTitle){
 }
   
 # Using abundances
-gulf21.Ord = nmdsMaker(ordPrepWideAbund, "Gulf 2020", "Gulf 2020")
+gulf20.Ord = nmdsMaker(ordPrepWideAbund, "Gulf 2020", "Gulf 2020")
 pac21.Ord = nmdsMaker(ordPrepWideAbund, "Pac 21", "Pacific 2021")
 nl20.Ord = nmdsMaker(ordPrepWideAbund, "NL 2020", "Newfoundland 2020")
 nl21.Ord = nmdsMaker(ordPrepWideAbund, "NL 2021", "Newfoundland 2021")
 
 # Using relative abundances
-gulf21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "Gulf 2020", "Gulf 2020")
+gulf20.OrdRel = nmdsMaker(ordPrepWideRelAbund, "Gulf 2020", "Gulf 2020")
 pac21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "Pac 21", "Pacific 2021")
 nl20.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2020", "Newfoundland 2020")
 nl21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2021", "Newfoundland 2021")
@@ -98,17 +99,13 @@ nl21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2021", "Newfoundland 2021")
 
 # Put them all together
 # Abundances
-ggarrange(gulf21.Ord, pac21.Ord, nl20.Ord, nl21.Ord)
+ggarrange(gulf20.Ord, pac21.Ord, nl20.Ord, nl21.Ord)
 # Relative abundance
-ggarrange(gulf21.OrdRel, pac21.OrdRel, nl20.OrdRel, nl21.OrdRel)
+ggarrange(gulf20.OrdRel, pac21.OrdRel, nl20.OrdRel, nl21.OrdRel)
 
 
 ################################################################################
 # Make NMDS with all the data
-
-# Could just put an if/else statement up above, 
-
-
 
 nmdsMakerAllDat = function(df, plotTitle){
   
@@ -152,10 +149,14 @@ nmdsMakerAllDat = function(df, plotTitle){
   
 }
 
-# Make the NMDS ordinations of ALL the data
+# Run the function (for all data) using abundance in seawater
 nmdsAll = nmdsMakerAllDat(ordPrepWideAbund, "Abundance: All Regions")
-# With relative abundance
+# Run using relative abundance
 nmdsAll.RelAbund = nmdsMakerAllDat(ordPrepWideRelAbund, "Relative Abundance: All Regions")
+
+
+################################################################################
+## Make interactive plots to visualize "problem" taxa
 
 # Make it interactive so you can point & click and see the sampleCode
 girafe(ggobj = nmdsAll)
@@ -173,8 +174,10 @@ girafe(ggobj = nmdsAll.RelAbund)
 # For NL, just point and click on the interactive plot. Can get info from FlowCamCodes.
 
 # This creates an interactive ggplot that I can click on to see the FlowCamCodes
-girafe(ggobj = gulf21.Ord)
+girafe(ggobj = gulf20.Ord)
 girafe(ggobj = nl21.Ord)
+
+girafe(ggobj = gulf20.OrdRel)
 
 # Gulf has 3 that form 1 group. They are:
 # THESE ARE ALL "OUTER" STATIONS
@@ -211,7 +214,11 @@ simTest = simper(sqrt(testNL[,which(colnames(testNL)== "Acartia spp."):ncol(test
 summary(simTest)
 
 
-
+# Ok I think these three just have WAY more bivalvia larvae than the rest
+test3 = ordPrepDf %>%
+  filter(!(FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
+                            "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
+                            "AMMP_Gulf_StPeters_3_20200903LT_250UM")))
 
 
 
