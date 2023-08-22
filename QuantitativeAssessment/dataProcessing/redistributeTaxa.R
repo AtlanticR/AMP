@@ -136,3 +136,55 @@ test = test %>%
 
 
 fcQaDf = test
+
+
+
+
+######################
+# Code for testing if there are samples with no child taxa to distribute parent taxa
+
+check_missing_child_taxa = function(df, problem_taxa, target_taxa) {
+  missing_samples <- character(0)
+  
+  for (flowcam_id in unique(df$FlowCamID)) {
+    for (type in unique(df$type[df$FlowCamID == flowcam_id])) {
+      sample_data <- df %>%
+        filter(FlowCamID == flowcam_id, type == type)
+      
+      problem_abundance <- sum(sample_data$abund[sample_data$newName == problem_taxa])
+      target_abundance <- sum(sample_data$abund[sample_data$newName %in% target_taxa])
+      
+      if (is.na(target_abundance) || target_abundance == 0) {
+        missing_samples <- c(missing_samples, paste(flowcam_id, type, sep = " - "))
+      }
+    }
+  }
+  
+  if (length(missing_samples) > 0) {
+    cat("Missing target taxa in the following samples:\n")
+    cat(paste(missing_samples, collapse = "\n"), "\n")
+  } else {
+    cat("All samples have the required target taxa.\n")
+  }
+  
+}
+
+# Example usage:
+missing_samples <- check_missing_child_taxa(test, "Cyclopoida", c("Calanoida (unid)"))
+
+
+
+
+x = check_missing_child_taxa(test, "Copepoda (unid)", c("Cyclopoida ci-ciii", "dog", "Oithona spp.", "Harpacticoida- epibenthic", "Microsetella spp.", "Monstrillidae", "Acartia spp.", "Calanoida ci-ciii", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
+                                                          "Metridia spp.", "Microcalanus spp.", "Paracalanus spp.", "Pseudocalanus spp.", "Pseudodiaptomus spp.", "Temora spp.", "Tortanus spp."))
+
+
+
+
+
+
+
+
+
+
+
