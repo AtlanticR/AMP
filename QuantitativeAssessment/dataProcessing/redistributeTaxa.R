@@ -78,7 +78,7 @@ redistribute_abundances = function(df, problem_taxa, target_taxa){
   # Join the total abundance back to the original dataframe
   df = df %>%
     left_join(df_total, by = c("FlowCamID", "type"))
-  
+
   # Calculate the relative abundance of the target taxa within each sample
   for (taxon in target_taxa) {
     df = df %>%
@@ -99,8 +99,7 @@ redistribute_abundances = function(df, problem_taxa, target_taxa){
   # Drop the unnecessary columns
   df = df %>% 
     select(-c(total_abund_problem, total_abund_target, starts_with("prop_")))
-  
-  return(df)
+
   
 }
 
@@ -115,7 +114,7 @@ test = redistribute_abundances(test, "Decapoda- CHECK", c("Decapoda- brachyura (
 
 # Redistribute Cyclopoida
 # NOTE: NEED TO MAKE A CHECK TO SEE WHAT HAPPENS IF NO CYLCOPOIDA CHILD
-# test = redistribute_abundances(test, "Cyclopoida", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp."))
+test = redistribute_abundances(test, "Cyclopoida", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp."))
 
 test = redistribute_abundances(test, "Cyclopoida", c("HI", "DOG"))
 
