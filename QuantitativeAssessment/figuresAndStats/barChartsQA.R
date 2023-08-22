@@ -18,6 +18,9 @@ source("QuantitativeAssessment/dataProcessing/QAcodeMatches.R")
 
 ################################################################################
 
+# If I want to use redistributed data:
+fcQaDf = fcQaDf.redist
+
 # Create a function that creates various types of bar charts
 # A data with the data for each region/year (i.e., 10 samples) is passed in 
 barChart = function(regData, newSampleLabels){
@@ -142,13 +145,13 @@ nl21Charts = barChart(fcQaDf %>% subset(regionYear == "NL 2021"), nl21Labs)
 # Create bar charts that show the average relative abundance for each taxa
 # Have FlowCam data beside the Microscopy data
 
-
 # Get summary stats for plotting
 # I want the average relative abundance for each sample in each region
 sampleSummary = fcQaDf %>%
   # Get the relative abundance for each sample
   group_by(FlowCamID, type) %>%
-  mutate(relAbund = countTot / sum(countTot)*100) %>%
+  # mutate(relAbund = countTot / sum(countTot)*100) %>%
+  mutate(relAbund = abund / sum(abund)*100) %>%
   # Now get the AVERAGE relative abundance for each sample. and the standard deviation
   group_by(newName, type, regionYear) %>%
   mutate(meanAbund = mean(relAbund),
