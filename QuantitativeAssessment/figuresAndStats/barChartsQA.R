@@ -148,8 +148,8 @@ barChartComparison = function(relData, regionYear, plotName) {
                   position=position_dodge(.8), col = "black", na.rm = T)+
     xlab("Average relative abundance (%)")+
     ggtitle(plotName)+
-    scale_fill_discrete(labels=c('FlowCam', 'Microscopy'))+
-    scale_color_discrete(labels = c("FlowCam", "Microscopy"))+
+    scale_fill_discrete(labels=c('FlowCam (FC)', 'Microscopy (MC)'))+
+    scale_color_discrete(labels = c("FlowCam (FC)", "Microscopy (MC)"))+
     theme_bw()+
     theme(
       axis.title.y = element_blank(),
@@ -162,14 +162,10 @@ barChartComparison = function(relData, regionYear, plotName) {
 }
   
 # Create the bar charts for each region separately
+barChartComparison(sampleSummaryAdj %>% filter(regionYear == "Gulf 2020"), "Gulf 2020", "Gulf 2020") 
+barChartComparison(sampleSummaryAdj %>% filter(regionYear == "Pac 21"), "Pac 21", "Pacific 2021") 
 barChartComparison(sampleSummaryAdj %>% filter(regionYear == "NL 2020"), "NL 2020", "Newfoundland 2020")
 barChartComparison(sampleSummaryAdj %>% filter(regionYear == "NL 2021"), "NL 2021", "Newfoundland 2021")
-barChartComparison(sampleSummaryAdj %>% filter(regionYear == "Pac 21"), "Pac 21", "Pacific 2021") 
-barChartComparison(sampleSummaryAdj %>% filter(regionYear == "Gulf 2020"), "Gulf 2020", "Gulf 2020") 
-
-hi = sampleSummaryAdj %>% filter(regionYear == "NL 2020")
-
-
 
 
 ################################################################################
