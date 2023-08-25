@@ -68,7 +68,7 @@ nmdsMaker = function(df, regYearSelect, plotTitle){
       geom_point_interactive(data = ordCoords, aes(x=NMDS1, y=NMDS2, fill = type), pch = 21, size = 5, data_id = ordCoords$FlowCamID, tooltip = ordCoords$FlowCamID, onclick =ordCoords$FlowCamID)+ # Use pch=21 to get black outline circles
       ggtitle(plotTitle)+
       annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4, hjust = -0.01)+
-    
+    scale_fill_discrete(labels=c('FC', 'MC'))+
       theme_bw()+
       theme(axis.text = element_blank(),
           axis.title = element_text(size = 12), # don't want 
@@ -85,16 +85,16 @@ nmdsMaker = function(df, regYearSelect, plotTitle){
 }
   
 # Using abundances
-gulf20.Ord = nmdsMaker(ordPrepWideAbund, "Gulf 2020", "Gulf 2020")
-pac21.Ord = nmdsMaker(ordPrepWideAbund, "Pac 21", "Pacific 2021")
-nl20.Ord = nmdsMaker(ordPrepWideAbund, "NL 2020", "Newfoundland 2020")
-nl21.Ord = nmdsMaker(ordPrepWideAbund, "NL 2021", "Newfoundland 2021")
+gulf20.Ord = nmdsMaker(ordPrepWideAbund, "Gulf 2020", "(A) Gulf 2020")
+pac21.Ord = nmdsMaker(ordPrepWideAbund, "Pac 21", "(B) Pacific 2021")
+nl20.Ord = nmdsMaker(ordPrepWideAbund, "NL 2020", "(C) Newfoundland 2020")
+nl21.Ord = nmdsMaker(ordPrepWideAbund, "NL 2021", "(D) Newfoundland 2021")
 
 # Using relative abundances
-gulf20.OrdRel = nmdsMaker(ordPrepWideRelAbund, "Gulf 2020", "Gulf 2020")
-pac21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "Pac 21", "Pacific 2021")
-nl20.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2020", "Newfoundland 2020")
-nl21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2021", "Newfoundland 2021")
+gulf20.OrdRel = nmdsMaker(ordPrepWideRelAbund, "Gulf 2020", "(A) Gulf 2020")
+pac21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "Pac 21", "(B) Pacific 2021")
+nl20.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2020", "(C) Newfoundland 2020")
+nl21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2021", "(D)Newfoundland 2021")
 
 
 # Put them all together
@@ -102,6 +102,24 @@ nl21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2021", "Newfoundland 2021")
 ggarrange(gulf20.Ord, pac21.Ord, nl20.Ord, nl21.Ord)
 # Relative abundance
 ggarrange(gulf20.OrdRel, pac21.OrdRel, nl20.OrdRel, nl21.OrdRel)
+
+
+# There are 3 Gulf samples with very high Bivalvia larvae that seem very different. Plot these separately
+gulf3Weird = nmdsMaker(ordPrepWideRelAbund %>%
+  filter((FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
+                            "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
+                            "AMMP_Gulf_StPeters_3_20200903LT_250UM"))), "Gulf 2020", "Gulf 2020")
+
+gulfOtherWeird = nmdsMaker(ordPrepWideRelAbund %>%
+  filter(!(FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
+                            "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
+                            "AMMP_Gulf_StPeters_3_20200903LT_250UM"))), "Gulf 2020", "Gulf 2020")
+
+# Plot these side by side
+ggarrange(gulf3Weird, gulfOtherWeird, ncol = 2)
+
+# Try and see if I can figure out why 2 FC samples are overlapping?
+girafe(ggobj = gulf3Weird)
 
 
 ################################################################################
@@ -133,6 +151,7 @@ nmdsMakerAllDat = function(df, plotTitle){
     ggtitle(plotTitle)+
     scale_shape_manual(values=c(21:24), name = "Bay")+
     annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4, hjust = -0.01)+
+    scale_fill_discrete(labels=c('FC', 'MC'))+
     theme_bw()+
     theme(axis.text = element_blank(),
           axis.title = element_text(size = 12), # don't want 
@@ -215,10 +234,7 @@ summary(simTest)
 
 
 # Ok I think these three just have WAY more bivalvia larvae than the rest
-test3 = ordPrepDf %>%
-  filter(!(FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
-                            "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
-                            "AMMP_Gulf_StPeters_3_20200903LT_250UM")))
+
 
 
 
