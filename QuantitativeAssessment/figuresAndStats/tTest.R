@@ -43,7 +43,7 @@ qaID.edit = qaID %>%
 dfAllPairs = fcQaDf %>%
   # Get the relative abundance of each taxa for each sample
   group_by(FlowCamID, type) %>%
-  mutate(relAbund = countTot / sum(countTot)*100) %>%
+  mutate(relAbund = abund / sum(abund)*100) %>%
   # Need to ungroup after using group_by or functions won't work
   ungroup() %>%
   # Create all comparisons. When there's no data, put relAbund as zero
@@ -129,4 +129,50 @@ do(t_test_result = tidy(t.test(relAbund~type, data = ., paired = T))) %>%
   mutate(avg_relAbund = mean(relAbund, na.rm = T))
 
 
+################################################################################
+###
+# Test coin package for the paired Wilcoxon test
+# This is to handle the case of "ties" https://library.virginia.edu/data/articles/the-wilcoxon-rank-sum-test
 
+install.packages("coin")
+library("coin")
+
+wilcox.test(testSh$relAbund~testSh$type, paired =T)
+wilcox_test(relAbund~as.factor(type), data = testSh, paired = T, distribution = "exact")
+wilcox_test(relAbund~as.factor(type), data = testSh, paired = T)
+
+
+
+
+# Wilcoxon test using coin package
+wilcRes2 <- dfAllPairs %>%
+  filter(presence == "Both") %>%
+  group_by(newName, regionYear) %>%
+  do(t_test_result = {
+    dat <- data.frame(relAbund = .$relAbund, type = .$type)
+    test <- wilcox_test(relAbund ~ as.factor(type), data = dat, distribution = "exact", paired = TRUE, conf.int = T)
+    data.frame(
+      est = statistic(test, type = "linear"),
+      p.value = pvalue(test),
+      CI.low = confint(test)$conf.int[1],  
+      CI.up = confint(test)$conf.int[2]
+    )
+  }) %>%
+  ungroup() %>%
+  unnest_wider(t_test_result) %>%
+  # Make adjustments to the dataset
+  mutate(p.value = round(as.numeric(p.value),4),
+         CI95 = paste0(round(CI.low,2), ", ", round(CI.up,2)))
+
+
+## Exact Wilcoxon-Mann-Whitney test
+## Hollander and Wolfe (1999, p. 111)
+## (At term - 12-26 Weeks)
+wt <- wilcox_test(pd ~ age, data = diffusion,
+                   distribution = "exact", conf.int = TRUE)
+
+statistic(wt, type = "linear")
+confint(wt)[1:2]
+x = confint(wt)
+x[1]
+test
