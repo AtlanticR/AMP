@@ -30,8 +30,8 @@
 ################################################################################
 ## Read in other scripts
 
-source("DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
-source("DataProcessing/metadataProcessing.R") # get metadata
+source("TechReport/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
+source("TechReport/DataProcessing/metadataProcessing.R") # get metadata
 
 taxaFixes = read.csv("../AMPDataFiles/taxaCorrections.csv")
 
@@ -225,7 +225,7 @@ pacSep21$dataset = "Pacific September 2021"
 # # Get counts BY SAMPLE 
 # taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
 #   dplyr::group_by(originalNames, dataset, sample) %>%
-#   summarize(countPerClass = sum(count)) 
+#   summarize(countPerClass = sum(count))
 
 # write.csv(taxaCountsBay, "taxaCountsBay2.csv")
 
