@@ -165,9 +165,9 @@ speciesDF = function(xlDataFull, xlDataShort) {
     
     # Note: this also removes the Particles and originalName columns
     group_by(sample, newName, class) %>%
-    summarize(count = sum(count)) %>%
-    filter(count >0) %>%
-    filter(newName != "Remove")
+    summarize(count = sum(count)) 
+    # filter(count >0) %>%
+    # filter(newName != "Remove")
   
   # Return the final corrected dataframe!
   # Will return a df with the sample name, class (taxa), count, particle (count/ml) as columns 
