@@ -51,7 +51,7 @@ nmdsMaker = function(df, regYearSelect, plotTitle){
   endNMDS = ncol(df)
   
   # Do NMDS ordination but only include species data
-  ord = metaMDS(sqrt(df[,c(beginNMDS:endNMDS)]), distance = "bray", autotransform=FALSE)
+  ord = metaMDS(df[,c(beginNMDS:endNMDS)], distance = "bray", autotransform=FALSE)
   
   # Get NMDS coordinates from plot
   ordCoords = as.data.frame(scores(ord, display="sites")) %>%
@@ -131,7 +131,7 @@ nmdsMakerAllDat = function(df, plotTitle){
   endNMDS = ncol(df)
   
   # Do NMDS ordination but only include species data
-  ord = metaMDS(sqrt(df[,c(beginNMDS:endNMDS)]), distance = "bray", autotransform=FALSE)
+  ord = metaMDS(df[,c(beginNMDS:endNMDS)], distance = "bray", autotransform=FALSE)
   
   # Get NMDS coordinates from plot
   ordCoords = as.data.frame(scores(ord, display="sites")) %>%
@@ -150,7 +150,7 @@ nmdsMakerAllDat = function(df, plotTitle){
     geom_point_interactive(data = ordCoords, aes(x=NMDS1, y=NMDS2, fill = type, pch = regionYear), size = 5, data_id = ordCoords$FlowCamID, tooltip = ordCoords$FlowCamID, onclick =ordCoords$FlowCamID)+ # Use pch=21 to get black outline circles
     ggtitle(plotTitle)+
     scale_shape_manual(values=c(21:24), name = "Bay")+
-    annotate("text", x = min(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4, hjust = -0.01)+
+    annotate("text", x = max(ordCoords$NMDS1), y=max(ordCoords$NMDS2), label = ordStress, size=4, hjust = 1)+
     scale_fill_discrete(labels=c('FC', 'MC'))+
     theme_bw()+
     theme(axis.text = element_blank(),
@@ -169,10 +169,11 @@ nmdsMakerAllDat = function(df, plotTitle){
 }
 
 # Run the function (for all data) using abundance in seawater
-nmdsAll = nmdsMakerAllDat(ordPrepWideAbund, "Abundance: All Regions")
+nmdsAll = nmdsMakerAllDat(ordPrepWideAbund, "Abundance in seawater: all regions")
 # Run using relative abundance
-nmdsAll.RelAbund = nmdsMakerAllDat(ordPrepWideRelAbund, "Relative Abundance: All Regions")
+nmdsAll.RelAbund = nmdsMakerAllDat(ordPrepWideRelAbund, "Relative abundance: all regions")
 
+ggarrange(nmdsAll.RelAbund, nmdsAll, ncol =)
 
 ################################################################################
 ## Make interactive plots to visualize "problem" taxa
