@@ -447,12 +447,25 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "Lemmens September 2021"))
 
 
-allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
-  
-  #pivot_wider(names_from = newName, values_from = count) %>%
-  mutate_all(~replace(., is.na(.), 0)) %>%
-  group_by(facetFactor) %>%
-  summarize(tot = sum(count))
+
+
+allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
+  left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
+  ungroup() %>%
+  select(sampleCode, class, newName, count, regionYear, selectForAnalysis) %>%
+  filter(selectForAnalysis == "Yes") %>%
+  select(class, newName, count) %>%
+  group_by(class, newName) %>%
+  summarize(countTot = sum(count))
+
+# write.csv(allSites, "allSites.csv")
+
+# allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
+#   
+#   #pivot_wider(names_from = newName, values_from = count) %>%
+#   mutate_all(~replace(., is.na(.), 0)) %>%
+#   group_by(facetFactor) %>%
+#   summarize(tot = sum(count))
 
 
 
@@ -460,20 +473,8 @@ allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
 ################################################################################
 ################################################################################
 
-rem = c("Remove", "Zooplankton (unid)", "Copepoda parent", "Calanoida parent")
 
-sumData = read.csv("../AMPDataFiles/taxaSummaryReport.csv") %>%
-  filter(!newName %in% rem) %>%
-  select(c(newName, taxonRank)) %>%
-  distinct(newName, .keep_all = T)
-
-
-numUniqueRank = sumData %>%
-  group_by(taxonRank) %>%
-  summarize(num_unique = n_distinct(newName))
-
-
-
+# ASK THEM ABOUT CHAETOGNATHS
 
 
 
