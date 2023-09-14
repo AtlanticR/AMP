@@ -319,6 +319,8 @@ pacJun21Adj =full_join(pacJun21, PacJun21Perc, by=c("sample" = "FlowCamSampleNam
   mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
+  # ADD THIS LINE TO NOT INCLUDE 5mm FRACTION!! IE MAKE THEIR COUNTS ZERO
+  mutate(count = if_else(endsWith(sample, "_5mm"), 0, count)) %>%
   mutate(sample = str_replace(sample, "_5mm", "_250um")) %>%
   mutate(sample = str_replace(sample, "_run", ""))
 
@@ -448,7 +450,8 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
 
 
 
-
+# Combine all the data for the 40 samples we're looking at. Get counts per different type
+# This will be used to get proportion of zooplankton out of all particle types
 allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
   left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
   ungroup() %>%
@@ -458,6 +461,30 @@ allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
   group_by(class, newName) %>%
   summarize(countTot = sum(count))
 
+# Actually, I need to make some corrections to the data first
+particleData = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
+  left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
+  ungroup() %>%
+  select(sampleCode, class, newName, count, regionYear, selectForAnalysis) %>%
+  filter(selectForAnalysis == "Yes") %>%
+  mutate(class = if_else(class == "0-250um", "0-250um Length", class),
+         class = if_else(class == "Clumped Zooplanlton/Debris", "Clumped Zooplankton/Debris", class),
+         class = if_else(class == "Clumped_zooplankton", "Clumped Zooplankton", class),
+         class = if_else(class == "Clumped_Zooplankton", "Clumped Zooplankton", class),
+         class = if_else(class == "Fragments_of_zooplankton", "Fragments of Zooplankton", class),
+         class = if_else(newName != "Remove", "Zooplankton", class)) %>%
+  filter(count != 0) %>%
+  group_by(sampleCode, class, regionYear) %>%
+  summarize(total_count = sum(count))
+  
+  
+  
+
+
+
+
+
+
 # write.csv(allSites, "allSites.csv")
 
 # allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
@@ -466,7 +493,6 @@ allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
 #   mutate_all(~replace(., is.na(.), 0)) %>%
 #   group_by(facetFactor) %>%
 #   summarize(tot = sum(count))
-
 
 
 ################################################################################
