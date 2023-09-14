@@ -294,6 +294,8 @@ nl20Adj =full_join(nl20, Nl20Perc, by=c("sample" = "FlowCamSampleName")) %>%
 nl21Adj =full_join(nl21, Nl21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
+  # ADD THIS LINE TO NOT INCLUDE 5mm FRACTION!! IE MAKE THEIR COUNTS ZERO
+  mutate(count = if_else(endsWith(sample, "_5mm"), 0, count)) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   mutate(sample = str_replace(sample, "_5mm", "_250"))
 
@@ -472,7 +474,8 @@ particleData = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
          class = if_else(class == "Clumped_zooplankton", "Clumped Zooplankton", class),
          class = if_else(class == "Clumped_Zooplankton", "Clumped Zooplankton", class),
          class = if_else(class == "Fragments_of_zooplankton", "Fragments of Zooplankton", class),
-         class = if_else(newName != "Remove", "Zooplankton", class)) %>%
+         class = if_else(newName != "Remove", "Zooplankton", class),
+         class = if_else(is.na(class), "Zooplankton", class)) %>%
   filter(count != 0) %>%
   group_by(sampleCode, class, regionYear) %>%
   summarize(total_count = sum(count))
