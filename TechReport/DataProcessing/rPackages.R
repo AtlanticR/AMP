@@ -15,7 +15,7 @@ ipak = function(pkg){
 packages = c("broom", "coin", "cowplot", "devtools", "dplyr", "egg", "ggiraph", "ggplot2", "ggrepel", "ggsignif", "ggsn", "ggnewscale", 
              "ggspatial", "ggthemes", "ggh4x", "gridExtra", "iNEXT", "jcolors", "leaflet", "lmodel2", "lsr", "mapr", "mapview",
              "patchwork", "pkgcond", "purrr", "readxl", "remotes", "reshape2", "rgdal", "rnaturalearth", "rnaturalearthdata", 
-             "scales", "sf", "sp", "stringr", "tidyr", "tools", "useful", "vegan", "wbstats", "wpa")
+             "scales", "sf", "sp", "stringr", "tidyr", "tools", "useful", "vegan", "wbstats", "wpa", "writexl")
 ipak(packages)
 
 
