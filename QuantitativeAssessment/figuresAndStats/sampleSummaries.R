@@ -11,10 +11,11 @@ sampleData = read_excel("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFile
   mutate(fiveMmCount = as.numeric(ifelse(is.na(fiveMmCount) | fiveMmCount == "n/a", 0, fiveMmCount)),
          chaetognathaNotes = as.numeric(ifelse(is.na(chaetognathaNotes) | str_detect(chaetognathaNotes, "^Taxa was"), 0, chaetognathaNotes)),
          propPlankton = zooCountPostCleaning / cleanedParticleCount) %>%
-  right_join(waterVolSamples, by = c("FlowCam Sample Name" = "FlowCamID")) # make sure to right join or I get all the extra data from samples not being used
-
+  right_join(waterVolSamples, by = c("FlowCam Sample Name" = "FlowCamID")) %>% # make sure to right join or I get all the extra data from samples not being used
+  filter(usedForAnalysis == "Yes") 
+  
+  
 sampleStats = sampleData %>%
-  filter(usedForAnalysis == "Yes") %>%
   group_by(regionYear) %>%
   summarize(meanParticle = mean(sampleParticleCount),
             minParticle = min(sampleParticleCount),
@@ -41,7 +42,6 @@ sampleStats = sampleData %>%
 
 
 statsAll = sampleData %>%
-  filter(usedForAnalysis == "Yes") %>%
   #group_by(regionYear) %>%
   summarize(meanParticle = mean(sampleParticleCount),
             minParticle = min(sampleParticleCount),
@@ -64,6 +64,6 @@ statsAll = sampleData %>%
             maxProp = max(propPlankton),
             sdProp = sd(propPlankton))
 
-write.csv(statsAll, "statsAll.csv")
+# write.csv(statsAll, "statsAll.csv")
 
 
