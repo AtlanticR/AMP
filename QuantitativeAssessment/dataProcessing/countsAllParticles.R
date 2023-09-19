@@ -190,25 +190,9 @@ speciesDF = function(xlDataFull, xlDataShort) {
 # Run the speciesDF function and create the dataframes for dataset
 # This returns a dataframe with columns for sample, class, count, particles
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]]) 
-
-
-
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
-mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
-# This is the one in a different format
-nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) #%>% 
-# Also, there was one file (AAMP_NL_S01_41_20200916PM_250) that had one extra blank line.
-# This was above "===END METADATA STATISTICS===". Remove this or else there will be a blank class with a count of zero
-#subset(class != "")
 
 nl21Old = speciesDF(dirFull[[2]], dirShort[[2]])
-
-nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
-nl22 = speciesDF(dirFull[[6]], dirShort[[6]])
-pac20 = speciesDF(dirFull[[7]], dirShort[[7]])
-pacJun21 = speciesDF(dirFull[[8]], dirShort[[8]])
-pacMar21 = speciesDF(dirFull[[9]], dirShort[[9]])
-pacSep21 = speciesDF(dirFull[[10]], dirShort[[10]])
 
 ################################################################################
 # TESTING FOR UNUSUAL SPECIES NAMES
@@ -218,32 +202,7 @@ pacSep21 = speciesDF(dirFull[[10]], dirShort[[10]])
 # in naming conventions between each region
 gulf20$dataset = "Gulf 2020"
 gulf21$dataset = "Gulf 2021"
-mar21$dataset = "Maritimes"
-nl20$dataset = "Newfoundland 2020"
-nl21$dataset = "Newfoundland 2021"
-nl22$dataset = "Newfoundland 2022"
-pac20$dataset = "Pacific August 2020"
-pacJun21$dataset = "Pacific June 2021"
-pacMar21$dataset = "Pacific March 2021"
-pacSep21$dataset = "Pacific September 2021"
 
-nl21Old$dataset = "Newfoundland 2021 Old"
-
-# Get of each species in whole dataset
-# taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-#   group_by(originalNames) %>%
-#   dplyr::summarize(countPerClass = sum(count))
-# 
-# # Get counts BY DATASET 
-# taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-#   group_by(originalNames, dataset) %>%
-#   dplyr::summarize(countPerClass = sum(count)) %>%
-#   filter(countPerClass > 0) # remove any zeroes
-# 
-# Get counts BY SAMPLE
-taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-  dplyr::group_by(class, dataset, sample) %>%
-  summarize(countPerClass = sum(count))
 
 # write.csv(taxaCountsBay, "taxaCountsBay2.csv")
 
@@ -258,17 +217,6 @@ taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun2
 # For some sites, the data files DO match the "Zooplankton Samples" spreadsheet. For others, they do not.
 # I will do this manually first and then see what is consistent between them all
 
-######## Maritimes 2021 ########
-
-# Remove the R2 from the file name
-# This represents a second run of the sample because the first one had some sort of problem
-# For some datasets, "R2" has been removed from data file names. For some it's not. 
-Mar21Perc$FlowCamSampleName = str_replace(Mar21Perc$FlowCamSampleName,"_R2", "")
-
-# Join the dataframes of counts with the dataframe of the adjustments
-mar21Adj =full_join(mar21, Mar21Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  # Add column with adjusted counts
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
 
 ######## Gulf 2020 ######## 
 
@@ -302,59 +250,6 @@ gulf21Adj =full_join(gulf21, Gulf21Perc, by=c("sample" = "FlowCamSampleName")) %
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   mutate(sample = str_replace(sample, "_5mm", "_250"))
 
-######## Newfoundland 2020 ######## 
-nl20Adj =full_join(nl20, Nl20Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
-
-########  Newfoundland 2021 ########  
-
-# Join the dataframes of counts with the dataframe of the adjustments
-nl21Adj =full_join(nl21, Nl21Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
-  mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
-  mutate(sample = str_replace(sample, "_5mm", "_250"))
-
-########  Newfoundland 2022 ########
-
-nl22Adj =full_join(nl22, Nl22Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
-
-
-########  Pacific 2020 ########  
-
-# Need to capitalize um so they match
-pac20 = pac20 %>%
-  mutate(sample = str_replace(sample,"um", "UM"))
-
-pac20Adj =full_join(pac20, Pac20Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
-
-######## Pacific June 2021 ########  
-
-# Join the dataframes of counts with the dataframe of the adjustments
-pacJun21Adj =full_join(pacJun21, PacJun21Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
-  mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
-  mutate(sample = str_replace(sample, "_5mm", "_250um")) %>%
-  mutate(sample = str_replace(sample, "_run", ""))
-
-########  Pacific March 2021 ########  
-
-# Join the dataframes of counts with the dataframe of the adjustments
-# NOTE TO SELF: COME BACK TO THIS. I DON'T THINK ALL SAMPLES WERE COMBINED
-pacMar21Adj =full_join(pacMar21, PacMar21Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
-
-######## Pacific Sept 2021 ########
-
-# Join the dataframes of counts with the dataframe of the adjustments
-pacSept21Adj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
-  mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
-  mutate(sample = str_replace(sample, "_5mm", ""))
 
 ################################################################################
 ## Merge FlowCam data with the metadata
@@ -362,10 +257,6 @@ pacSept21Adj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleN
 ## First, need to combine Gulf and Pacific datasets together.
 # Combine 2020 and 2021 flowcam data
 gulfAll = rbind(gulf20Adj, gulf21Adj)
-# Combine 2020, 2021, 2022 Newfoundland data together
-nlAll = rbind(nl20Adj, nl21Adj, nl22Adj)
-# all Pacific datasets
-pacAll = rbind(pac20Adj, pacMar21Adj, pacJun21Adj, pacSept21Adj)
 
 # Function to only get the metadata columns that are important to merge (raw metadata files have ~30-40 columns)
 reducedMeta = function(metadata) {
@@ -377,35 +268,6 @@ reducedMeta = function(metadata) {
 
 # Run function to get reduced metadata files for each region
 gulfMetaRed = reducedMeta(gulfMeta) 
-
-marMetaRed = reducedMeta(marMeta) %>%
-  # Maritimes didn't need a flowcamCode since the flowcam files were correctly named.
-  # However, for consistency between all datasets (so function below works), I will assign flowcamCode as sampleCode
-  # flowcamCode is what will be used to link the species datasets to metadata
-  mutate(flowcamCode = sampleCode)
-
-nlMetaRed = reducedMeta(nlMeta)
-
-# Pacific needs a bit of extra processing! Otherwise the species dataframe won't merge correctly with metadata
-pacMetaRed = reducedMeta(pacMeta) %>%
-  # There are a bunch of samples with NAs where they didn't collect data. Not sure why even included. Remove these
-  filter(!is.na(flowcamCode)) %>%
-  # Pooled data from March 2021 are from all over the inlet. Replace with NA.
-  mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103HT_250UM", NA)) %>%
-  mutate(myLabel = replace(myLabel, flowcamCode == "AMMP_PA_S04Pooled_202103LT_250UM", NA)) %>%
-  # Make an adjustment for March: if I group by dayStart, I will end up with 4 entries (instead of 2) because HT and LT were collected on multiple days
-  # Therefore, for the Pacific March data, just replace the "dayStart" to 3 (instead of 3 and 5)
-  mutate(dayStart = ifelse(monthStart == 3, 3, dayStart)) %>%
-  # Remember that each sample in the Pacific is made up of two (or more) tows that they combined together. Need to group these into one
-  # by NOT including "sampleCode" in the grouping, the waterVolumes per flowcamCode can be summed
-  group_by(flowcamCode, myLabel, yearStart, monthStart, dayStart, facilityName, tidePhase, productionType, target, samplingDesign, equipmentType, TowType, netMesh) %>%
-  # Adjust the water volume that is the sum of the water volume from tow of both samples
-  summarize(waterVolume = sum(as.numeric(waterVolume)),
-            depthWaterM = mean(as.numeric(depthWaterM))) %>% # Need to add depthWaterM. Take the average from both tows
-  # NOTE: This is not technically correct. But I use 'sampleCode' in future functions/scripts. 
-  # I want to keep this as a column name. Therefore create a sampleCode column and set it equal to flowcamCode
-  # Pacific often combined data from multiple tows and therefore multiple sampleCodes are combined within one flowcamCode
-  mutate(sampleCode = flowcamCode)
 
 # Create function to merge the metadata with the species data from the flowcam
 mergeSpeciesMeta = function(metadata, speciesDataset) {
@@ -435,62 +297,11 @@ gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
          ocean = "Atlantic") %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters"))
 
-nlMerge = mergeSpeciesMeta(nlMetaRed, nlAll) %>%
-  # For Newfoundland data, I will only be running stats for month/year combos with enough data
-  # Only testing tide and station effects for September 2020 data and October 2021. 
-  # Just call the rest "Other" and ignore them for most of the stats/plots
-  mutate(facetFactor = ifelse(monthStart == 9 & yearStart == 2020, "SEA Sept 2020", 
-                              ifelse(monthStart == 10 & yearStart == 2021, "SEA Oct 2021", "SEA")),
-         region = "Newfoundland") %>%
-  filter(flowcamCode != "NO MATCH")
 
-#        ocean = "Atlantic") %>%
-# mutate(facetFactor = replace(facetFactor, facetFactor == "Newfoundland 2020", "Southeast Arm 2020"))
+nl21cleanList = nl21Old %>%
+  rename("flowcamCode" = "sample")%>%
+  mutate(sampleCode = flowcamCode)
 
-marMerge = mergeSpeciesMeta(marMetaRed, mar21Adj) %>%
-  mutate(facetFactor = facilityName,
-         region = "Maritimes",
-         ocean = "Atlantic") %>%
-  # I think I want to change the name of Sober Island
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Sober Island Oyster", "Sober Island")) %>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "WhiteHead", "Whitehead"))
-
-pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
-  mutate(facetFactor = dataset,
-         region = "Pacific",
-         ocean = "Pacific") %>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific August 2020", "Lemmens August 2020"))%>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific June 2021", " Lemmens June 2021"))%>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific March 2021", "Lemmens March 2021"))%>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "Pacific September 2021", "Lemmens September 2021"))
-
-
-
-
-allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
-  left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
-  ungroup() %>%
-  select(sampleCode, class, newName, count, regionYear, selectForAnalysis) %>%
-  filter(selectForAnalysis == "Yes") %>%
-  select(class, newName, count) %>%
-  group_by(class, newName) %>%
-  summarize(countTot = sum(count))
-
-# write.csv(allSites, "allSites.csv")
-
-# allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
-#   
-#   #pivot_wider(names_from = newName, values_from = count) %>%
-#   mutate_all(~replace(., is.na(.), 0)) %>%
-#   group_by(facetFactor) %>%
-#   summarize(tot = sum(count))
-
-
-gulf20Test = gulf20 %>%
-  left_join(qaID, by = c("sample" = "FlowCamID"))
-
-nl21OldTest = nl21Old %>%
-  rename("flowcamCode" = "sample")
 
 
 
