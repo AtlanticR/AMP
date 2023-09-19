@@ -44,13 +44,13 @@ taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
 # Then, get all of the file names in all of those folders. 
 # Just because it's useful, I get the full directory name, and just the file name
 
+# FOR READING IN THE GULF DATA USE THIS
 # Define the directory where data need to be read from 
 allFolders = "../AMPDataFiles/AMMP FlowCam Zooplankton Data/"
 
 
-# For the old Newfoundland data:
+# FOR READING IN THE NEWFOUNDLAND DATA USE THIS
 allFolders = "../AMPDataFiles/OLD AMMP NL 2021 Zooplankton Data"
-
 
 # Get a list of all the folders that are within that directory
 # These are what I refer to as the "datasets" (Gulf 2020, Gulf 2021, etc)
@@ -291,14 +291,14 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
 # Need to also add extra columns! These are important for the plotting scripts later on
 # facetFactor is used in some scripts since regions in the Atlantic are faceted based on bay (facilityName)
 # but Pacific is faceted based on field season (dataset)
-gulfMerge = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
+gulfCleanList = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
   mutate(facetFactor = facilityName,
          region = "Gulf",
          ocean = "Atlantic") %>%
   mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters"))
 
 
-nl21cleanList = nl21Old %>%
+nl21CleanList = nl21Old %>%
   rename("flowcamCode" = "sample")%>%
   mutate(sampleCode = flowcamCode)
 
