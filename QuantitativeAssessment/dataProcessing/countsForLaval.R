@@ -212,9 +212,10 @@ pacMar21$dataset = "Pacific March 2021"
 pacSep21$dataset = "Pacific September 2021"
 
 # Get of each species in whole dataset
-# taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
-#   group_by(originalNames) %>%
-#   dplyr::summarize(countPerClass = sum(count))
+taxaCountsEntire = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
+  filter(!str_detect(sample, "_5mm")) %>%
+  group_by(class) %>%
+  dplyr::summarize(countPerClass = sum(count))
 # 
 # # Get counts BY DATASET 
 # taxaCountsBay = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
@@ -225,10 +226,12 @@ pacSep21$dataset = "Pacific September 2021"
 # Get counts BY SAMPLE
 taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun21, pacMar21, pacSep21) %>%
   dplyr::group_by(class, dataset, sample) %>%
-  summarize(countPerClass = sum(count))
+  summarize(countPerClass = sum(count)) %>%
+  # NEW FOR SEPT 21
+  filter(!str_detect(sample, "_5mm"))
 
-# write.csv(taxaCountsBay, "taxaCountsBay2.csv")
-
+write.csv(taxaCountsEntire, "taxaCountsEntire.csv")
+write.csv(taxaCountsSample, "taxaCountsSample.csv")
 ################################################################################
 ## Make adjustments to the zooplankton counts
 # The counts in the data spreadsheets do NOT represent counts from the entire sample
