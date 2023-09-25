@@ -33,7 +33,8 @@
 source("TechReport/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
 source("TechReport/DataProcessing/metadataProcessing.R") # get metadata
 
-taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
+# taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
+taxaFixes = read_xlsx("../AMPDataFiles/extraFiles/taxaFixesLaval.xlsx")
 
 ################################################################################
 ## GET THE DATA FILE NAMES
