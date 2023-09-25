@@ -6,7 +6,7 @@ source("TechReport/DataProcessing/rPackages.R")
 
 
 # Actually, I need to make some corrections to the data first
-particleData = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
+particleData = rbind(gulfMerge, nlMerge, pacMerge) %>% 
   left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
   ungroup() %>%
   select(sampleCode, flowcamCode, class, newName, count, regionYear, selectForAnalysis) %>%
@@ -35,58 +35,68 @@ particleData = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
   group_by(sampleCode) %>%
   mutate(totalSampleNoNum = sum(classCountNoNum, na.rm = T))
 
-##### NEW
-# Actually, I need to make some corrections to the data first
-particleDataCleanList = rbind(gulfMerge, nl21OldTest) %>% 
-  left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
-  ungroup() %>%
-  select(sampleCode, flowcamCode, class, newName, count, regionYear, selectForAnalysis) %>%
-  filter(selectForAnalysis == "Yes") %>%
-  # Fix typos, etc.
-  mutate(class = if_else(class == "0-250um", "0-250um Length", class),
-         class = if_else(class == "Clumped Zooplanlton/Debris", "Clumped Zooplankton/Debris", class),
-         class = if_else(class == "Clumped_zooplankton", "Clumped Zooplankton", class),
-         class = if_else(class == "Clumped_Zooplankton", "Clumped Zooplankton", class),
-         class = if_else(class == "Fragments_of_zooplankton", "Fragments of Zooplankton", class),
-         class = if_else(newName != "Remove", "Zooplankton", class),
-         class = if_else(is.na(class), "Zooplankton", class)) %>%
-  filter(count != 0) %>%
-  # Get total counts for each class within each sample
-  group_by(sampleCode, flowcamCode, class, regionYear) %>%
-  summarize(total_class_count = sum(count)) %>%
-  # Get total count of all particle types for entire sample
-  group_by(sampleCode) %>%
-  mutate(totalSample = sum(total_class_count)) %>%
-  
-  # But note: the classes labelled 1-10 contain particles that were not actually counted
-  # Make these NAs. Add this as an extra column 
-  # (I could have deleted them, but it is easier to just include them for now!)
-  mutate(classCountNoNum = ifelse(class %in% as.character(0:10), NA, total_class_count))%>%
-  # Now recalculate the total counts without these NA values
-  group_by(sampleCode) %>%
-  mutate(totalSampleNoNum = sum(classCountNoNum, na.rm = T))
-
-
-
-
-
-
-
-
-# Write the data to an excel file where every regionYear is a different sheet
-# First split the data based on regionYear 
-grouped_data = particleDataCleanList %>%
+grouped_data_zooList = particleData %>%
   split(.$regionYear)
 
 # Then write it out
-write_xlsx(grouped_data, "test.xlsx")
+write_xlsx(grouped_data_zooList, "zooList.xlsx")
+
+
+##### NEW
+
+# This data comes from countsAllParticles.R. It is from the Clean List which includes bubbles, debris, etc.
+# Only the Gulf and NL 2021 data from the analyzed datasets had these types of lists
+
+# Actually, I need to make some corrections to the data first
+particleDataCleanList = rbind(gulfCleanList, nl21CleanList) %>% 
+  left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
+  #mutate(regionYear =paste(regionYear, "clean list")) %>%
+  ungroup() %>%
+  select(sampleCode, flowcamCode, class, newName, count, regionYear, selectForAnalysis) %>%
+  filter(selectForAnalysis == "Yes") %>%
+  # Fix typos, etc.
+  mutate(class = if_else(class == "0-250um", "0-250um Length", class),
+         class = if_else(class == "Clumped Zooplanlton/Debris", "Clumped Zooplankton/Debris", class),
+         class = if_else(class == "Clumped_zooplankton", "Clumped Zooplankton", class),
+         class = if_else(class == "Clumped_Zooplankton", "Clumped Zooplankton", class),
+         class = if_else(class == "Fragments_of_zooplankton", "Fragments of Zooplankton", class),
+         class = if_else(newName != "Remove", "Zooplankton", class),
+         class = if_else(is.na(class), "Zooplankton", class)) %>%
+  filter(count != 0) %>%
+  # Get total counts for each class within each sample
+  group_by(sampleCode, flowcamCode, class, regionYear) %>%
+  summarize(total_class_count = sum(count)) %>%
+  # Get total count of all particle types for entire sample
+  group_by(sampleCode) %>%
+  mutate(totalSample = sum(total_class_count)) %>%
+  # But note: the classes labelled 1-10 contain particles that were not actually counted
+  # Make these NAs. Add this as an extra column 
+  # (I could have deleted them, but it is easier to just include them for now!)
+  mutate(classCountNoNum = ifelse(class %in% as.character(0:10), NA, total_class_count))%>%
+  # Now recalculate the total counts without these NA values
+  group_by(sampleCode) %>%
+  mutate(totalSampleNoNum = sum(classCountNoNum, na.rm = T)) 
+
+# Write the data to an excel file where every regionYear is a different sheet
+# First split the data based on regionYear 
+grouped_data_cleanList = particleDataCleanList %>%
+  split(.$regionYear)
+
+# Then write it out
+write_xlsx(grouped_data_cleanList, "cleanList.xlsx")
 
 
 ################################################################################
 ### Make some comparisons
 
-# Julie's spreadsheets were read in sampleSummaries.R
-source("QuantitativeAssessment/figuresAndStats/sampleSummaries.R")
+# This contains Julie's spreadsheets that were put together
+sampleData = read_excel("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/sampleSummaries.xlsx", sheet = "originalCopy") %>%
+  # Replace NAs (or "n/a" written in) with zeroes for the 5mm counts
+  mutate(fiveMmCount = as.numeric(ifelse(is.na(fiveMmCount) | fiveMmCount == "n/a", 0, fiveMmCount)),
+         chaetognathaNotes = as.numeric(ifelse(is.na(chaetognathaNotes) | str_detect(chaetognathaNotes, "^Taxa was"), 0, chaetognathaNotes)),
+         propPlankton = zooCountPostCleaning / cleanedParticleCount) %>%
+  right_join(waterVolSamples, by = c("FlowCam Sample Name" = "FlowCamID")) %>% # make sure to right join or I get all the extra data from samples not being used
+  filter(usedForAnalysis == "Yes") 
 
 # Now, only take the data I want
 julieData = sampleData %>%
@@ -95,7 +105,7 @@ julieData = sampleData %>%
 
 # Ok now actually do some major rearranging to the particleData dataframe lol
 
-compareDat = particleData %>%
+compareDat = particleDataCleanList %>%
   filter(class == "Zooplankton") %>%
   rename(myZooCount = total_class_count,
          myCleanedCount = totalSampleNoNum) %>%
@@ -133,8 +143,15 @@ dataWithBubblesTest = dataWithBubbles%>%
   complete(flowcamCode, class, fill = list(total_class_count = 0)) %>%
   left_join(toMerge) %>%
   select(-c(sampleCode, totalSampleNoNum)) %>%
-  mutate(propParticle = total_class_count / totalSample)
+  rename(total_class_count_round2 = total_class_count,
+         total_sample_round2 = totalSample,
+         sampleCode = sampleCode2)
+  #mutate(propParticle = total_class_count / totalSample)
 
+test = dataWithBubblesTest %>%
+  full_join(particleDataCleanList)
+
+write.csv(test, "test.csv")
 
 
 # Write the data to an excel file where every regionYear is a different sheet
@@ -143,7 +160,7 @@ grouped_data = dataWithBubblesTest %>%
   split(.$regionYear)
 
 # Then write it out
-write_xlsx(grouped_data, "test.xlsx")
+write_xlsx(grouped_data, "zooData.xlsx")
 
 
 
