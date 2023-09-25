@@ -291,12 +291,7 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
 # Need to also add extra columns! These are important for the plotting scripts later on
 # facetFactor is used in some scripts since regions in the Atlantic are faceted based on bay (facilityName)
 # but Pacific is faceted based on field season (dataset)
-gulfCleanList = mergeSpeciesMeta(gulfMetaRed, gulfAll) %>%
-  mutate(facetFactor = facilityName,
-         region = "Gulf",
-         ocean = "Atlantic") %>%
-  mutate(facetFactor = replace(facetFactor, facetFactor == "StPeters", "St. Peters"))
-
+gulfCleanList = mergeSpeciesMeta(gulfMetaRed, gulfAll) 
 
 nl21CleanList = nl21Old %>%
   rename("flowcamCode" = "sample")%>%
