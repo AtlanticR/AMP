@@ -46,7 +46,8 @@ taxaFixes = read_xlsx("../AMPDataFiles/extraFiles/taxaFixesLaval.xlsx")
 # Just because it's useful, I get the full directory name, and just the file name
 
 # Define the directory where data need to be read from 
-allFolders = "../AMPDataFiles/AMMP FlowCam Zooplankton Data/"
+# Make sure this is the data with the OLD NEWFOUNDLAND DATA
+allFolders = "../AMPDataFiles/LavalOldNL AMMP FlowCam Data/"
 
 # Get a list of all the folders that are within that directory
 # These are what I refer to as the "datasets" (Gulf 2020, Gulf 2021, etc)
@@ -231,8 +232,8 @@ taxaCountsSample = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20, pacJun2
   # NEW FOR SEPT 21
   filter(!str_detect(sample, "_5mm"))
 
-write.csv(taxaCountsEntire, "taxaCountsEntire.csv")
-write.csv(taxaCountsSample, "taxaCountsSample.csv")
+#write.csv(taxaCountsEntire, "taxaCountsEntire.csv")
+#write.csv(taxaCountsSample, "taxaCountsSample.csv")
 ################################################################################
 ## Make adjustments to the zooplankton counts
 # The counts in the data spreadsheets do NOT represent counts from the entire sample
@@ -459,12 +460,75 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
 # Combine all the data for the 40 samples we're looking at. Get counts per different type
 # This will be used to get proportion of zooplankton out of all particle types
 allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
+  mutate(newName = ifelse(class == "Pseudocalanus spp Civ-vi ", "Pseudocalanus spp.", newName)) %>%
   left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
   ungroup() %>%
   select(sampleCode, class, newName, count, regionYear, selectForAnalysis) %>%
-  filter(selectForAnalysis == "Yes") %>%
+  # filter(selectForAnalysis == "Yes") %>%
   select(class, newName, count) %>%
-  group_by(class, newName) %>%
-  summarize(countTot = sum(count))
+  group_by(newName) %>%
+  summarize(countTot = sum(count)) %>%
+  filter(countTot >0)
+
+################################
+
+
+
+
+cyrilCountsUpdated = read_xlsx("../AMPDataFiles/extraFiles/taxon class names mapping master.xlsx", sheet = "categ_SELECTED_sples_vs_dfo") %>%
+  select(newName, categorie_count) %>%
+  group_by(newName) %>%
+  summarize(countCyril = sum(categorie_count))
+
+cyrilNameAdjustments = read_xlsx("../AMPDataFiles/extraFiles/samples categories comparison-short_SF.xlsx", sheet = "categ_train_samples_vs_dfo Modi") %>%
+  select(object_annotation_category, finnisNewName)
+
+
+
+
+cyrilCountsFullList = read_xlsx("../AMPDataFiles/extraFiles/samples categories comparison-short_SF.xlsx", sheet = "by sample categories summary") %>%
+  mutate(sampleName = tsv_filename) %>%
+  # Fix the beginning part of the sample names
+  mutate(sampleName = str_replace_all(sampleName, c("ecotaxa_4500_" = "", "ecotaxa_Zoo_" = "", "ecotaxa_Zoo_Half_" = ""))) %>%
+  mutate(sampleName = str_replace_all(sampleName, c("ecotaxa_" = "", "Half_" = "", "zoo_" = ""))) %>%
+  mutate(sampleName = str_replace_all(sampleName, c("Zoo-" = "", "269_" ="", "Clean_" = "", "5000_" = "", "Z00_" = ""))) %>%
+  # Now fix the end of the sample nmaes
+  mutate(sampleName = str_replace_all(sampleName, c("_Reduced_Complete.tsv" = "", "copy_Complete.tsv" = "", "_Complete.tsv" = "", "_LessDebris.tsv" = "", ".tsv" = ""))) %>%
+  mutate(sampleName = str_replace_all(sampleName, c("_R2$" = "", "_1$" = "", "_$" = ""))) %>%
+  select(sampleName, object_annotation_category, categorie_count, sample_type) %>%
+  filter(sample_type == "Test")
+                                                    
+cyrilCountsUpdatedName = cyrilCountsFullList %>%
+  left_join(cyrilNameAdjustments) %>%
+  left_join(taxaFixes, by= c("object_annotation_category" = "class")) %>%
+  group_by(sampleName, newName) %>%
+  summarize(countCyril = sum(categorie_count))
+
+
+myDat = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
+  mutate(newName = ifelse(class == "Pseudocalanus spp Civ-vi ", "Pseudocalanus spp.", newName)) %>%
+  group_by(newName, flowcamCode) %>%
+  summarize(countInSample = sum(count)) %>%
+  left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
+  #filter(selectForAnalysis == "Yes") %>%
+  select(newName, flowcamCode, countInSample)
+
+test = cyrilCountsUpdatedName %>%
+  full_join(myDat, by=c("newName" = "newName", "sampleName" = "flowcamCode")) %>%
+  mutate(dif = countCyril - countInSample)
+
+write.csv(test, "test.csv")
+
+unique(test$sampleName)
+
+
+
+
+
+
+
+
+
+
 
 
