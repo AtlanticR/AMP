@@ -273,6 +273,9 @@ gulf20Adj = full_join(gulf20, Gulf20Perc, by=c("sample" = "FlowCamSampleName")) 
   filter(sample!="AMMP_Gulf_StPeters_2_20200901HT_250UM_2") %>%
   mutate(sample = str_replace(sample, "_R2", "")) %>%
   
+  # ADD THIS LINE TO NOT INCLUDE 5mm FRACTION!! IE MAKE THEIR COUNTS ZERO
+  mutate(count = if_else(endsWith(sample, "_5mm"), 0, count)) %>%
+  
   # Gulf 2020 have underscores in the middle of the string AND at the end
   # I need to remove the one at the end 
   mutate(sample = ifelse(endsWith(sample, "_1"), # check if it ends with "_1"
@@ -286,6 +289,8 @@ gulf20Adj = full_join(gulf20, Gulf20Perc, by=c("sample" = "FlowCamSampleName")) 
 gulf21Adj =full_join(gulf21, Gulf21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
+  # ADD THIS LINE TO NOT INCLUDE 5mm FRACTION!! IE MAKE THEIR COUNTS ZERO
+  mutate(count = if_else(endsWith(sample, "_5mm"), 0, count)) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   mutate(sample = str_replace(sample, "_5mm", "_250"))
 
@@ -328,6 +333,7 @@ pacJun21Adj =full_join(pacJun21, PacJun21Perc, by=c("sample" = "FlowCamSampleNam
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   # ADD THIS LINE TO NOT INCLUDE 5mm FRACTION!! IE MAKE THEIR COUNTS ZERO
   mutate(count = if_else(endsWith(sample, "_5mm"), 0, count)) %>%
+  mutate(count = if_else(endsWith(sample, "_run"), 0, count)) %>%
   mutate(sample = str_replace(sample, "_5mm", "_250um")) %>%
   mutate(sample = str_replace(sample, "_run", ""))
 
@@ -344,6 +350,8 @@ pacMar21Adj =full_join(pacMar21, PacMar21Perc, by=c("sample" = "FlowCamSampleNam
 pacSept21Adj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
+  # ADD THIS LINE TO NOT INCLUDE 5mm FRACTION!! IE MAKE THEIR COUNTS ZERO
+  mutate(count = if_else(endsWith(sample, "_5mm"), 0, count)) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   mutate(sample = str_replace(sample, "_5mm", ""))
 
@@ -480,8 +488,9 @@ cyrilCountsUpdated = read_xlsx("../AMPDataFiles/extraFiles/taxon class names map
   group_by(newName) %>%
   summarize(countCyril = sum(categorie_count))
 
+# This includes the other names present in Cyril's data that I have provided updated names for 
 cyrilNameAdjustments = read_xlsx("../AMPDataFiles/extraFiles/samples categories comparison-short_SF.xlsx", sheet = "categ_train_samples_vs_dfo Modi") %>%
-  select(object_annotation_category, finnisNewName)
+  select(object_annotation_category, finnisNewName) 
 
 
 
@@ -495,27 +504,44 @@ cyrilCountsFullList = read_xlsx("../AMPDataFiles/extraFiles/samples categories c
   # Now fix the end of the sample nmaes
   mutate(sampleName = str_replace_all(sampleName, c("_Reduced_Complete.tsv" = "", "copy_Complete.tsv" = "", "_Complete.tsv" = "", "_LessDebris.tsv" = "", ".tsv" = ""))) %>%
   mutate(sampleName = str_replace_all(sampleName, c("_R2$" = "", "_1$" = "", "_$" = ""))) %>%
-  select(sampleName, object_annotation_category, categorie_count, sample_type) %>%
-  filter(sample_type == "Test")
+  select(sampleName, object_annotation_category, categorie_count, sample_type) 
+  #filter(sample_type == "Test") # Add this if I only want the "Test samples" (i.e., the 40 we're looking at)
                                                     
 cyrilCountsUpdatedName = cyrilCountsFullList %>%
-  left_join(cyrilNameAdjustments) %>%
-  left_join(taxaFixes, by= c("object_annotation_category" = "class")) %>%
-  group_by(sampleName, newName) %>%
-  summarize(countCyril = sum(categorie_count))
+  #left_join(cyrilNameAdjustments) %>%
+  full_join(taxaFixes, by= c("object_annotation_category" = "class")) %>%
+
+  # Note that Cyril has a few other categories that I do not have in my data. 
+  left_join(cyrilNameAdjustments, by = c("object_annotation_category" = "object_annotation_category")) %>%
+  mutate(comboName = ifelse(!is.na(newName), newName, finnisNewName),
+         comboName = ifelse(is.na(comboName), "nan", comboName)) %>%
+  
+  group_by(sampleName, comboName) %>%
+  summarize(countCyril = sum(categorie_count)) %>%
+  mutate(sampleName = ifelse(sampleName == "AMMP_PA_S04_W020_20200829LT_236um", "AMMP_PA_S04_W020_20200829LT_236UM", sampleName))
 
 
 myDat = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
   mutate(newName = ifelse(class == "Pseudocalanus spp Civ-vi ", "Pseudocalanus spp.", newName)) %>%
+  # Remove entries where newName is NA and count is 0 (i.e., both true, in the same row)
+  filter(!is.na(newName) | count != 0) %>%
+  # Idk why this wasn't removed, and the others weren't fixed
+  filter(newName != "Duplicate Images ") %>%
   group_by(newName, flowcamCode) %>%
   summarize(countInSample = sum(count)) %>%
   left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
   #filter(selectForAnalysis == "Yes") %>%
-  select(newName, flowcamCode, countInSample)
+  select(newName, flowcamCode, countInSample) %>%
+  filter(flowcamCode != "Zoo_21_10_05_NL_S1_Z41_1327_250")
+  
+
 
 test = cyrilCountsUpdatedName %>%
-  full_join(myDat, by=c("newName" = "newName", "sampleName" = "flowcamCode")) %>%
+  full_join(myDat, by=c("comboName" = "newName", "sampleName" = "flowcamCode")) %>%
+  mutate(countCyril = if_else(is.na(countCyril), 0, countCyril)) %>%
   mutate(dif = countCyril - countInSample)
+
+
 
 write.csv(test, "test.csv")
 
