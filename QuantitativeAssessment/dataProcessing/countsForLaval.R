@@ -1,18 +1,39 @@
 ################################################################################
 ################################################################################
-### 
+### Compare FlowCam Counts to Laval University
 
+# Researchers at Laval are also using the zooplankton data for Ecotaxa
+# They wanted to compare the counts per sample between what we have and what they
+# have.
+# They have counts from a slightly different source- the images saved as tvs files
 
-## ADDITIONAL INFO:
-# Created by Stephen Finnis 2022
-# Data files are not public
+# To prep this data, I have been using the same code as for the Tech Report but 
+# with a few adjustments
+# Original code is found in: "TechReport/DataProcessing/zooplanktonCounts.R"
+
+# Changes:
+# 5mm fraction is not used
+# The OLD Newfoundland data is used (~500 more zooplankton were identified per sample) at a later date
+# Those extra specimens are not included for this.
+# There are slightly different classes used for the zooplankton than in the tech report
+# e.g., removing eggs, reclassifying amphipods, etc.
+
+# This code preps our data, then reads in Cyril's
+# Makes some adjustments to Cyril's data to get the sample IDs to line up. Also to make the taxa names consistent
+# Then compares to find differences
+
+# Some of this code is a bit clunky (e.g., making all the 5mm data --> 0 counts) but it was easier
+# to just adjust from the original zooplanktonCounts.R file
+
 ################################################################################
 ################################################################################
 ## Read in other scripts
 
+# Note that I don't really need these. But it's easier to just keep them in
 source("TechReport/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
 source("TechReport/DataProcessing/metadataProcessing.R") # get metadata
 
+# Switch to the NEW file for altering zooplankton names
 # taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
 taxaFixes = read_xlsx("../AMPDataFiles/extraFiles/taxaFixesLaval.xlsx")
 
@@ -26,7 +47,7 @@ taxaFixes = read_xlsx("../AMPDataFiles/extraFiles/taxaFixesLaval.xlsx")
 # Just because it's useful, I get the full directory name, and just the file name
 
 # Define the directory where data need to be read from 
-# Make sure this is the data with the OLD NEWFOUNDLAND DATA
+# Make sure this is the directory with the OLD NEWFOUNDLAND DATA. I just made a new directory lol
 allFolders = "../AMPDataFiles/LavalOldNL AMMP FlowCam Data/"
 
 # Get a list of all the folders that are within that directory
@@ -458,15 +479,11 @@ allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
   summarize(countTot = sum(count)) %>%
   filter(countTot >0)
 
-################################
+################################################################################
+################################################################################
+#### Start making comparisons to Cyril's data
 
 
-# Read in Cyril's counts for the testing data
-# But actually I don't use this
-# cyrilCountsUpdated = read_xlsx("../AMPDataFiles/extraFiles/taxon class names mapping master.xlsx", sheet = "categ_SELECTED_sples_vs_dfo") %>%
-#   select(newName, categorie_count) %>%
-#   group_by(newName) %>%
-#   summarize(countCyril = sum(categorie_count))
 
 
 # This includes the other names present in Cyril's data that I have provided updated names for 
