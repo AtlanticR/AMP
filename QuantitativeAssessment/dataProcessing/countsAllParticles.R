@@ -1,31 +1,29 @@
 ################################################################################
 ################################################################################
-### ZOOPLANKTON ABUNDANCE
+### Particle counts for Clean List samples
 
-## BACKGROUND:
-# Zooplankton from the Aquaculture Monitoring Program (AMP) have been sampled from
-# four different DFO regions (Pacific, Gulf, Maritimes, Newfoundland) in several
-# different years. 
-# These samples were run through the FlowCam and taxonomists identified the species.
-# These counts need to be read in, and then corrected to represent the # of 
-# individuals per cubic meter of seawater
+# We are making a summary of all the zooplankton samples to provide a breakdown 
+# of the particle types (e.g., Debris, Bubbles, Zooplankton, etc.)
 
-## PURPOSE OF CODE:
-# This code is intended to:
-# -Read in the necessary information from the data files
-# -Ensure consistency between data file entries (e.g., consistent spelling)
-# -Adjust the counts by the amount of sample analyzed (from FlowCamPercentAnalyzed.R)
-# -Adjust the counts again by volume of water sampled (from metadataProcessing.R)
-# -Adjust the counts again by dividing by 4 (since the samples were divided in 
-# 4 and only one of the samples was run through the FlowCam)
-# -Final units for each taxa are individuals per cubic meter of water (abundance)
-# The output will be a dataframe for each region with the abundance of each taxa
-# within each sample
-# These will be used as the data for statistical analyses/making graphs, etc.
+# Depending on the dataset, sometimes the samples were analyzed by the taxonomists
+# in different ways. 
+# In this script, I want to look at the files where the samples were cleaned separately
+# from the zooplankton identification
+# i.e., the taxonomists took a portion of the sample, separated zooplankton from non-zooplankton
+# Then later ID'd the zooplankton. Those files are then separate
 
-## ADDITIONAL INFO:
-# Created by Stephen Finnis 2022
-# Data files are not public
+# In other samples, zooplankton were ID'd at the same time that other particles were separated out
+
+# This script is for getting the info where the data were cleaned first, zooplankton ID'd later
+# This data is then summarized in the script: sampleSummaries.R
+
+# For the 40 samples of interest, this is therefore only applicable to samples from:
+# Newfoundland 2021 and Gulf 2020
+
+
+# This isn't a great system, but to get the data for both NL and Gulf, make sure to change the 
+# directory and run separately (the command for allFolders)
+
 ################################################################################
 ################################################################################
 ## Read in other scripts
@@ -45,12 +43,10 @@ taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
 # Just because it's useful, I get the full directory name, and just the file name
 
 # FOR READING IN THE GULF DATA USE THIS
-# Define the directory where data need to be read from 
 allFolders = "../AMPDataFiles/AMMP FlowCam Zooplankton Data/"
 
-
 # FOR READING IN THE NEWFOUNDLAND DATA USE THIS
-allFolders = "../AMPDataFiles/OLD AMMP NL 2021 Zooplankton Data"
+# allFolders = "../AMPDataFiles/OLD AMMP NL 2021 Zooplankton Data"
 
 # Get a list of all the folders that are within that directory
 # These are what I refer to as the "datasets" (Gulf 2020, Gulf 2021, etc)
