@@ -34,8 +34,8 @@ source("TechReport/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments f
 source("TechReport/DataProcessing/metadataProcessing.R") # get metadata
 
 # Switch to the NEW file for altering zooplankton names
-# taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
-taxaFixes = read_xlsx("../AMPDataFiles/extraFiles/taxaFixesLaval.xlsx")
+taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
+#taxaFixes = read_xlsx("../AMPDataFiles/extraFiles/taxaFixesLaval.xlsx")
 
 ################################################################################
 ## GET THE DATA FILE NAMES
