@@ -1,11 +1,36 @@
+################################################################################
+## Make summarizes of the particle types within each sample
+
+# For the samples used in our analysis (40 total) we want a breakdown of all the 
+# particle types (e.g., Zooplankton, Debris, Fragments, etc.)
+
+# There were two different ways taxonomists analyzed the data, so as a result, the
+# file structures are a bit different. I created separate scripts to read in the different
+# files.
+
+# 1. Cleaned List --> zooplankton were separated out, and ID'd at a later date
+# This was created in countsCleanedList.R
+
+# 2. Zooplankton Data --> zooplankton were ID'd at the same time other particles were identified
+# This was created in countsForLaval.R
+# NOTE: Some zooplankton may be removed from analysis (e.g., Invertebrate eggs)
+# I am not sure if these should be included in the list
+# Make sure to use the correct file for specifying if these should be included or not
+# i.e., this is the taxaFix file
 
 
+################################################################################
+
+# Read this in just to make sure I have the right R packages
 source("TechReport/DataProcessing/rPackages.R")
 
 # Also need to have QAcodeMatches.R to get waterVolSamples data
 
 
-# Actually, I need to make some corrections to the data first
+################################################################################
+## Make some adjustments to the data files
+
+# These are the datasets not from the "clean list" folder
 particleData = rbind(gulfMerge, nlMerge, pacMerge) %>% 
   left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
   ungroup() %>%
@@ -39,15 +64,14 @@ grouped_data_zooList = particleData %>%
   split(.$regionYear)
 
 # Then write it out
-write_xlsx(grouped_data_zooList, "zooList.xlsx")
+# write_xlsx(grouped_data_zooList, "zooList.xlsx")
 
 
-##### NEW
-
+## Clean List Data
 # This data comes from countsAllParticles.R. It is from the Clean List which includes bubbles, debris, etc.
 # Only the Gulf and NL 2021 data from the analyzed datasets had these types of lists
 
-# Actually, I need to make some corrections to the data first
+# Make some corrections to the data first
 particleDataCleanList = rbind(gulfCleanList, nl21CleanList) %>% 
   left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
   #mutate(regionYear =paste(regionYear, "clean list")) %>%
@@ -83,8 +107,7 @@ grouped_data_cleanList = particleDataCleanList %>%
   split(.$regionYear)
 
 # Then write it out
-write_xlsx(grouped_data_cleanList, "cleanList.xlsx")
-
+# write_xlsx(grouped_data_cleanList, "cleanList.xlsx")
 
 ################################################################################
 ### Make some comparisons
