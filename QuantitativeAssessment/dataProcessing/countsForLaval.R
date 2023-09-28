@@ -1,27 +1,7 @@
 ################################################################################
 ################################################################################
-### ZOOPLANKTON ABUNDANCE
+### 
 
-## BACKGROUND:
-# Zooplankton from the Aquaculture Monitoring Program (AMP) have been sampled from
-# four different DFO regions (Pacific, Gulf, Maritimes, Newfoundland) in several
-# different years. 
-# These samples were run through the FlowCam and taxonomists identified the species.
-# These counts need to be read in, and then corrected to represent the # of 
-# individuals per cubic meter of seawater
-
-## PURPOSE OF CODE:
-# This code is intended to:
-# -Read in the necessary information from the data files
-# -Ensure consistency between data file entries (e.g., consistent spelling)
-# -Adjust the counts by the amount of sample analyzed (from FlowCamPercentAnalyzed.R)
-# -Adjust the counts again by volume of water sampled (from metadataProcessing.R)
-# -Adjust the counts again by dividing by 4 (since the samples were divided in 
-# 4 and only one of the samples was run through the FlowCam)
-# -Final units for each taxa are individuals per cubic meter of water (abundance)
-# The output will be a dataframe for each region with the abundance of each taxa
-# within each sample
-# These will be used as the data for statistical analyses/making graphs, etc.
 
 ## ADDITIONAL INFO:
 # Created by Stephen Finnis 2022
@@ -275,7 +255,7 @@ gulf20Adj = full_join(gulf20, Gulf20Perc, by=c("sample" = "FlowCamSampleName")) 
   
   # ADD THIS LINE TO NOT INCLUDE 5mm FRACTION!! IE MAKE THEIR COUNTS ZERO
   mutate(count = if_else(endsWith(sample, "_5mm"), 0, count)) %>%
-  
+
   # Gulf 2020 have underscores in the middle of the string AND at the end
   # I need to remove the one at the end 
   mutate(sample = ifelse(endsWith(sample, "_1"), # check if it ends with "_1"
@@ -481,67 +461,107 @@ allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
 ################################
 
 
+# Read in Cyril's counts for the testing data
+# But actually I don't use this
+# cyrilCountsUpdated = read_xlsx("../AMPDataFiles/extraFiles/taxon class names mapping master.xlsx", sheet = "categ_SELECTED_sples_vs_dfo") %>%
+#   select(newName, categorie_count) %>%
+#   group_by(newName) %>%
+#   summarize(countCyril = sum(categorie_count))
 
-
-cyrilCountsUpdated = read_xlsx("../AMPDataFiles/extraFiles/taxon class names mapping master.xlsx", sheet = "categ_SELECTED_sples_vs_dfo") %>%
-  select(newName, categorie_count) %>%
-  group_by(newName) %>%
-  summarize(countCyril = sum(categorie_count))
 
 # This includes the other names present in Cyril's data that I have provided updated names for 
 cyrilNameAdjustments = read_xlsx("../AMPDataFiles/extraFiles/samples categories comparison-short_SF.xlsx", sheet = "categ_train_samples_vs_dfo Modi") %>%
   select(object_annotation_category, finnisNewName) 
 
-
-
-
+# Read in Cyril's data for ALL samples
 cyrilCountsFullList = read_xlsx("../AMPDataFiles/extraFiles/samples categories comparison-short_SF.xlsx", sheet = "by sample categories summary") %>%
+  # Then, go through and make adjustments to the file names so they match what I have. He has extra stuff added like "ecotaxa_4500"
+  # Some of this I had to do piece by piece so it wouldn't make a ton of unwanted changes
   mutate(sampleName = tsv_filename) %>%
   # Fix the beginning part of the sample names
   mutate(sampleName = str_replace_all(sampleName, c("ecotaxa_4500_" = "", "ecotaxa_Zoo_" = "", "ecotaxa_Zoo_Half_" = ""))) %>%
   mutate(sampleName = str_replace_all(sampleName, c("ecotaxa_" = "", "Half_" = "", "zoo_" = ""))) %>%
   mutate(sampleName = str_replace_all(sampleName, c("Zoo-" = "", "269_" ="", "Clean_" = "", "5000_" = "", "Z00_" = ""))) %>%
-  # Now fix the end of the sample nmaes
+  # Now fix the end of the sample names
   mutate(sampleName = str_replace_all(sampleName, c("_Reduced_Complete.tsv" = "", "copy_Complete.tsv" = "", "_Complete.tsv" = "", "_LessDebris.tsv" = "", ".tsv" = ""))) %>%
   mutate(sampleName = str_replace_all(sampleName, c("_R2$" = "", "_1$" = "", "_$" = ""))) %>%
-  select(sampleName, object_annotation_category, categorie_count, sample_type) 
+  # This one is capitalized in the FlowCam data but not in Cyril's
+  mutate(sampleName = ifelse(sampleName == "AMMP_PA_S04_W020_20200829LT_236um", "AMMP_PA_S04_W020_20200829LT_236UM", sampleName)) %>%
+  # Select only the columns I'm interested in
+  select(sampleName, tsv_filename, object_annotation_category, categorie_count, sample_type) 
   #filter(sample_type == "Test") # Add this if I only want the "Test samples" (i.e., the 40 we're looking at)
-                                                    
-cyrilCountsUpdatedName = cyrilCountsFullList %>%
-  #left_join(cyrilNameAdjustments) %>%
-  full_join(taxaFixes, by= c("object_annotation_category" = "class")) %>%
 
-  # Note that Cyril has a few other categories that I do not have in my data. 
+# Then, update the names in his columns to match what I have
+cyrilCountsUpdatedName = cyrilCountsFullList %>%
+  # First, match his taxa names to the ones I used for the FlowCam data. This matches Almost all of them
+  full_join(taxaFixes, by= c("object_annotation_category" = "class")) %>%
+  # Note that Cyril has a few other categories that I do not have in my data. I don't exactly know why
   left_join(cyrilNameAdjustments, by = c("object_annotation_category" = "object_annotation_category")) %>%
+  
+  # Now, first use the name applied in taxaFixes ("newName"). But if that isn't there, use what was in cyrilNameAdjustments ("finnisNewName")
+  # Put this in a new column called comboName
   mutate(comboName = ifelse(!is.na(newName), newName, finnisNewName),
          comboName = ifelse(is.na(comboName), "nan", comboName)) %>%
+  # Now, get counts of these "comboNames" per sample
+  group_by(sampleName, tsv_filename, sample_type, comboName) %>%
+  summarize(countCyril = sum(categorie_count)) 
   
-  group_by(sampleName, comboName) %>%
-  summarize(countCyril = sum(categorie_count)) %>%
-  mutate(sampleName = ifelse(sampleName == "AMMP_PA_S04_W020_20200829LT_236um", "AMMP_PA_S04_W020_20200829LT_236UM", sampleName))
 
 
 myDat = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
   mutate(newName = ifelse(class == "Pseudocalanus spp Civ-vi ", "Pseudocalanus spp.", newName)) %>%
   # Remove entries where newName is NA and count is 0 (i.e., both true, in the same row)
   filter(!is.na(newName) | count != 0) %>%
-  # Idk why this wasn't removed, and the others weren't fixed
+  
+  # I actually made entries from 5mm fraction 99999. This was a weak solution lol. Remove these
+  
+  ## OK SOMETHING BONKERS IS GOING ON
+  # REMOVE THE ONES WHERE NEWNAME IS NA. I tried correcting them, but then it adds extra data.
+  #filter(!is.na(newName)) %>%
+  # IDK why these aren't being corrected!!!
+  mutate(newName = ifelse(class == "Cyclopoida " & flowcamCode == "AMMP_Gulf_StPeters_2_20200902LT_250UM", "Cyclopoida (unid)", newName)) %>%
+  mutate(newName = ifelse(class == "Amphipoda " & flowcamCode == "21_08_25_Mar_S03_Z02_1338_250", "Amphipoda", newName)) %>%
   filter(newName != "Duplicate Images ") %>%
-  group_by(newName, flowcamCode) %>%
+  
+  filter(flowcamCode != "Zoo_21_10_05_NL_S1_Z41_1327_250") %>%
+  # Idk why this wasn't removed, and the others weren't fixed
+  ungroup() %>%
+  select(flowcamCode, class, newName, dataset, count) %>%
+  
+  # Need to do this to add the 5mm fraction together
+  group_by(flowcamCode, class, newName, dataset) %>%
+  summarize(count = sum(count)) %>%
+  
+  ### STOP HERE AND SAVE THIS FOR CYRIL
+  
+  group_by(newName, flowcamCode, dataset) %>%
   summarize(countInSample = sum(count)) %>%
   left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
   #filter(selectForAnalysis == "Yes") %>%
-  select(newName, flowcamCode, countInSample) %>%
-  filter(flowcamCode != "Zoo_21_10_05_NL_S1_Z41_1327_250")
-  
+  select(newName, flowcamCode, countInSample, dataset) 
+
+
+test3 = myDat %>%
+  filter(flowcamCode == "AMMP_Gulf_StPeters_2_20200902LT_250UM")
+
 
 
 test = cyrilCountsUpdatedName %>%
   full_join(myDat, by=c("comboName" = "newName", "sampleName" = "flowcamCode")) %>%
+  
+  mutate(comboName = ifelse(comboName=="Amphipoda" & dataset == "Gulf 2020", "Amphipoda- epibenthic", comboName)) %>%
+  mutate(comboName = ifelse(comboName == "Isopoda" & dataset == "Gulf 2020", "Isopoda- epibenthic",
+                          ifelse(comboName == "Isopoda" & (dataset == "Gulf 2021" | dataset == "Newfoundland 2021"), "Isopoda (larvae)", comboName))) %>%
+  
   mutate(countCyril = if_else(is.na(countCyril), 0, countCyril)) %>%
   mutate(dif = countCyril - countInSample)
 
+write.csv(test, "compareDat.csv")
 
+
+
+test2 = test %>%
+  filter(sampleName == "AMMP_Gulf_StPeters_2_20200902LT_250UM")
 
 write.csv(test, "test.csv")
 
