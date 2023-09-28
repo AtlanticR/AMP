@@ -483,10 +483,9 @@ allSites = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>%
 ################################################################################
 #### Start making comparisons to Cyril's data
 
-
-
-
-# This includes the other names present in Cyril's data that I have provided updated names for 
+# Read in additional spreadsheet with taxa name changes
+# Note that Cyril's data had a few slightly different classes based on the way the data was extracted
+# from tsv files. This includes the other names present in Cyril's data that I have provided updated names for. 
 cyrilNameAdjustments = read_xlsx("../AMPDataFiles/extraFiles/samples categories comparison-short_SF.xlsx", sheet = "categ_train_samples_vs_dfo Modi") %>%
   select(object_annotation_category, finnisNewName) 
 
@@ -510,11 +509,10 @@ cyrilCountsFullList = read_xlsx("../AMPDataFiles/extraFiles/samples categories c
 
 # Then, update the names in his columns to match what I have
 cyrilCountsUpdatedName = cyrilCountsFullList %>%
-  # First, match his taxa names to the ones I used for the FlowCam data. This matches Almost all of them
+  # First, match his taxa names to the ones I used for the FlowCam data. This matches almost all of them
   full_join(taxaFixes, by= c("object_annotation_category" = "class")) %>%
   # Note that Cyril has a few other categories that I do not have in my data. I don't exactly know why
   left_join(cyrilNameAdjustments, by = c("object_annotation_category" = "object_annotation_category")) %>%
-  
   # Now, first use the name applied in taxaFixes ("newName"). But if that isn't there, use what was in cyrilNameAdjustments ("finnisNewName")
   # Put this in a new column called comboName
   mutate(comboName = ifelse(!is.na(newName), newName, finnisNewName),
@@ -523,75 +521,48 @@ cyrilCountsUpdatedName = cyrilCountsFullList %>%
   group_by(sampleName, tsv_filename, sample_type, comboName) %>%
   summarize(countCyril = sum(categorie_count)) 
   
-
-
+# Combine my data for ALL samples
 myDat = rbind(gulfMerge, nlMerge, marMerge, pacMerge) %>% 
+  # There are a few weird samples where I still have to make some changes. IDK WHY
   mutate(newName = ifelse(class == "Pseudocalanus spp Civ-vi ", "Pseudocalanus spp.", newName)) %>%
   # Remove entries where newName is NA and count is 0 (i.e., both true, in the same row)
   filter(!is.na(newName) | count != 0) %>%
-  
-  # I actually made entries from 5mm fraction 99999. This was a weak solution lol. Remove these
-  
-  ## OK SOMETHING BONKERS IS GOING ON
-  # REMOVE THE ONES WHERE NEWNAME IS NA. I tried correcting them, but then it adds extra data.
-  #filter(!is.na(newName)) %>%
-  # IDK why these aren't being corrected!!!
   mutate(newName = ifelse(class == "Cyclopoida " & flowcamCode == "AMMP_Gulf_StPeters_2_20200902LT_250UM", "Cyclopoida (unid)", newName)) %>%
   mutate(newName = ifelse(class == "Amphipoda " & flowcamCode == "21_08_25_Mar_S03_Z02_1338_250", "Amphipoda", newName)) %>%
   filter(newName != "Duplicate Images ") %>%
-  
-  filter(flowcamCode != "Zoo_21_10_05_NL_S1_Z41_1327_250") %>%
-  # Idk why this wasn't removed, and the others weren't fixed
+  # Remove 5mm fraction file name
+  filter(flowcamCode != "Zoo_21_10_05_NL_S1_Z41_1327_250") %>% 
   ungroup() %>%
   select(flowcamCode, class, newName, dataset, count) %>%
   
   # Need to do this to add the 5mm fraction together
   group_by(flowcamCode, class, newName, dataset) %>%
   summarize(count = sum(count)) %>%
-  
   ### STOP HERE AND SAVE THIS FOR CYRIL
-  
   group_by(newName, flowcamCode, dataset) %>%
   summarize(countInSample = sum(count)) %>%
   left_join(qaID, by = c("flowcamCode" = "FlowCamID")) %>%
   #filter(selectForAnalysis == "Yes") %>%
   select(newName, flowcamCode, countInSample, dataset) 
 
-
-test3 = myDat %>%
+# If I just want to test things for one sample
+oneSampleTest = myDat %>%
   filter(flowcamCode == "AMMP_Gulf_StPeters_2_20200902LT_250UM")
 
-
-
-test = cyrilCountsUpdatedName %>%
+# Compare Cyril's counts with mine
+compareCounts = cyrilCountsUpdatedName %>%
+  # Join his data with mine
   full_join(myDat, by=c("comboName" = "newName", "sampleName" = "flowcamCode")) %>%
-  
+  # Fix these gosh darn Amphipods and Isopods. Instructions came from taxonomist
   mutate(comboName = ifelse(comboName=="Amphipoda" & dataset == "Gulf 2020", "Amphipoda- epibenthic", comboName)) %>%
   mutate(comboName = ifelse(comboName == "Isopoda" & dataset == "Gulf 2020", "Isopoda- epibenthic",
                           ifelse(comboName == "Isopoda" & (dataset == "Gulf 2021" | dataset == "Newfoundland 2021"), "Isopoda (larvae)", comboName))) %>%
-  
+  # Sometimes Cyril didn't have info where I had entries of 0. Make his NAs equal to 0.
   mutate(countCyril = if_else(is.na(countCyril), 0, countCyril)) %>%
+  # Compare the counts
   mutate(dif = countCyril - countInSample)
 
-write.csv(test, "compareDat.csv")
-
-
-
-test2 = test %>%
-  filter(sampleName == "AMMP_Gulf_StPeters_2_20200902LT_250UM")
-
-write.csv(test, "test.csv")
-
-unique(test$sampleName)
-
-
-
-
-
-
-
-
-
-
+# Write the spreadsheet as a csv
+# write.csv(compareCounts, "compareDat.csv")
 
 
