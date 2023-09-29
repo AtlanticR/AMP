@@ -46,7 +46,7 @@ taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
 allFolders = "../AMPDataFiles/AMMP FlowCam Zooplankton Data/"
 
 # FOR READING IN THE NEWFOUNDLAND DATA USE THIS
-# allFolders = "../AMPDataFiles/OLD AMMP NL 2021 Zooplankton Data"
+allFolders = "../AMPDataFiles/OLD AMMP NL 2021 Zooplankton Data"
 
 # Get a list of all the folders that are within that directory
 # These are what I refer to as the "datasets" (Gulf 2020, Gulf 2021, etc)
@@ -291,7 +291,10 @@ gulfCleanList = mergeSpeciesMeta(gulfMetaRed, gulfAll)
 
 nl21CleanList = nl21Old %>%
   rename("flowcamCode" = "sample")%>%
-  mutate(sampleCode = flowcamCode)
+  mutate(sampleCode = flowcamCode) %>%
+  # There's one mistake in the NL 2021 data. They do not have a 0 after the S. e.g., should change from:
+  # 21_10_05_NL_S1_Z17_1406_250 --> 21_10_05_NL_S01_Z17_1406_250
+  mutate(sampleCode = sub("NL_S([0-9])", "NL_S0\\1", sampleCode), sampleCode)
 
 
 
