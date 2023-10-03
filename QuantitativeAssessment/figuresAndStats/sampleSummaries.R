@@ -26,6 +26,8 @@ source("TechReport/DataProcessing/rPackages.R")
 
 # Also need to have QAcodeMatches.R to get waterVolSamples data
 
+# Remove scientific notation
+options(scipen=999)
 
 ################################################################################
 ## Make some adjustments to the data files
@@ -112,23 +114,25 @@ grouped_data_cleanList = particleDataCleanList %>%
 ################################################################################
 ### Make some comparisons
 
+## Read in 
+
 # This contains Julie's spreadsheets that were put together
-sampleData = read_excel("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/sampleSummaries.xlsx", sheet = "originalCopy") %>%
+julieData = read_excel("../AMPDataFiles/QuantitativeAssessment/GoodCopyDataFiles/sampleSummaries.xlsx", sheet = "originalCopy") %>%
   # Replace NAs (or "n/a" written in) with zeroes for the 5mm counts
   mutate(fiveMmCount = as.numeric(ifelse(is.na(fiveMmCount) | fiveMmCount == "n/a", 0, fiveMmCount)),
          chaetognathaNotes = as.numeric(ifelse(is.na(chaetognathaNotes) | str_detect(chaetognathaNotes, "^Taxa was"), 0, chaetognathaNotes)),
          propPlankton = zooCountPostCleaning / cleanedParticleCount) %>%
   right_join(waterVolSamples, by = c("FlowCam Sample Name" = "FlowCamID")) %>% # make sure to right join or I get all the extra data from samples not being used
-  filter(usedForAnalysis == "Yes") 
-
-# Now, only take the data I want
-julieData = sampleData %>%
+  # Only want info for the 40 analyzed samples
+  filter(usedForAnalysis == "Yes") %>%
   select(c("FlowCam Sample Name", sampleParticleCount, cleanedParticleCount, zooCountPostCleaning))
 
+## Comparisons of the CLEAN LIST (i.e., Gulf 2020 and NL 2021 data)
 
-# Ok now actually do some major rearranging to the particleData dataframe lol
+# Now compare the particle counts to Julie's 
 
-compareDat = particleDataCleanList %>%
+# Clean List
+compareDatClean = particleDataCleanList %>%
   filter(class == "Zooplankton") %>%
   rename(myZooCount = total_class_count,
          myCleanedCount = totalSampleNoNum) %>%
@@ -137,23 +141,44 @@ compareDat = particleDataCleanList %>%
   mutate(zooDiff = zooCountPostCleaning - myZooCount,
          cleanDiff = cleanedParticleCount - myCleanedCount)
 
+# Other list (not cleaned aka "zoo" list)
+compareDatZoo = particleData %>%
+  filter(class == "Zooplankton") %>%
+  rename(myZooCount = total_class_count,
+         myCleanedCount = totalSampleNoNum) %>%
+  select(-c(totalSample, classCountNoNum)) %>%
+  left_join(julieData, by = c(flowcamCode = "FlowCam Sample Name")) %>%
+  mutate(zooDiff = zooCountPostCleaning - myZooCount,
+         cleanDiff = cleanedParticleCount - myCleanedCount)
+
+compareDatPrint = compareDatZoo %>%
+  filter(regionYear == "NL 2020" | regionYear == "Pac 21") %>%
+  bind_rows(compareDatClean)
+
+write_xlsx(compareDatPrint, "compareDatPrint.xlsx")
+
 # We know that some bubbles in the NL 2020 data were not included in the particle counts
 # I THINK (BUT COULD BE WRONG) that the difference in counts in the files vs cleaned particle counts in Julie's spreadsheets should be the # of bubbles
 
-nlBubbles = compareDat %>%
+# Extract just the NL 2020 data and make any difference in particle counts equal to the number of bubbles
+nlBubbles = compareDatZoo %>%
   filter(regionYear == "NL 2020") %>%
   mutate(class = "Bubbles or Other(?)",
+         # Then rename the columns for consistency with the original data frame
          total_class_count = cleanDiff,
          totalSample = sampleParticleCount,
          classCountNoNum = cleanDiff,
          totalSampleNoNum = sampleParticleCount) %>%
   select(sampleCode, flowcamCode, class, regionYear, total_class_count, totalSample, classCountNoNum, totalSampleNoNum)
 
-
+# Add back in bubbles to the particleDat dataframe as a new class
 dataWithBubbles = rbind(nlBubbles, particleData) %>%
+  # Remove data from classes 1-10
   filter(!class %in% as.character(1:10)) %>%
   select(-c(totalSample, classCountNoNum)) 
 
+
+# Now just create a new df with total particles counts, now that the bubbles have been added
 toMerge = dataWithBubbles %>%
   select(flowcamCode, sampleCode, totalSampleNoNum) %>%
   rename(sampleCode2 = sampleCode, totalSample = totalSampleNoNum) %>%
@@ -162,49 +187,50 @@ toMerge = dataWithBubbles %>%
 
 dataWithBubblesTest = dataWithBubbles%>%
   ungroup() %>%
+  # Then within each regionYear, need all possible particle types present to then have a value 
+  # e.g., if there was Debris in one sample, but not the other, add "bubbles" with count of 0 as a row
   group_by(regionYear) %>%
   complete(flowcamCode, class, fill = list(total_class_count = 0)) %>%
   left_join(toMerge) %>%
   select(-c(sampleCode, totalSampleNoNum)) %>%
   rename(total_class_count_round2 = total_class_count,
          total_sample_round2 = totalSample,
-         sampleCode = sampleCode2)
+         sampleCode = sampleCode2) %>%
+  # Ok so then the original total particle counts for NL 2020 data still show up and should be switched
+  # There are two rows of data. Remove the one with the original value (the lower value)
+  # This means "group_by" all but the specified column
+  group_by(across(-total_sample_round2)) %>%
+  filter(total_sample_round2 == max(total_sample_round2)) %>%
+  ungroup()
   #mutate(propParticle = total_class_count / totalSample)
 
-test = dataWithBubblesTest %>%
-  full_join(particleDataCleanList)
-
-write.csv(test, "test.csv")
 
 
-# Write the data to an excel file where every regionYear is a different sheet
-# First split the data based on regionYear 
-grouped_data = dataWithBubblesTest %>%
-  split(.$regionYear)
+sampleBreakdownBothTypes = dataWithBubblesTest %>%
+  full_join(particleDataCleanList, by = c("regionYear", "class", "flowcamCode", "sampleCode")) %>%
+  # Move the round2 stuff to the end of the dataframe 
+  select(-total_class_count_round2, -total_sample_round2, everything(),
+         total_class_count_round2, total_sample_round2) %>%
+  select(-c(classCountNoNum, totalSampleNoNum)) %>%
+  # There will be NAs introduced after merging. Just make these zero
+  mutate(total_class_count = ifelse(regionYear %in% c("NL 2021", "Gulf 2020") & is.na(total_class_count), 0, total_class_count)) %>%
+  mutate(total_class_count_round2 = ifelse(regionYear %in% c("NL 2021", "Gulf 2020") & is.na(total_class_count_round2), 0, total_class_count_round2)) %>%
+  group_by(sampleCode) %>%
+  # But make sure the totals don't become zero. These have to become the true totals (i.e., putting it as the max val from each sampleCode)
+  mutate(total_sample_round2 = ifelse(regionYear %in% c("NL 2021", "Gulf 2020"), 
+                                      ifelse(is.na(total_sample_round2), max(total_sample_round2, na.rm = T), total_sample_round2), total_sample_round2)) %>%
+  mutate(totalSample = ifelse(regionYear %in% c("NL 2021", "Gulf 2020"), 
+                                      ifelse(is.na(totalSample), max(totalSample, na.rm = T), totalSample), totalSample)) %>%
+  ungroup() %>%
+  mutate(propParticle = ifelse(regionYear %in% c("NL 2021", "Gulf 2020"), total_class_count/totalSample*100, total_class_count_round2/total_sample_round2*100))
+  
+write_xlsx(sampleBreakdownBothTypes, "sampleBreakdownBothTypes.xlsx")
 
-# Then write it out
-write_xlsx(grouped_data, "zooData.xlsx")
 
 
-
-
-summaryRegion = dataWithBubblesTest %>%
+summaryNL2021Gulf2020 = sampleBreakdownBothTypes %>%
+  filter(regionYear == "NL 2021" | regionYear == "Gulf 2020") %>%
   group_by(regionYear, class) %>%
-  summarize(
-    min_value_prop = min(propParticle, na.rm = T),
-    max_value_prop = max(propParticle, na.rm = T),
-    sd_value_prop = sd(propParticle, na.rm = T),
-    avg_value_prop = mean(propParticle, na.rm = T),
-    
-    
-    min_value = min(total_class_count),
-    max_value = max(total_class_count),
-    sd_value = sd(total_class_count),
-    avg_value = mean(total_class_count)
-  )
-
-summaryTotal = dataWithBubblesTest %>%
-  group_by(class) %>%
   summarize(
     min_value_prop = min(propParticle, na.rm = T),
     max_value_prop = max(propParticle, na.rm = T),
@@ -214,12 +240,30 @@ summaryTotal = dataWithBubblesTest %>%
     
     min_value = min(total_class_count, na.rm = T),
     max_value = max(total_class_count, na.rm = T),
-    sd_value = sd(total_class_count, na.rm =T),
-    avg_value = mean(total_class_count, na.rm =T)
-  ) %>%
-  mutate(regionYear = "Total") %>%
-  bind_rows(summaryRegion)
+    sd_value = sd(total_class_count, na.rm = T),
+    avg_value = mean(total_class_count, na.rm = T)
+  )
 
-write.csv(summaryTotal, "summaryTotal2.csv")
+summaryNL2020Pac2021 = sampleBreakdownBothTypes %>%
+  filter(regionYear == "NL 2020" | regionYear == "Pac 21") %>%
+  group_by(regionYear, class) %>%
+  summarize(
+    min_value_prop = min(propParticle, na.rm = T),
+    max_value_prop = max(propParticle, na.rm = T),
+    sd_value_prop = sd(propParticle, na.rm = T),
+    avg_value_prop = mean(propParticle, na.rm = T),
+    
+    
+    min_value = min(total_class_count_round2, na.rm = T),
+    max_value = max(total_class_count_round2, na.rm = T),
+    sd_value = sd(total_class_count_round2, na.rm = T),
+    avg_value = mean(total_class_count_round2, na.rm = T)
+  )
+
+summaryRegions = summaryNL2021Gulf2020 %>%
+  bind_rows(summaryNL2020Pac2021)
+
+
+write_xlsx(summaryRegions, "summaryRegions.xlsx")
 
 
