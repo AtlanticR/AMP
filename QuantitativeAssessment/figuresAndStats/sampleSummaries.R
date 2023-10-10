@@ -18,6 +18,7 @@
 # Make sure to use the correct file for specifying if these should be included or not
 # i.e., this is the taxaFix file
 
+# Test new PAT
 
 ################################################################################
 
@@ -171,21 +172,24 @@ nlBubbles = compareDatZoo %>%
          totalSampleNoNum = sampleParticleCount) %>%
   select(sampleCode, flowcamCode, class, regionYear, total_class_count, totalSample, classCountNoNum, totalSampleNoNum)
 
+### RECENTLY CHANGED: I DON'T THINK I WANT TO ADD BUBBLES
 # Add back in bubbles to the particleDat dataframe as a new class
-dataWithBubbles = rbind(nlBubbles, particleData) %>%
+dataWithBubbles = particleData %>%
+#dataWithBubbles = rbind(nlBubbles, particleData) %>%
   # Remove data from classes 1-10
   filter(!class %in% as.character(1:10)) %>%
   select(-c(totalSample, classCountNoNum)) 
 
 
 # Now just create a new df with total particles counts, now that the bubbles have been added
+# toMerge = particleData %>%
 toMerge = dataWithBubbles %>%
   select(flowcamCode, sampleCode, totalSampleNoNum) %>%
   rename(sampleCode2 = sampleCode, totalSample = totalSampleNoNum) %>%
   distinct()
 
 
-dataWithBubblesTest = dataWithBubbles%>%
+dataWithBubblesTest = dataWithBubbles %>%
   ungroup() %>%
   # Then within each regionYear, need all possible particle types present to then have a value 
   # e.g., if there was Debris in one sample, but not the other, add "bubbles" with count of 0 as a row
