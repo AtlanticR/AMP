@@ -254,6 +254,12 @@ ggplot(disAug20df, aes(x = group, y = distances), fill = "white")+
         strip.text.x = element_text(size = 13),
         legend.position = "none")
 
+# Check standard deviation of Acartia spp. for unusual SIMPER result noted in Reviewer comment
+# checkAcartia = pacAug2020 %>%
+#   group_by(myLabel) %>%
+#   summarize(st_dev = sd(sqrt(`Acartia spp. (civ-vi)`)),
+#             average = mean(sqrt(`Acartia spp. (civ-vi)`)))
+
 
 ## PERMANOVA
 set.seed(13)
