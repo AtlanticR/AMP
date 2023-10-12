@@ -15,6 +15,9 @@ source("TechReport/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments f
 source("TechReport/DataProcessing/metadataProcessing.R") # get metadata
 
 # Read in spreadsheet with adjustments to taxa names
+# NOTE: This will add name corrections for the taxa based on what was used for the Tech Report
+# HOWEVER, for the Quantitative Assessment, these won't be used, and will be fixed later
+# It's just too complicated to remove this for now. I just won't use the updated names 
 taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
 
 ################################################################################
@@ -491,7 +494,9 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
 fcDataForQA = rbind(nlMerge, marMerge, pacMerge, gulfMerge) %>%
   # Revert back to counts in one sample
   # But this also includes the 5mm fraction
-  mutate(abundSample = abund / 4 * waterVolume) 
+  mutate(abundSample = abund / 4 * waterVolume)
+
+
 
 
 
