@@ -13,15 +13,14 @@
 
 ################################################################################
 
-# Read in the script that puts together the QA (microscopy) and Flowcam data
-source("QuantitativeAssessment/dataProcessing/QAcodeMatches.R")
+# Read in the script that reads in the QA (microscopy) and Flowcam data
+# after the adjustments to the taxa list have been made
+source("QuantitativeAssessment/dataProcessing/redistributeTaxa.R")
 
 ################################################################################
 
 # If I want to use redistributed data:
 fcQaDf = fcQaDf.redist
-
-
 
 # Create a function that creates various types of bar charts
 # A data with the data for each region/year (i.e., 10 samples) is passed in
@@ -62,7 +61,7 @@ barChart = function(regData, newSampleLabels, plotLabel){
     scale_y_continuous(labels = scales::percent_format(), name = "Relative Abundance")+
     scale_x_discrete(name = "Sample")+
     ggtitle(plotLabel)+
-    #scale_fill_brewer(palette = "Set3", name = "")+
+    scale_fill_brewer(palette = "Set3", name = "")+
     theme_bw()+
     theme(
       axis.title.x = element_blank()
