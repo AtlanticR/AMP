@@ -10,7 +10,7 @@
 # Prep the data
 
 # Run the script that preps the QA and FlowCam data
-source("QuantitativeAssessment/QAcodeMatches.R")
+source("QuantitativeAssessment/dataProcessing/redistributeTaxa.R")
 
 # If I want to use redistributed abundances (from redistributeTaxa.R), just set this:
 fcQaDf = fcQaDf.redist
