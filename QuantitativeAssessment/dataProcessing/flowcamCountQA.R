@@ -30,7 +30,7 @@ taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
 # Just because it's useful, I get the full directory name, and just the file name
 
 # Define the directory where data need to be read from 
-allFolders = "../AMPDataFiles/AMMP FlowCam Zooplankton Data/"
+allFolders = "../AMPDataFiles/LavalOldNL AMMP FlowCam Data/"
 
 # Get a list of all the folders that are within that directory
 # These are what I refer to as the "datasets" (Gulf 2020, Gulf 2021, etc)
