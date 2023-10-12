@@ -1,10 +1,6 @@
 ################################################################################
 #### Redistribute taxa
 
-
-
-
-################################################################################
 ## Background
 
 # There are a few taxa within both the FlowCam and Quantitative Assessment lists
@@ -136,9 +132,15 @@ fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Calanoida (unid)", c("Ac
 fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Copepoda (unid)", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp.", "Harpacticoida- epibenthic", "Microsetella spp.", "Monstrillidae", "Acartia spp.", "Calanoida ci-ciii", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
                                                           "Metridia spp.", "Microcalanus spp.", "Paracalanus spp.", "Pseudocalanus spp.", "Pseudodiaptomus spp.", "Temora spp.", "Tortanus spp."))
 
+# Get the names of all other taxa except Zooplankton (unid). This is what Zooplankton (unid) abundances will be split between
+allButZoo = fcQaDf.redist %>%
+  filter(newName != "Zooplankton (unid)") %>%
+  ungroup() %>%
+  select(newName) %>%
+  distinct()
 
 # Redistribute zooplankton (unid) among everything that isn't Zooplankton (unid)
-fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Zooplankton (unid)", unique(fcQaDf$newName[fcQaDf$newName != "Zooplankton (unid)"]))
+fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Zooplankton (unid)", allButZoo$newName)
 
 # Make sure that any taxa that have changed are now being added together so they aren't separate lines
 fcQaDf.redist = fcQaDf.redist %>%
