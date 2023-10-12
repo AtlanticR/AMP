@@ -41,11 +41,21 @@ source("QuantitativeAssessment/dataProcessing/QAcodeMatches.R")
 # Make this a new variable for testing
 fcQaDf.redist = fcQaDf
 
-# Remove the "egg mass" taxa from the dataset. There are WAY too many of them in the Pacific dataset
-# Asked the lead taxonomist. Said these could be "Invertebrate egg/trochophore" but I think they must
-# have counted them differently. Also remove "Invertebrate egg/trochophore" for consistency
+# Remove eggs from the dataset. These were counted slightly differently in the Pacific dataset.
+# I named these "EGG CHECK" in the QA dataset. Or "Invertebrate (egg, trochophore larvae)
+# Also removing Osteichthyes egg which may have been counted as "egg mass" in the Pacific data
 fcQaDf.redist = fcQaDf.redist %>%
-  filter(newName != "EGG CHECK" & newName != "Invertebrate (egg, trochophore larvae)")
+  filter(newName != "EGG CHECK" & newName != "Invertebrate (egg, trochophore larvae)" & newName != "Osteichthyes egg") %>%
+  # Need to reclassify taxonomic level for consistency with  Cyril's dataset
+  mutate(newName = ifelse(newName == "Hyperiidea spp. (juvenile)", "Amphipoda- epibenthic", newName))
+
+# Note, there were several other changes that should be made to the overall dataset. However, they are not not in these samples. 
+# Including below for reference, but commented out. These are applicable for the FlowCam dataset. QA data might be different.
+# Fix these Amphipods and Isopods. Instructions came from taxonomist
+  # mutate(newName = ifelse(newName=="Amphipoda" & dataset == "Gulf 2020", "Amphipoda- epibenthic", newName)) %>%
+  # mutate(newName = ifelse(newName == "Isopoda" & dataset == "Gulf 2020", "Isopoda- epibenthic",
+  #                           ifelse(newName == "Isopoda" & (dataset == "Gulf 2021" | dataset == "Newfoundland 2021"), "Isopoda (larvae)", newName))) 
+
 
 ################################################################################
 ### Create the function 
@@ -116,7 +126,7 @@ fcQaDf.redist = fcQaDf.redist %>%
   mutate(newName = if_else(FlowCamID == "AMMP_Gulf_StPeters_3B_20200903_250UM" & type == "FC" & newName == "Cyclopoida", "Oithona spp.", newName))
 
 # Then redistribute the rest
-fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Cyclopoida", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp."))
+fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Cyclopoida (unid)", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp."))
 
 # Redistribute Calanoida among all possible Calanoida taxa (I had to look all of these up)
 fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Calanoida (unid)", c("Acartia spp.", "Calanoida ci-ciii", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
@@ -139,53 +149,61 @@ fcQaDf.redist = fcQaDf.redist %>%
 ################################################################################
 ################################################################################
 # Code for testing if there are samples with no child taxa to distribute parent taxa
-
-# e.g., there are Cyclopoida, but no "Cyclopoida ci-ciii", "Corycaeidae", or "Oithona spp."
-
-# From FlowCam/Tech Report (dividePlankton.R), we know these are the problems:
-# 20_09_01_Gulf_S04_Z38_1434_250 aka	AMMP_Gulf_StPeters_1_20200901LT_250UM
-# 20_09_03_Gulf_S04_Z40_0942_250 aka	AMMP_Gulf_StPeters_3B_20200903_250UM
-# Then one from Pac Aug 2020 (not looking at): AMMP_PA_S04_W01_20200830LT_236UM
-
+# e.g., there are Cyclopoida, but no "Corycaeidae", or "Oithona spp."
 # I tried making code to test this. It's not perfect. Ideally it should be incorporated
 # within the code above. But it would take too much time to do, and wasn't working when I tried
+# I am commenting this out, but the code is here for future use
 
-check_missing_child_taxa = function(df, problem_taxa, target_taxa) {
-  missing_samples <- character(0)
-  
-  unique_flowcam_ids <- unique(df$FlowCamID)
-  unique_types <- unique(df$type)
-  
-  for (flowcam_id in unique_flowcam_ids) {
-    has_problem_taxa <- any(df$newName[df$FlowCamID == flowcam_id] == problem_taxa)
-    
-    if (has_problem_taxa) {
-      for (type in unique_types) {
-        sample_data <- df %>%
-          filter(FlowCamID == flowcam_id, type == type)
-        
-        target_abundance <- sum(sample_data$abund[sample_data$newName %in% target_taxa])
-        
-        if ((is.na(target_abundance) || target_abundance == 0)) {
-          missing_samples <- c(missing_samples, paste(flowcam_id, type, sep = " - "))
-        }
-      }
-    }
-  }
-  
-  if (length(missing_samples) > 0) {
-    cat("Missing target taxa in the following samples:\n")
-    cat(paste(missing_samples, collapse = "\n"), "\n")
-  } else {
-    cat("All samples have the required target taxa.\n")
-  }
-}
-
-# Example usage:
-check_missing_child_taxa(fcQaDf, "Cyclopoida", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp."))
+# check_missing_child_taxa = function(df, problem_taxa, target_taxa) {
+#   missing_samples = character(0)
+#   
+#   unique_flowcam_ids = unique(df$FlowCamID)
+#   unique_types = unique(df$type)
+#   
+#   for (flowcam_id in unique_flowcam_ids) {
+#     has_problem_taxa = any(df$newName[df$FlowCamID == flowcam_id] == problem_taxa)
+#     
+#     if (has_problem_taxa) {
+#       for (type in unique_types) {
+#         sample_data = df %>%
+#           filter(FlowCamID == flowcam_id, type == type)
+#         
+#         target_abundance = sum(sample_data$abund[sample_data$newName %in% target_taxa])
+#         
+#         if ((is.na(target_abundance) || target_abundance == 0)) {
+#           missing_samples = c(missing_samples, paste(flowcam_id, type, sep = " - "))
+#         }
+#       }
+#     }
+#   }
+#   
+#   if (length(missing_samples) > 0) {
+#     cat("Missing target taxa in the following samples:\n")
+#     cat(paste(missing_samples, collapse = "\n"), "\n")
+#   } else {
+#     cat("All samples have the required target taxa.\n")
+#   }
+# }
+# 
+# # Example usage:
+# check_missing_child_taxa(fcQaDf, "Cyclopoida (unid)", c("Corycaeidae", "Oithona spp."))
 # Note that this returns both FC and QA and I am struggling to fix it
 # But from exploring the data, I know only the FC sample has no child taxa
 # The sample being returned is AMMP_Gulf_StPeters_3B_20200903_250UM
 
-test2 = fcQaDf %>%
-  filter(FlowCamID == "AMMP_Gulf_StPeters_1_20200901LT_250UM")
+# # Have a look at the sample
+# noChildTaxaSample = fcQaDf %>%
+#   filter(FlowCamID == "AMMP_Gulf_StPeters_3B_20200903_250UM")
+
+### This agrees with our previous work from the Tech Report.
+# From this work (in dividePlankton.R), we knew there were 3 problem samples:
+# This one is included in the samples we are analyzing:
+# 20_09_03_Gulf_S04_Z40_0942_250 aka	AMMP_Gulf_StPeters_3B_20200903_250UM 
+
+# These two had issues but are not in our samples for this project:
+# 20_09_01_Gulf_S04_Z38_1434_250 aka	AMMP_Gulf_StPeters_1_20200901LT_250UM
+# AMMP_PA_S04_W01_20200830LT_236UM
+
+
+
+
