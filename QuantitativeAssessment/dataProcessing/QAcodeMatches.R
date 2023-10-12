@@ -182,7 +182,7 @@ flowCamData = qaID %>%
   left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
   # Only select the samples we're interested in
   filter(selectForAnalysis == "Yes") %>%
-  left_join(fcTaxaChanges) %>% 
+  left_join(fcTaxaChanges) %>% # joins by originalNames
   mutate(newName = ifelse(is.na(newName) & originalNames == "Chaetognatha (juvenile or n.s.)", "Chaetognatha", newName)) %>%
   mutate(newName = ifelse(is.na(newName) & originalNames == "Pseudocalanus spp Civ-vi ", "Pseudocalanus spp.", newName)) %>%
   # Only select the relevant columns otherwise there are too many
