@@ -27,10 +27,6 @@ source("QuantitativeAssessment/dataProcessing/StudyAreaDataPrepQA.R") # preps al
 
 
 
-# Colour scheme is defined in colourPchSchemes.R
-# Note that transparency of alpha = 0.7 was given to my regions of interest (Pac, Mar, Gulf, NL) so they are less aggressive
-# All others were "gray92", my standard colour for land
-
 # Map of Canada
 # Shows all of Canada. DFO regions I am analyzing are coloured. All other regions are in grey (gray92)
 # Also has a red outline around the insets that focus in more on the Pacific and Atlantic areas so it's easier to see the sampling bays
