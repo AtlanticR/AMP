@@ -122,14 +122,14 @@ fcQaDf.redist = fcQaDf.redist %>%
   mutate(newName = if_else(FlowCamID == "AMMP_Gulf_StPeters_3B_20200903_250UM" & type == "FC" & newName == "Cyclopoida", "Oithona spp.", newName))
 
 # Then redistribute the rest
-fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Cyclopoida (unid)", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp."))
+fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Cyclopoida (unid)", c("Cyclopoida (ci-ciii)", "Corycaeidae", "Oithona spp."))
 
 # Redistribute Calanoida among all possible Calanoida taxa (I had to look all of these up)
 fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Calanoida (unid)", c("Acartia spp.", "Calanoida ci-ciii", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
                                                            "Metridia spp.", "Microcalanus spp.", "Paracalanus spp.", "Pseudocalanus spp.", "Pseudodiaptomus spp.", "Temora spp.", "Tortanus spp."))
 
 # Redistribute Copepoda among all possible Copepod taxa
-fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Copepoda (unid)", c("Cyclopoida ci-ciii", "Corycaeidae", "Oithona spp.", "Harpacticoida- epibenthic", "Microsetella spp.", "Monstrillidae", "Acartia spp.", "Calanoida ci-ciii", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
+fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Copepoda (unid)", c("Corycaeidae", "Oithona spp.", "Harpacticoida- epibenthic", "Microsetella spp.", "Monstrillidae", "Acartia spp.", "Calanoida (ci-ciii)", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
                                                           "Metridia spp.", "Microcalanus spp.", "Paracalanus spp.", "Pseudocalanus spp.", "Pseudodiaptomus spp.", "Temora spp.", "Tortanus spp."))
 
 # Get the names of all other taxa except Zooplankton (unid). This is what Zooplankton (unid) abundances will be split between
