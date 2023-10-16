@@ -93,6 +93,33 @@
 # Set up
 source("TechReport/DataProcessing/rPackages.R")
 
+source("QuantitativeAssessment/dataProcessing/QAcodeMatches.R")
+
+# Need to get the FlowCam codes, sampleCodes and the ones just identified in this analysis
+samplesForMaps = qaID %>%
+  left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
+  select(regionYear, FlowCamID, selectForAnalysis) %>%
+  filter(selectForAnalysis == "Yes") %>%
+  distinct() 
+
+samplesPac = samplesForMaps %>%
+  filter(regionYear == "Pac 21") %>%
+  left_join(pacJun21Loc, by = c("FlowCamID" = "flowcamCode")) %>%
+  select(regionYear, FlowCamID, sampleCode, latitude, longitude)
+  
+samplesGulf = samplesForMaps %>%
+  filter(regionYear == "Gulf 2020") %>%
+  left_join(gulfLoc, by = c("FlowCamID" = "flowcamCode")) %>%
+  select(regionYear, FlowCamID, sampleCode, latitude, longitude, latitudeEnd, longitudeEnd)
+
+samplesNL = samplesGulf = samplesForMaps %>%
+  filter(regionYear == "NL 2020" | regionYear == "NL 2021") %>%
+  left_join(nlAllLoc, by = c("FlowCamID" = "flowcamCode")) %>%
+  left_join(nlMeta) %>%
+  select(regionYear, FlowCamID, sampleCode, latitude, longitude)
+
+
+
 # Install this extra library which contains a Canadian province shapefile
 devtools::install_github("ropensci/rnaturalearthhires")
 library("rnaturalearthhires")
@@ -112,18 +139,6 @@ library("rnaturalearthhires")
 # For most of these, I selected only the relevant features within a bounding box (zoomed in), otherwise it's too detailed and takes too long to load
 # I did this in QGIS (right click on layer, ), the code for clipping to a bounding box in R is pretty simple
 
-
-# Maritimes coastline
-argyleCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/argyleCoastline.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-countryCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/countryCoastline.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-whiteheadCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/whiteheadCoastline.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-soberCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/soberCoastline.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-
-# There are some leases in Eel Lake. The coastline from Jeff does include this portion
-# I digitized Eel Lake and its islands in Google Earth to include. The 6 Islands were merged in QGIS so I didn't have to plot them all separately
-eelLakeBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/EelLake.kml"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-eelLakeIslands = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/eelLakeIslands.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-
 # Gulf coastline
 gulfCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/gulfCoastline.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 
@@ -141,12 +156,6 @@ lemmensCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMP
 # These are to show the boundaries of where we calculated things like bay area. They are very subjective, but we needed something
 # Jeff created the boundaries
 
-# Maritimes
-argBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/Argyle_final.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-countryBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/CountryHarbour_final.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-soberBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/SoberBoundary.kml"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))) # I traced this one myself in Google Earth
-whiteheadBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/Whitehead_final.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-
 
 # Gulf
 cocagneBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/Cocagne_AMA_final.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
@@ -161,69 +170,9 @@ seArmBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDat
 seArmBoundaryExtension = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/SouthArm_Extension.kml"), sp::CRS("+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 
 ################################################################################
-## Read in shellfish lease shapefiles
-# See notes from above for explanation about which leases to map
-
-# Nova Scotia: for all bays, mapping 2021 data
-nsLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2021/NS_leases_April_2021.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-
-# New Brunswick: map 2022 data but remove six leases
-# It's important to have all the other attributes because I need to select/remove based on shellfish lease # (columns MSNO)
-# If I don't do this next step, I will lose all the attribute information when using fortify(). I need to add it back in.
-nbLeasesOGR = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2022/2022_NB_MASMPS_Data.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-# Trying a new method for removing multiple leases at once
-removeLeaseNB = c("MS-1240", "MS-0946", "MS-0067", "MS-1363", "MS-1362", "MS-1369")
-nbLeases = merge(fortify(nbLeasesOGR), as.data.frame(nbLeasesOGR), by.x = "id", by.y = 0) %>%
-  # Add ! to exclude the leases mentioned above
-  filter(!(MSNO %in% removeLeaseNB))
-
-# PEI: map 2020 data
-peiLeases = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/shellfishLeases/2020/PEI_leases_March_2020.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-
-# Newfoundland
-# Read in the Excel spreadsheets where I saved the lease coordinate information
-lease1Sf = sfheaders::sf_polygon(
-  obj = read.csv("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/NLlease108739.csv"),
-  x = "Lon",
-  y = "Lat"
-)
-
-lease2Sf = sfheaders::sf_polygon(
-  obj = read.csv("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/NLlease118040.csv"),
-  x = "Lon",
-  y = "Lat"
-)
-
-# Set csr to WGS 84 and then reproject to UTM zone 21 for both leases
-sf::st_crs(lease1Sf) = 4326
-st_transform(lease1Sf, crs = "+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")
-sf::st_crs(lease2Sf) = 4326
-st_transform(lease2Sf, crs = "+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")
-
-# Pacific
-pacLeasesOGR = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/TANTALIS_-_Crown_Tenures.shp"), sp::CRS("+proj=utm +zone=9 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-pacLeases = merge(fortify(pacLeasesOGR), as.data.frame(pacLeasesOGR), by.x = "id", by.y = 0) %>%
-  # Only include leases that are actually tenured, i.e. don't include ones with status "APPLICATION" because those wouldn't have been stocked with shellfish
-  # I could have filtered this out on the online portal, but when I downloaded it I wasn't sure what should be included
-  filter(TENURE_STA == "TENURE")
 
 ################################################################################
-## DFO regions
-# Data are from here: https://open.canada.ca/data/en/dataset/3862c9fa-dbeb-4f00-ac03-c5da6551bf00
-# (click Download on the first option)
-# However, I don't think (???) these show provinces. So I had to add the provinces from a different coastline layer over top (next section)
-# Reproject to Lambert Conic conformal. (It might actually be a specific subtype. I can't remember. The coordinates specified might be important lol)
-# Is it the NAD 1983 Labmert Canada projection???? Whatever!
-dfoRegions = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/dfoRegions.shp"), CRS("+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"))
 
-# Turn into a dataframe but keep the original column names. I could do this with the other datasets, but it's not important to me
-# I need to do this so I don't lose the DFO region names
-dfoRegions.df = merge(fortify(dfoRegions), as.data.frame(dfoRegions), by.x="id", by.y=0) %>%
-  # It's easiest (for the legend on study area map) to just rename everything else as "Other"
-  mutate(Region_EN = recode(Region_EN, "Arctic" = "Other",
-                            "Arctic-Water" = "Other",
-                            "Ontario and Prairie" = "Other",
-                            "Quebec" = "Other"))
 
 ################################################################################
 ## Get a map of Canadian provinces since the DFO Regions map above doesn't show them!!!
@@ -293,11 +242,11 @@ rm(marTransectUTM.End)
 # All sites were transects
 
 # Get the coordinate positions for the beginning of the transect and convert to UTM for plotting 
-gulfTransectWGS = st_as_sf(gulfMeta, coords = c("longitude", "latitude"), crs = 4326)
+gulfTransectWGS = st_as_sf(samplesGulf, coords = c("longitude", "latitude"), crs = 4326)
 gulfTransectUTM = st_transform(gulfTransectWGS, CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
 # Get the coordinate positions for the end of the transect and convert to UTM for plotting 
-gulfTransectWGS.End = st_as_sf(gulfMeta, coords = c("longitudeEnd", "latitudeEnd"), crs = 4326)
+gulfTransectWGS.End = st_as_sf(samplesGulf, coords = c("longitudeEnd", "latitudeEnd"), crs = 4326)
 gulfTransectUTM.End = st_transform(gulfTransectWGS.End, CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
 # Those commands DID convert the coordinates! But now they are the final column called "Geometry" and both coordinates are in the same cell
@@ -321,10 +270,9 @@ rm(gulfTransectUTM.End)
 
 
 ## PACIFIC
-
 # All were punctual stations
 # Need to remove the ones with NAs (these have no data, don't worry about them)
-pacPunctualWGS = st_as_sf(pacMeta %>% drop_na(latitude), coords = c("longitude", "latitude"), crs = 4326)
+pacPunctualWGS = st_as_sf(samplesPac %>% drop_na(latitude), coords = c("longitude", "latitude"), crs = 4326) 
 pacPunctualUTM = st_transform(pacPunctualWGS, CRS("+proj=utm +zone=9 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
 
@@ -344,7 +292,7 @@ rm.nl.samples = c("21_06_09_NL_S01_Z33_1147_250",
 
 # All were punctual stations
 # Need to remove the ones with NAs (these have no data, don't worry about them)
-nlPunctualWGS = st_as_sf(nlMeta, coords = c("longitude", "latitude"), crs = 4326)
+nlPunctualWGS = st_as_sf(samplesNL, coords = c("longitude", "latitude"), crs = 4326)
 nlPunctualUTM = st_transform(nlPunctualWGS, CRS("+proj=utm +zone=21 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")) %>%
   filter(!sampleCode %in% rm.nl.samples) # exclude these samples
 
