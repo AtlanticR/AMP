@@ -26,9 +26,10 @@
 # Set up
 source("TechReport/DataProcessing/rPackages.R")
 
-
+# This specifies which samples were used for THIS analysis
 source("QuantitativeAssessment/dataProcessing/QAcodeMatches.R")
 
+# Now rearrange this data for plotting. This is what will be used to make the sf objects below
 # Need to get the FlowCam codes, sampleCodes and the ones just identified in this analysis
 samplesForMaps = qaID %>%
   left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
