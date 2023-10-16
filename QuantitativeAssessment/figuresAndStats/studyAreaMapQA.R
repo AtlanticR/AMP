@@ -24,8 +24,17 @@
 source("QuantitativeAssessment/dataProcessing/StudyAreaDataPrepQA.R") # preps all the data for plotting
 
 ################################################################################
+# Create the top panel of my maps
+# One with all of Canada (canMap)
+# One zoomed in on Pacific sites 
+# One zoomed in on Atlantic sites
+# I mostly just included the Pac/Atl maps because there was extra space I needed to fill
+# I couldn't show the sampled bays well enough with just one map of all of Canada
 
 
+# Colour scheme is defined in colourPchSchemes.R
+# Note that transparency of alpha = 0.7 was given to my regions of interest (Pac, Mar, Gulf, NL) so they are less aggressive
+# All others were "gray92", my standard colour for land
 
 # Map of Canada
 # Shows all of Canada. DFO regions I am analyzing are coloured. All other regions are in grey (gray92)
@@ -40,9 +49,13 @@ canMap =
   # Adjust the names of the legend items so there's enough space on the map for them
   # scale_fill_manual(values=regionMapCols, labels = c("Gulf", "Mar", "Nfld", "Other", "Pac"))+
   geom_sf(data = canada_map, linewidth = 0.01, fill = NA, col = "black")+ # this shows the provinces. Make the linewidth very small
-  # Note that if an sf object is not plotted first, you need to use coord_sf to situate everything
+  geom_sf(data = nlPunctualUTM[1,], col = "RED", size = 3)+
+  geom_sf(data = pacPunctualUTM[1,], col = "RED", size = 3)+
+  geom_sf(data = gulfTransectUTM[1,], col = "RED", size = 3)+
+    # Note that if an sf object is not plotted first, you need to use coord_sf to situate everything
   # This will add graticules to the map. It also makes sure the scale bar is in correct units (but N/A for this map- no scale bar)
   coord_sf(crs = can.lcc, xlim = c(-2414929, 3168870), ylim = c(343395, 4960120))+ # limits of entire map. In Lambert Conformal Conic (defined in data prep)
+
   ggtitle("(A) Canada")+
   theme_bw()+
   theme(
@@ -94,8 +107,8 @@ ggStPMap =
   # geom_polygon(peiLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+
   geom_segment(gulfTransectUTM, mapping = aes(x = lon, xend = lonEnd, y = lat, yend = latEnd), col = "#F8766D", alpha = 0.7, linewidth = 2.5, lineend = "round")+
   coord_sf(xlim = c(519487, 532582), ylim = c(5136283, 5149220), crs = 32620)+
-  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
-  #  Add a north arrow to map
+  annotation_scale(location = "br", text_cex = 0.8)+
+  # annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.7, "cm"))+
   annotation_north_arrow(location = "tr", which_north = "true",
                          height = unit(0.7, "cm"), width = unit(0.7, "cm"),
                          style = north_arrow_minimal)+
@@ -115,10 +128,11 @@ ggStPMap =
 ggLemMap = ggplot()+
   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   # geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group), fill = "pink", col = "#cc3d6f", linewidth = 0.1)+ # add shellfish leases
-  geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "#F8766D", size = 3, alpha = 0.7)+ # add sampling locations
+  geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "#F8766D", size = 5, alpha = 0.7)+ # add sampling locations
   # crs = 32609 is UTM zone 9
   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
-  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+ # see note above about scale bar
+  annotation_scale(location = "br", text_cex = 0.8)+
+  #annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+ # see note above about scale bar
   # Add a north arrow to Lemmens only in the top right
   annotation_north_arrow(location = "tr", which_north = "grid",
                          height = unit(0.7, "cm"), width = unit(0.7, "cm"),
@@ -140,10 +154,12 @@ ggSeArmMap =
   geom_polygon(seArmCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
   # geom_sf(data = lease1Sf, col = "#cc3d6f", fill = "pink")+
   # geom_sf(data = lease2Sf, col = "#cc3d6f", fill = "pink")+
-  geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "#F8766D", size = 3, alpha = 0.7)+
+  geom_sf(data = nlPunctualUTM, pch = 21, col = "black", fill = "#F8766D", size = 5, alpha = 0.7)+
   # coord_sf(xlim = c(618843, 623646), ylim = c(5464557, 5469483), crs = 32621)+ # UTM zone 21N
   coord_sf(xlim = c(618447, 626387), ylim = c(5462394, 5469827), crs = 32621)+
-  annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
+  annotation_scale(location = "br", text_cex = 0.8)+
+  
+ # annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   # Add a north arrow to map
   annotation_north_arrow(location = "tr", which_north = "true",
                          height = unit(0.7, "cm"), width = unit(0.7, "cm"),
@@ -167,14 +183,14 @@ ggSeArmMap =
 # Arrange each study area map using the function from the egg package
 # This makes each plot line up perfectly. But I think it squishes the maps slightly to match the longest (?) dimension of each ggplot object
 # My maps are almost exactly square, so that's not too much of an issue
-studyMaps = ggarrange(ggStPMap, ggLemMap, SeArmMap, ncol = 3, nrow = 1)
+studyMaps = ggarrange(ggStPMap, ggLemMap, ggSeArmMap, ncol = 3, nrow = 1)
 
 # Combine inset maps with study area maps using the patchwork package
 # studyMaps could instead be individual maps, but since they are not perfect squares, they are slightly unaligned
 # All of this could probably be combined with the ggarrange package, but I wasn't sure how to combine everything together with the correct sizes
 (canMap) /
   (studyMaps) +
-  plot_layout(heights = (c(0.45, 0.55))) # top panel takes up 1/4 of plot. studyMaps make up 3/4
+  plot_layout(heights = (c(0.2, 0.8))) # top panel takes up 1/4 of plot. studyMaps make up 3/4
 
 
 ggsave("test.png", width = 12.32, height = 12.07, units = "in", dpi = 300)
