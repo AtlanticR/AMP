@@ -2,8 +2,12 @@
 ################################################################################
 #### NMDS FOR QUANTITATIVE ASSESSMENT DATA
 
+# Note about transformations: arcsine square root transformed data, then Bray Curtis (ew)
+# https://link.springer.com/article/10.1007/s10886-016-0784-x
 
+# Square root transformed: https://peerj.com/articles/3437/
 
+# square root: https://peerj.com/articles/3437/
 
 
 ################################################################################
@@ -173,7 +177,7 @@ nmdsAll = nmdsMakerAllDat(ordPrepWideAbund, "Abundance in seawater: all regions"
 # Run using relative abundance
 nmdsAll.RelAbund = nmdsMakerAllDat(ordPrepWideRelAbund, "Relative abundance: all regions")
 
-ggarrange(nmdsAll.RelAbund, nmdsAll, ncol =)
+ggarrange(nmdsAll.RelAbund, nmdsAll, ncol =1)
 
 ################################################################################
 ## Make interactive plots to visualize "problem" taxa
