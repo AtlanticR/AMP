@@ -50,6 +50,7 @@ barChart = function(regData, newSampleLabels, plotLabel){
 
   # Change the labels of the FlowCam IDs otherwise the text within facet labels are too long
   datPlot$FlowCamID = as.factor(datPlot$FlowCamID)
+  datPlot$Original = as.factor(datPlot$FlowCamID) # create, just in case I need to know which is which
   levels(datPlot$FlowCamID) = newSampleLabels
 
   # Relative abundance chart
@@ -68,7 +69,7 @@ barChart = function(regData, newSampleLabels, plotLabel){
     )+
     guides(fill = guide_legend(ncol=2))
   
-
+  #return(datPlot)
 }
 
 
