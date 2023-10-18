@@ -2,10 +2,8 @@
 ################################################################################
 ### ZOOPLANKTON ABUNDANCE
 
+# This gets the counts of all zooplankton taxa from the FlowCam
 # I have taken this code from zooplanktonCounts.R in Desktop/AMP/DataProcessing
-# I am adapting it here to give counts per sample for the Quantitative Assessment
-
-
 
 ################################################################################
 ################################################################################
@@ -14,16 +12,15 @@
 source("TechReport/DataProcessing/FlowCamPercentAnalyzed.R") # get adjustments for % of sample analyzed
 source("TechReport/DataProcessing/metadataProcessing.R") # get metadata
 
-# Read in spreadsheet with adjustments to taxa names
-# NOTE: This will add name corrections for the taxa based on what was used for the Tech Report
+# Read in spreadsheet with adjustments to names
+# NOTE: This will add the corrections for the taxa based on what was used for the Tech Report
 # HOWEVER, for the Quantitative Assessment, these won't be used, and will be fixed later
 # It's just too complicated to remove this for now. I just won't use the updated names 
 taxaFixes = read.csv("../AMPDataFiles/extraFiles/taxaCorrections.csv")
 
 ################################################################################
 ## GET THE DATA FILE NAMES
-# First, get the names of the dataset folders to search through. 
-# This is just how the data were provided to me. They include:
+# First, get the names of the dataset folders to search through. They include:
 # Gulf 2020, Gulf 2021, Maritimes 2021, NL 2020, NL 2021, Pacific 2020, Pacific 
 # June 2021, Pacific March 2021, Pacific Sept 2021.
 # Then, get all of the file names in all of those folders. 
@@ -37,7 +34,7 @@ allFolders = "../AMPDataFiles/LavalOldNL AMMP FlowCam Data/"
 allDataNames =
   list.files(
     allFolders,
-    full.names = T, # don't want full directory names
+    full.names = T,
   )
 
 # Now, create a list of the csv files within each folder that contain the zooplankton counts
@@ -144,8 +141,6 @@ speciesDF = function(xlDataFull, xlDataShort) {
     mutate(count = as.numeric(count)) %>%
     # Merge values to the spreadsheet that has the edited taxa names
     full_join(taxaFixes) %>%
-    
-    
     # Need to sum the values to remove the duplicates
     # Note: this also removes the Particles and originalName columns
     group_by(sample, newName, originalNames, isCopepod, copepodType) %>%
@@ -167,11 +162,7 @@ speciesDF = function(xlDataFull, xlDataShort) {
 gulf20 = speciesDF(dirFull[[1]], dirShort[[1]]) 
 gulf21 = speciesDF(dirFull[[2]], dirShort[[2]])
 mar21 = speciesDF(dirFull[[3]], dirShort[[3]])
-# This is the one in a different format
-nl20 = speciesDF(dirFull[[4]], dirShort[[4]])# %>% 
-# Also, there was one file (AAMP_NL_S01_41_20200916PM_250) that had one extra blank line.
-# This was above "===END METADATA STATISTICS===". Remove this or else there will be a blank class with a count of zero
-#subset(class != "")
+nl20 = speciesDF(dirFull[[4]], dirShort[[4]]) # This is the one in a different format
 nl21 = speciesDF(dirFull[[5]], dirShort[[5]])
 nl22 = speciesDF(dirFull[[6]], dirShort[[6]])
 pac20 = speciesDF(dirFull[[7]], dirShort[[7]])
@@ -180,11 +171,8 @@ pacMar21 = speciesDF(dirFull[[9]], dirShort[[9]])
 pacSep21 = speciesDF(dirFull[[10]], dirShort[[10]])
 
 ################################################################################
-# TESTING FOR UNUSUAL SPECIES NAMES
-# Just checking if I got all the typos. 
 
-# I also need to find out which dataset they're from to see if it's due to differences 
-# in naming conventions between each region
+# Add dataset names
 gulf20$dataset = "Gulf 2020"
 gulf21$dataset = "Gulf 2021"
 mar21$dataset = "Maritimes"
@@ -217,9 +205,6 @@ taxaCountsSampleOrigNames = rbind(gulf20, gulf21, mar21, nl20, nl21, nl22, pac20
   group_by(originalNames, newName, sample) %>%
   dplyr::summarize(countPerClass = sum(count)) %>%
   filter(countPerClass > 0) # remove any zeroes
-
-
-# write.csv(taxaCountsBay, "taxaCountsBay2.csv")
 
 ################################################################################
 ################################################################################
@@ -446,7 +431,6 @@ mergeSpeciesMeta = function(metadata, speciesDataset) {
     dplyr::summarize(count = sum(count), abund = sum(abund))
 }
 
-
 # Call the functions to merge the zooplankton counts with the (reduced) metadata
 # Need to also add extra columns! These are important for the plotting scripts later on
 # facetFactor is used in some scripts since regions in the Atlantic are faceted based on bay (facilityName)
@@ -495,19 +479,4 @@ fcDataForQA = rbind(nlMerge, marMerge, pacMerge, gulfMerge) %>%
   # Revert back to counts in one sample
   # But this also includes the 5mm fraction
   mutate(abundSample = abund / 4 * waterVolume)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
