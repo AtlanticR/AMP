@@ -8,7 +8,7 @@
 
 # Read in the script that creates bar charts for the different comparisons
 # This has already created a dataframe of relative abundance for each sample
-source("QuantitativeAssessment/barChartsQA.R")
+source("QuantitativeAssessment/figuresAndStats/barChartsQA.R")
 
 ################################################################################
 ## Prep the data 
@@ -138,10 +138,10 @@ install.packages("coin")
 library("coin")
 
 wilcox.test(testSh$relAbund~testSh$type, paired =T)
-wilcox_test(relAbund~as.factor(type), data = testSh, paired = T, distribution = "exact")
-wilcox_test(relAbund~as.factor(type), data = testSh, paired = T)
+x = wilcox_test(relAbund~as.factor(type), data = testSh, paired = T, distribution = "exact")
+x = wilcox_test(relAbund~as.factor(type), data = testSh, paired = T)
 
-
+pvalue(x)
 
 
 # Wilcoxon test using coin package
@@ -152,11 +152,11 @@ wilcRes2 <- dfAllPairs %>%
     dat <- data.frame(relAbund = .$relAbund, type = .$type)
     test <- wilcox_test(relAbund ~ as.factor(type), data = dat, distribution = "exact", paired = TRUE, conf.int = T)
     data.frame(
-      est = statistic(test, type = "linear"),
-      p.value = pvalue(test),
-      CI.low = confint(test)$conf.int[1],  
-      CI.up = confint(test)$conf.int[2]
-    )
+     est = statistic(test, type = "linear"),
+     #p.value = pvalue(test))
+    CI.low = confint(test)$conf.int[1],  
+    CI.up = confint(test)$conf.int[2])
+    # )
   }) %>%
   ungroup() %>%
   unnest_wider(t_test_result) %>%
