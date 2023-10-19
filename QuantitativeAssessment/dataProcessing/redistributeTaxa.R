@@ -1,8 +1,6 @@
 ################################################################################
 #### Redistribute taxa
 
-## Background
-
 # There are a few taxa within both the FlowCam and Quantitative Assessment lists
 # that need to be dealt with
 
@@ -17,14 +15,11 @@
 # will be distributed to them. See the paper above for more of an explanation.
 
 # I also used this approach in the Tech Report under TechReport/DataProcessing/dividePlankton.R
-# But the code was a bit messy so I'm fixing it up here
+# But the code was a bit messy so I'm fixing it up here.
 
-# There are also a few taxa from the Quantitative Assessment that need to be "fixed" in some capacity
-# This includes:
-# Convert all Decapoda to either "brachyura" or "non-brachyura". Many taxa in the Pacific (QA data) were to higher taxonomic
-# levels and that gets too complicated. So switch ALL to that. Including the few from the FlowCam data that were also to higher levels 
-# Check about Porcellanidae- but honestly I think just make it non-brachyura.
-# Based on advice of taxonomist, "Damaged" taxa in QA dataset, was just classified into the adult taxa (not split into that vs ci-ciii)
+# Note that there are some instances specific to the one specific paper comparing FlowCam (FC) counts to Microscopy Counts
+# (I sometimes call the Microscopy data QA aka "Quantitative Assessment")
+# There are some changes here that may only be applicable to this one project (e.g., removing eggs from the analysis)
 
 ################################################################################
 ### Set up
@@ -122,13 +117,14 @@ fcQaDf.redist = fcQaDf.redist %>%
   mutate(newName = if_else(FlowCamID == "AMMP_Gulf_StPeters_3B_20200903_250UM" & type == "FC" & newName == "Cyclopoida", "Oithona spp.", newName))
 
 # Then redistribute the rest
-fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Cyclopoida (unid)", c("Cyclopoida (ci-ciii)", "Corycaeidae", "Oithona spp."))
+fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Cyclopoida (unid)", c("Corycaeidae", "Oithona spp."))
 
 # Redistribute Calanoida among all possible Calanoida taxa (I had to look all of these up)
-fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Calanoida (unid)", c("Acartia spp.", "Calanoida ci-ciii", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
+fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Calanoida (unid)", c("Acartia spp.", "Calanoida (ci-ciii)", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
                                                            "Metridia spp.", "Microcalanus spp.", "Paracalanus spp.", "Pseudocalanus spp.", "Pseudodiaptomus spp.", "Temora spp.", "Tortanus spp."))
 
 # Redistribute Copepoda among all possible Copepod taxa
+# NOTE: If someone else is using this code, make sure ALL applicable copepods are identified. These were the ones present in our 40 samples for this study.
 fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Copepoda (unid)", c("Corycaeidae", "Oithona spp.", "Harpacticoida- epibenthic", "Microsetella spp.", "Monstrillidae", "Acartia spp.", "Calanoida (ci-ciii)", "Calanus spp.", "Centropages spp.", "Chiridius spp.", "Eurytemora spp.",
                                                           "Metridia spp.", "Microcalanus spp.", "Paracalanus spp.", "Pseudocalanus spp.", "Pseudodiaptomus spp.", "Temora spp.", "Tortanus spp."))
 
@@ -151,11 +147,15 @@ fcQaDf.redist = fcQaDf.redist %>%
 ################################################################################
 ################################################################################
 # Code for testing if there are samples with no child taxa to distribute parent taxa
-# e.g., there are Cyclopoida, but no "Corycaeidae", or "Oithona spp."
+
+# There may be cases where "parent taxa" are present, with no "child taxa" in the dataset.
+# e.g., there are Cyclopoida (unid) present, but no "Corycaeidae", or "Oithona spp."
 # I tried making code to test this. It's not perfect. Ideally it should be incorporated
 # within the code above. But it would take too much time to do, and wasn't working when I tried
-# I am commenting this out, but the code is here for future use
+# In these cases, Cuffney et al. (2007) recommdned splitting the abundances of the parent taxa
+# between child taxa present in the entire dataset. I do not have the code for that hear because it was not applicable. 
 
+# I am commenting this out, but the code is here for future use
 # check_missing_child_taxa = function(df, problem_taxa, target_taxa) {
 #   missing_samples = character(0)
 #   
