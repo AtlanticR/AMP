@@ -134,8 +134,6 @@ do(t_test_result = tidy(t.test(relAbund~type, data = ., paired = T))) %>%
 # Test coin package for the paired Wilcoxon test
 # This is to handle the case of "ties" https://library.virginia.edu/data/articles/the-wilcoxon-rank-sum-test
 
-install.packages("coin")
-library("coin")
 
 wilcox.test(testSh$relAbund~testSh$type, paired =T)
 x = wilcox_test(relAbund~as.factor(type), data = testSh, paired = T, distribution = "exact")
