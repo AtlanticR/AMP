@@ -4,20 +4,18 @@
 
 # There are many ways of handling spatial data. 
 # This was a bit of a learning experience, so I am combining several approaches.
-# If I were to start over, I would probably use only sf objects, but I don't have 
-# time for that! 
+# If I were to start over, I would probably use only sf objects, but I don't have time to change it all! 
 
 # For sf objects, data is stored pretty much in a dataframe. And there is a 
-# Geometry column that specifies the vector data type (point, line polygon, etc)
-# and the coordinates for that. 
-# You can then plot in ggplot using geom_sf and it figures out how to plot it all for you
+# Geometry column that specifies the vector data type (point, line polygon, etc) and the coordinates for that. 
+# You can then plot in ggplot using geom_sf and it figures out how to plot it all for you.
 
 # If it's not in sf format, I need to get it into dataframe format (using fortify), and 
 # then use the regular ggplot commands to plot everything manually (e.g., geom_polygon, geom_point, etc)
 
 # For the maps of Canada, Atlantic and Pacific, I want the data to be in Lambert Conic Conformal projection
 # For insets, I want data to be in UTM
-# Data often need to be reprojected using spTransform or other approach
+# Data often need to be reprojected using spTransform or other approach.
 
 # The code for putting everything together is in: Figures/StudyAreaMaps.R
 
@@ -110,8 +108,7 @@ library("rnaturalearthhires")
 # I just created a square polygon covering the area of interest, then used an “erase” function to subtract the water polygons.
 
 # For most of these, I selected only the relevant features within a bounding box (zoomed in), otherwise it's too detailed and takes too long to load
-# I did this in QGIS (right click on layer, ), the code for clipping to a bounding box in R is pretty simple
-
+# I did this in QGIS (right click on layer), but the code for clipping to a bounding box in R is also pretty simple.
 
 # Maritimes coastline
 argyleCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/argyleCoastline.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
@@ -138,7 +135,7 @@ lemmensCoastline = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMP
 ################################################################################
 
 ## Read in bay boundaries
-# These are to show the boundaries of where we calculated things like bay area. They are very subjective, but we needed something
+# These are to show the boundaries of where we calculated things like bay area. They are very subjective, but we needed something.
 # Jeff created the boundaries
 
 # Maritimes
@@ -146,7 +143,6 @@ argBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataF
 countryBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/CountryHarbour_final.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
 soberBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/SoberBoundary.kml"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))) # I traced this one myself in Google Earth
 whiteheadBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/Whitehead_final.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
-
 
 # Gulf
 cocagneBoundary = fortify(sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/bayBoundaries/Cocagne_AMA_final.shp"), sp::CRS("+proj=utm +zone=20 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0")))
@@ -212,11 +208,10 @@ pacLeases = merge(fortify(pacLeasesOGR), as.data.frame(pacLeasesOGR), by.x = "id
 # Data are from here: https://open.canada.ca/data/en/dataset/3862c9fa-dbeb-4f00-ac03-c5da6551bf00
 # (click Download on the first option)
 # However, I don't think (???) these show provinces. So I had to add the provinces from a different coastline layer over top (next section)
-# Reproject to Lambert Conic conformal. (It might actually be a specific subtype. I can't remember. The coordinates specified might be important lol)
-# Is it the NAD 1983 Labmert Canada projection???? Whatever!
+# Reproject to Lambert Conic conformal (or maybe it's actually called the NAD 1983 Labmert Canada projection?)
 dfoRegions = sp::spTransform(readOGR("C:/Users/FINNISS/Desktop/AMPDataFiles/shapefiles/dfoRegions.shp"), CRS("+proj=lcc +lat_1=50 +lat_2=70 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"))
 
-# Turn into a dataframe but keep the original column names. I could do this with the other datasets, but it's not important to me
+# Turn into a dataframe but keep the original column names.
 # I need to do this so I don't lose the DFO region names
 dfoRegions.df = merge(fortify(dfoRegions), as.data.frame(dfoRegions), by.x="id", by.y=0) %>%
   # It's easiest (for the legend on study area map) to just rename everything else as "Other"
@@ -226,7 +221,7 @@ dfoRegions.df = merge(fortify(dfoRegions), as.data.frame(dfoRegions), by.x="id",
                             "Quebec" = "Other"))
 
 ################################################################################
-## Get a map of Canadian provinces since the DFO Regions map above doesn't show them!!!
+## Get a map of Canadian provinces since the DFO Regions map above doesn't show them
 
 # See here for a helpful tutorial
 # https://ahurford.github.io/quant-guide-all-courses/making-maps.html
@@ -330,7 +325,7 @@ pacPunctualUTM = st_transform(pacPunctualWGS, CRS("+proj=utm +zone=9 +datum=WGS8
 
 ## NEWFOUNDLAND
 
-# There were 10 samples collected but not analyzed (due to budget concerns)
+# There were 10 samples collected but not analyzed (due to budget)
 rm.nl.samples = c("21_06_09_NL_S01_Z33_1147_250",
                   "21_07_07_NL_S01_Z33_1248_250",
                   "21_08_12_NL_S01_Z33_1351_250",
@@ -351,10 +346,7 @@ nlPunctualUTM = st_transform(nlPunctualWGS, CRS("+proj=utm +zone=21 +datum=WGS84
 ################################################################################
 # Get the coordinate locations for each bay to be added to inset maps
 
-# Get the locations of each bay (facilityName) within each region
-# These are to be added to the inset maps as rectangles
-# Only get the first row for each of these, otherwise all data points will plot. This is good enough since the map is zoomed out.
-# I don't totally understand why this works since I thought the units were different (Canada: LCC, inset: UTM) but whatever! sf objects must just know what they're doing!
+# This was if I wanted to have an inset as a red rectangle. I didn't use this code in the end.
 marTrMap = marTransectUTM %>%
   group_by(facilityName) %>%
   filter(row_number()==1) # only get the first entry for each bay
