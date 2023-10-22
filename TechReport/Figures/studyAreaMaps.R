@@ -7,15 +7,9 @@
 # Then next 3 panels are the 9 sampling bays, which show the sampling stations and shellfish leases
 
 # Some labels (e.g., "Inner", "Mid", "Outer") will be labelled by hand in PowerPoint or other software. 
-# It is too much work to set all the exact coordinates for each label, especially since things are still in draft mode and may 
-# be removed.
 
 # Note that the 9 bays should have approximately the same size dimensions (square)
 # The Pacific and Atlantic maps are also roughly the same relative dimensions
-
-# Data were prepared in a different script. Originally I had it all here, but it was too much
-
-# Making this figure was truly a nightmare, so if you're trying to copy this, good luck!
 
 ################################################################################
 ################################################################################
@@ -29,9 +23,8 @@ source("TechReport/Figures/colourPchSchemes.R") # defines colour schemes for the
 # One with all of Canada (canMap)
 # One zoomed in on Pacific sites 
 # One zoomed in on Atlantic sites
-# I mostly just included the Pac/Atl maps because there was extra space I needed to fill
+# I mostly just included the Pac/Atl maps because there was extra space I needed to fill lol
 # I couldn't show the sampled bays well enough with just one map of all of Canada
-
 
 # Colour scheme is defined in colourPchSchemes.R
 # Note that transparency of alpha = 0.7 was given to my regions of interest (Pac, Mar, Gulf, NL) so they are less aggressive
@@ -40,12 +33,12 @@ source("TechReport/Figures/colourPchSchemes.R") # defines colour schemes for the
 # Map of Canada
 # Shows all of Canada. DFO regions I am analyzing are coloured. All other regions are in grey (gray92)
 # Also has a red outline around the insets that focus in more on the Pacific and Atlantic areas so it's easier to see the sampling bays
-# can_map needs to be added over top of the regions so we can see the outlines of each province
+# canada_map needs to be added over top of the regions so we can see the outlines of each province
 # I thought I could add it below and adjust transparency of dfoRegions.df but something weird is happening and I think the data are stacking 
 # Multiple areas on top of each other, so the grey doesn't look grey. Parts look a lot darker.
 canMap = 
   ggplot()+
-  geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
+  geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ 
   geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
   # Adjust the names of the legend items so there's enough space on the map for them
   scale_fill_manual(values=regionMapCols, labels = c("Gulf", "Mar", "Nfld", "Other", "Pac"))+
@@ -83,8 +76,8 @@ pacMap =
   ggplot()+
   geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
   geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
-  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = "red", size = 3)+ # outline square for Lemmens (why did this work?)
-  # geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # outline square for Lemmens (why did this work?)
+  geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = "red", size = 3)+ # filled square for Lemmens (
+  # geom_sf(data = pacPunctualUTM[1,], pch = 22, col = "red", fill = NA, size = 3, stroke = 0.7)+ # outline square for Lemmens 
   theme_bw()+
   ggtitle("(B) Pacific")+
   coord_sf(crs = can.lcc, xlim = c(-2243138, -1907966), ylim = c(1323684, 1843861))+ # set map extents and define coordinate system
@@ -102,7 +95,7 @@ pacMap =
 # Atlantic inset
 atlMap = 
   ggplot()+
-  geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ # IF I JUST WANT CANADA OUTLINE (no DFO regions)
+  geom_sf(data = canada_map, fill = "gray92", col = "black", linewidth = 0.1)+ 
   geom_polygon(dfoRegions.df, mapping = aes(x = long, y = lat, group=group, fill = Region_EN), col = "black", linewidth = 0.1)+
   # Add markers (red outlines) for each of the bays that were sampled
   # "Tr" refers to data that were transects. "Pun" is "punctual stations" (discrete locations)
@@ -141,10 +134,10 @@ atlMap =
 # If I use ggarrange from egg package to line them up, this MOSTLY isn't an issue. It lines them up.
 # But that can distort the maps slightly. So when selecting xlim/ylim in coord_sf command, each axis should be approx the same
 # I could adjust them to be EXACTLY the same length, but that's too much work! 
-# To get ~square coordinates, I drew out a perfect square on my screen in QGIS, and wrote down the coordinates at these limits
+# To get approximatley square coordinates, I drew out a perfect square on my screen in QGIS, and wrote down the coordinates at these limits lol. 
 
-## A note about the stupid scalebar:
-# dding the scalebar with annotation_scale is very annoying! If you add it to the bottom right "location = "br", the text 
+## A note about the scalebar:
+# Adding the scalebar with annotation_scale is very annoying! If you add it to the bottom right "location = "br", the text 
 # (distance) is on the left hand side of the scalebar. But I want it on the right, or it appears over top of coastline and it's difficult
 # to read. I didn't see/couldn't figure out if there was an easy way to move it.
 # Instead, if you set location = "bl" (bottom left) the text is on the left hand side of the scalebar
@@ -174,23 +167,6 @@ ggLemMap = ggplot()+
     axis.ticks = element_blank(),
     axis.title = element_blank(),
         panel.grid = element_blank())
-
-# Question for Terri Sutherland
-# ggLemMap = ggplot()+
-#   geom_polygon(lemmensCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-#   geom_polygon(pacLeases, mapping = aes(x = long, y= lat, group = group, fill = TENURE_STA), col = "black", linewidth = 0.1)+
-#   scale_fill_discrete(name = "TENURE_STATUS")+ # add shellfish leases
-#   geom_sf(data = pacPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+ # add sampling locations
-#   # crs = 32609 is UTM zone 9
-#   coord_sf(xlim = c(726115, 730885), ylim = c(5453319, 5458079), crs = 32609)+
-#   annotation_scale(location = "br", text_cex = 0.8)+ # see note above about scale bar
-#   ggtitle("Lemmens")+
-#   theme_bw()+
-#   theme(
-#     #axis.text = element_blank(),
-#     #axis.ticks = element_blank(),
-#     axis.title = element_blank(),
-#     panel.grid = element_blank())
   
 ################################################################################
 ## MARITIMES
@@ -200,7 +176,6 @@ ggLemMap = ggplot()+
 ggArgMap = ggplot()+
   geom_polygon(argBoundary, mapping = aes(x = long, y= lat, group = group), fill = "blue", col = NA, linewidth = 0.1, alpha = 0.1)+
   geom_polygon(argyleCoastline, mapping = aes(x = long, y = lat, group=group), fill = "gray92", col = "black", linewidth = 0.1)+
-  
   # The coastline layer wasn't detailed enough for Eel Lake, where there were some shellfish farms.
   # Add the eelLakeBoundary file in white first, otherwise it'll overlay on grey and this will look incorrect when alpha is set to 0.1
   # Then, add the eelLakeBoundary in blue with the alpha set to 0.1
@@ -255,7 +230,6 @@ ggChMap = ggplot()+
   geom_sf(data = marPunctualUTM, pch = 21, col = "black", fill = "blue", size = 3, alpha = 0.7)+
   # Use this instead of coord_map to get the scalebar thing to work. 
   # annotation_scale needs the crs to be set here too
-  # coord_sf(xlim = c(596383, 611074), ylim = c(4996642, 5011378), crs = 32620)+
   coord_sf(xlim = c(593384, 606378), ylim = c(5000120, 5011138), crs = 32620)+
   annotation_scale(location = "bl", text_cex = 0.8, pad_x = unit(3.5, "cm"))+
   # Add a north arrow to map
