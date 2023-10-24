@@ -253,16 +253,18 @@ nl21ChaetData = suppress_warnings(read_excel("../AMPDataFiles/extraFiles/NL_Chae
   rename(sample = "FlowCam Sample Name") %>%
   # Only select the flowcam names (sample) and the counts
   select(sample, newName, count) %>%
+  mutate(origFileName = "Hand-counted Chaetognatha") %>%
   mutate(PercSampleCleaned = 1,
          PercZooIdentified = 1,
          adjCount = count,
          dataset = "Newfoundland 2021",
          originalNames = "Chaetognatha (juvenile or n.s.)",
          isCopepod = "",
-         copepodType = "")
+         copepodType = "",
          # NEW: COMMENT THIS OUT:
-         # sample = str_replace(sample, "_5mm", "_250")) # Need to replace last bit of the sample ID so 250 um and 5mm fractions add together properly
+         sample = str_replace(sample, "_5mm", "_250"))  # Need to replace last bit of the sample ID so 250 um and 5mm fractions add together properly
 
+  
 nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/extraFiles/NL_Chaetognath_2022.xlsx")) %>%
   # For everything except the first row: if a value is NA, put 0. If it's not, put 1.
   # This is because chaetognath lengths were recorded. But I am only interested in counts. So if there is any text, it's a count of 1
@@ -279,7 +281,8 @@ nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/extraFiles/NL_Chae
          originalNames = "Chaetognatha (juvenile or n.s.)",
          isCopepod = "",
          copepodType = "",
-         dataset = "Newfoundland 2022")
+         dataset = "Newfoundland 2022") %>%
+  mutate(origFileName = "Hand-counted Chaetognatha")
 
 ################################################################################
 ################################################################################
@@ -298,12 +301,14 @@ nl22ChaetData = suppress_warnings(read_excel("../AMPDataFiles/extraFiles/NL_Chae
 # Remove the R2 from the file name
 # This represents a second run of the sample because the first one had some sort of problem
 # For some datasets, "R2" has been removed from data file names. For some it's not. 
-Mar21Perc$FlowCamSampleName = str_replace(Mar21Perc$FlowCamSampleName,"_R2", "")
+Mar21Perc$FlowCamSampleName = str_replace(Mar21Perc$FlowCamSampleName,"_R2", "") 
 
 # Join the dataframes of counts with the dataframe of the adjustments
 mar21Adj =full_join(mar21, Mar21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   # Add column with adjusted counts
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
+  # NEW:
+  mutate(origFileName = sample)
 
 ######## Gulf 2020 ######## 
 
@@ -325,9 +330,10 @@ gulf20Adj = full_join(gulf20, Gulf20Perc, by=c("sample" = "FlowCamSampleName")) 
   # I need to remove the one at the end 
   mutate(sample = ifelse(endsWith(sample, "_1"), # check if it ends with "_1"
                          gsub('.{2}$', '', sample), # if it does, remove last 2 characters (i.e., "_1")
-                         sample))  # if not, just leave it
+                         sample)) %>% # if not, just leave it
   # NEW: COMMENT OUT
-  # mutate(sample = str_replace(sample, "_5mm", ""))
+  mutate(origFileName = sample) %>%
+  mutate(sample = str_replace(sample, "_5mm", ""))
 
 ######## Gulf 2021 ########  
 
@@ -335,13 +341,15 @@ gulf20Adj = full_join(gulf20, Gulf20Perc, by=c("sample" = "FlowCamSampleName")) 
 gulf21Adj =full_join(gulf21, Gulf21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) 
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   # NEW: COMMENT OUT
-  # mutate(sample = str_replace(sample, "_5mm", "_250"))
+  mutate(origFileName = sample) %>%
+  mutate(sample = str_replace(sample, "_5mm", "_250"))
 
 ######## Newfoundland 2020 ######## 
 nl20Adj =full_join(nl20, Nl20Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
+  mutate(origFileName = sample)
 
 ########  Newfoundland 2021 ########  
 
@@ -351,24 +359,27 @@ nl21Adj =full_join(nl21, Nl21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   # NEW: COMMENT OUT
-  # mutate(sample = str_replace(sample, "_5mm", "_250")) %>%
+  mutate(origFileName = sample) %>%
+  mutate(sample = str_replace(sample, "_5mm", "_250")) %>%
   rbind(nl21ChaetData) # Now add the hand-counted chaeotognath data
 
 ########  Newfoundland 2022 ########
 
 nl22Adj =full_join(nl22, Nl22Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
-  rbind(nl22ChaetData)
+  rbind(nl22ChaetData) %>%
+  mutate(origFileName = sample)
 
 
 ########  Pacific 2020 ########  
 
 # Need to capitalize um so they match
 pac20 = pac20 %>%
-  mutate(sample = str_replace(sample,"um", "UM"))
+  mutate(sample = str_replace(sample,"um", "UM")) 
 
 pac20Adj =full_join(pac20, Pac20Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
+  mutate(origFileName = sample)
 
 ######## Pacific June 2021 ########  
 
@@ -378,15 +389,19 @@ pacJun21Adj =full_join(pacJun21, PacJun21Perc, by=c("sample" = "FlowCamSampleNam
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
   mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   # NEW: COMMENT OUT
-  # mutate(sample = str_replace(sample, "_5mm", "_250um")) %>%
-  mutate(sample = str_replace(sample, "_run", ""))
+
+  mutate(origFileName = sample) %>%
+  mutate(sample = str_replace(sample, "_run", "")) %>%
+  mutate(sample = str_replace(sample, "_5mm", "_250um")) 
+
 
 ########  Pacific March 2021 ########  
 
 # Join the dataframes of counts with the dataframe of the adjustments
 # NOTE TO SELF: COME BACK TO THIS. I DON'T THINK ALL SAMPLES WERE COMBINED
 pacMar21Adj =full_join(pacMar21, PacMar21Perc, by=c("sample" = "FlowCamSampleName")) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified)
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
+  mutate(origFileName = sample)
 
 ######## Pacific Sept 2021 ########
 
@@ -394,9 +409,10 @@ pacMar21Adj =full_join(pacMar21, PacMar21Perc, by=c("sample" = "FlowCamSampleNam
 pacSept21Adj =full_join(pacSep21, PacSept21Perc, by=c("sample" = "FlowCamSampleName")) %>%
   mutate(PercSampleCleaned = replace_na(PercSampleCleaned, 1)) %>%
   mutate(PercZooIdentified = replace_na(PercZooIdentified, 1)) %>%
-  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) 
+  mutate(adjCount = count / PercSampleCleaned / PercZooIdentified) %>%
   # NEW: COMMENT OUT
-  # mutate(sample = str_replace(sample, "_5mm", ""))
+  mutate(origFileName = sample) %>%
+  mutate(sample = str_replace(sample, "_5mm", ""))
 
 ################################################################################
 ## Merge FlowCam data with the metadata
@@ -513,3 +529,10 @@ pacMerge = mergeSpeciesMeta(pacMetaRed, pacAll) %>%
   rename(class = newName)
 
 
+rawCounts = bind_rows(gulfMerge, nlMerge, marMerge, pacMerge) %>%
+  mutate(class = ifelse(class == "Acartia spp. (civ-vi)", "Acartia spp.", class)) %>%
+  mutate(class = ifelse(class == "Cyclopoida parent", "Cyclopoida (unid)", class)) %>%
+  mutate(class = ifelse(class == "Calanoida parent", "Calanoida (unid)", class))
+
+
+write.csv(rawCounts, "rawCounts.csv")
