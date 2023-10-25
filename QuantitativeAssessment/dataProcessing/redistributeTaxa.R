@@ -141,7 +141,7 @@ fcQaDf.redist = redistribute_abundances(fcQaDf.redist, "Zooplankton (unid)", all
 # Make sure that any taxa that have changed are now being added together so they aren't separate lines
 fcQaDf.redist = fcQaDf.redist %>%
   group_by(newName, FlowCamID, regionYear, qaSampleID, type) %>%
-  summarize(abund = sum(abund))
+  summarize(abund = sum(abund)) 
 
 
 ################################################################################
