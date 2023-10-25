@@ -29,11 +29,11 @@ ordPrepDf = fcQaDf %>%
 
 # Convert dataframes to wide format
 
-# Make one for abundance in seawater
-ordPrepWideAbund = ordPrepDf %>% 
-  select(-relAbund) %>%
-  pivot_wider(names_from = newName, values_from = abund) %>%
-  mutate_all(~replace(., is.na(.), 0))   # replace NAs with 0 
+# # Make one for abundance in seawater
+# ordPrepWideAbund = ordPrepDf %>% 
+#   select(-relAbund) %>%
+#   pivot_wider(names_from = newName, values_from = abund) %>%
+#   mutate_all(~replace(., is.na(.), 0))   # replace NAs with 0 
 
 # Make the other using relative abundance
 ordPrepWideRelAbund = ordPrepDf %>% 
@@ -89,10 +89,10 @@ nmdsMaker = function(df, regYearSelect, plotTitle){
 }
   
 # Using abundances
-gulf20.Ord = nmdsMaker(ordPrepWideAbund, "Gulf 2020", "(A) Gulf 2020")
-pac21.Ord = nmdsMaker(ordPrepWideAbund, "Pac 21", "(B) Pacific 2021")
-nl20.Ord = nmdsMaker(ordPrepWideAbund, "NL 2020", "(C) Newfoundland 2020")
-nl21.Ord = nmdsMaker(ordPrepWideAbund, "NL 2021", "(D) Newfoundland 2021")
+# gulf20.Ord = nmdsMaker(ordPrepWideAbund, "Gulf 2020", "(A) Gulf 2020")
+# pac21.Ord = nmdsMaker(ordPrepWideAbund, "Pac 21", "(B) Pacific 2021")
+# nl20.Ord = nmdsMaker(ordPrepWideAbund, "NL 2020", "(C) Newfoundland 2020")
+# nl21.Ord = nmdsMaker(ordPrepWideAbund, "NL 2021", "(D) Newfoundland 2021")
 
 # Using relative abundances
 gulf20.OrdRel = nmdsMaker(ordPrepWideRelAbund, "Gulf 2020", "(A) Gulf 2020")
@@ -102,28 +102,11 @@ nl21.OrdRel = nmdsMaker(ordPrepWideRelAbund, "NL 2021", "(D)Newfoundland 2021")
 
 
 # Put them all together
-# Abundances
-ggarrange(gulf20.Ord, pac21.Ord, nl20.Ord, nl21.Ord)
+# # Abundance in seawater
+# ggarrange(gulf20.Ord, pac21.Ord, nl20.Ord, nl21.Ord)
+
 # Relative abundance
 ggarrange(gulf20.OrdRel, pac21.OrdRel, nl20.OrdRel, nl21.OrdRel)
-
-
-# There are 3 Gulf samples with very high Bivalvia larvae that seem very different. Plot these separately
-gulf3Weird = nmdsMaker(ordPrepWideRelAbund %>%
-  filter((FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
-                            "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
-                            "AMMP_Gulf_StPeters_3_20200903LT_250UM"))), "Gulf 2020", "Gulf 2020")
-
-gulfOtherWeird = nmdsMaker(ordPrepWideRelAbund %>%
-  filter(!(FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
-                            "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
-                            "AMMP_Gulf_StPeters_3_20200903LT_250UM"))), "Gulf 2020", "Gulf 2020")
-
-# Plot these side by side
-ggarrange(gulf3Weird, gulfOtherWeird, ncol = 2)
-
-# Try and see if I can figure out why 2 FC samples are overlapping?
-girafe(ggobj = gulf3Weird)
 
 
 ################################################################################
@@ -179,74 +162,87 @@ nmdsAll.RelAbund = nmdsMakerAllDat(ordPrepWideRelAbund, "Relative abundance: all
 
 ggarrange(nmdsAll.RelAbund, nmdsAll, ncol =1)
 
-################################################################################
-## Make interactive plots to visualize "problem" taxa
-
-# Make it interactive so you can point & click and see the sampleCode
-girafe(ggobj = nmdsAll)
-girafe(ggobj = nmdsAll.RelAbund)
-
-
-
-### Track down some data
-# Two of the plots had distinct groupings
-# This is: Gulf 2020 (left hand side has 3 samples vs RHS has 7)
-# For Newfoundland, there is an Upper cluster (4 points) and Lower cluster (6 points) on the NMDS
-
-# For Gulf, need to go back to the original data that specifies if they're inner/mid/outer etc
-# Too many sample labelling issues to get that from just the code 
-# For NL, just point and click on the interactive plot. Can get info from FlowCamCodes.
-
-# This creates an interactive ggplot that I can click on to see the FlowCamCodes
-girafe(ggobj = gulf20.Ord)
-girafe(ggobj = nl21.Ord)
-
-girafe(ggobj = gulf20.OrdRel)
-
-# Gulf has 3 that form 1 group. They are:
-# THESE ARE ALL "OUTER" STATIONS
-# AMMP_Gulf_StPeters_1_20200903HT_250UM
-# AMMP_Gulf_StPeters_1_20200904HT_250UM
-# AMMP_Gulf_StPeters_3_20200903LT_250UM
-
-# Need to go back to the original code from QAcodeMatches.R before i select for certain columns
-findWeirdGulfStations = qaID %>%
-  left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
-  # Only select the samples we're interested in
-  filter(selectForAnalysis == "Yes") %>%
-  left_join(fcTaxaChanges) %>%
-  filter(regionYear == "Gulf 2020") %>%
-  filter(!(FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
-                          "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
-                          "AMMP_Gulf_StPeters_3_20200903LT_250UM")))
-
-# End result: 
-# For Gulf, LHS are Outer stations. RHS are Inner/Mid stations
-# For NL, upper is station 41 ("Mid-B"). Lower = station 17 ("Outer")
-
 
 
 ################################################################################
-### Find out what's behind these differences using SIMPER analysis
+### EXPLORING THE DATA A BIT MORE
 
+# Commented out since I am not using these
 
-testNL = ordPrepWide %>%
-  filter(regionYear == "NL 2021")
-
-simTest = simper(sqrt(testNL[,which(colnames(testNL)== "Acartia spp."):ncol(testNL)]), 
-                 group=testNL$type)
-summary(simTest)
+# # There are 3 Gulf samples with very high Bivalvia larvae that seem very different. Plot these separately
+# gulf3Weird = nmdsMaker(ordPrepWideRelAbund %>%
+#                          filter((FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
+#                                                   "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
+#                                                   "AMMP_Gulf_StPeters_3_20200903LT_250UM"))), "Gulf 2020", "Gulf 2020")
+# 
+# gulfOtherWeird = nmdsMaker(ordPrepWideRelAbund %>%
+#                              filter(!(FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
+#                                                        "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
+#                                                        "AMMP_Gulf_StPeters_3_20200903LT_250UM"))), "Gulf 2020", "Gulf 2020")
+# 
+# # Plot these side by side
+# ggarrange(gulf3Weird, gulfOtherWeird, ncol = 2)
+# 
+# # Try and see if I can figure out why 2 FC samples are overlapping?
+# girafe(ggobj = gulf3Weird)
+# 
+# ################################################################################
+# ## Make interactive plots to visualize "problem" samples (i.e., why does the Gulf figure look so weird???)
+# 
+# # Make it interactive so you can point & click and see the sampleCode
+# girafe(ggobj = nmdsAll)
+# girafe(ggobj = nmdsAll.RelAbund)
+# 
+# 
+# 
+# ### Track down some data
+# # Two of the plots had distinct groupings
+# # This is: Gulf 2020 (left hand side has 3 samples vs RHS has 7)
+# # For Newfoundland, there is an Upper cluster (4 points) and Lower cluster (6 points) on the NMDS
+# 
+# # For Gulf, need to go back to the original data that specifies if they're inner/mid/outer etc
+# # Too many sample labelling issues to get that from just the code 
+# # For NL, just point and click on the interactive plot. Can get info from FlowCamCodes.
+# 
+# # This creates an interactive ggplot that I can click on to see the FlowCamCodes
+# girafe(ggobj = gulf20.Ord)
+# girafe(ggobj = nl21.Ord)
+# 
+# girafe(ggobj = gulf20.OrdRel)
+# 
+# # Gulf has 3 that form 1 group. They are:
+# # THESE ARE ALL "OUTER" STATIONS
+# # AMMP_Gulf_StPeters_1_20200903HT_250UM
+# # AMMP_Gulf_StPeters_1_20200904HT_250UM
+# # AMMP_Gulf_StPeters_3_20200903LT_250UM
+# 
+# # Need to go back to the original code from QAcodeMatches.R before i select for certain columns
+# findWeirdGulfStations = qaID %>%
+#   left_join(fcDataForQA, by = c("FlowCamID" = "flowcamCode")) %>%
+#   # Only select the samples we're interested in
+#   filter(selectForAnalysis == "Yes") %>%
+#   left_join(fcTaxaChanges) %>%
+#   filter(regionYear == "Gulf 2020") %>%
+#   filter(!(FlowCamID %in% c("AMMP_Gulf_StPeters_1_20200903HT_250UM", 
+#                           "AMMP_Gulf_StPeters_1_20200904HT_250UM", 
+#                           "AMMP_Gulf_StPeters_3_20200903LT_250UM")))
+# 
+# # End result: 
+# # For Gulf, LHS are Outer stations. RHS are Inner/Mid stations
+# # For NL, upper is station 41 ("Mid-B"). Lower = station 17 ("Outer")
+# 
+# ################################################################################
+# ### Find out what's behind these differences using SIMPER analysis
+# 
+# 
+# testNL = ordPrepWide %>%
+#   filter(regionYear == "NL 2021")
+# 
+# simTest = simper(sqrt(testNL[,which(colnames(testNL)== "Acartia spp."):ncol(testNL)]), 
+#                  group=testNL$type)
+# summary(simTest)
 
 
 # Ok I think these three just have WAY more bivalvia larvae than the rest
-
-
-
-
-
-
-
-
-
 
 
