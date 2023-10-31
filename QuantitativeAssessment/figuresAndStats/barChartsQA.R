@@ -110,7 +110,6 @@ sampleSummary = fcQaDf %>%
   distinct() 
 
 # I want to know, for each regionYear, which taxa are found: in both flowcam and microsopy, flowcam only, and microscopy only
-# It is very annoying to do lol
 sampleSummaryAdj = sampleSummary %>%
   # First need to expand the list, so it has ALL comparisons 
   # Because previously, only taxa that are present are recorded for each regionYear/type
@@ -169,6 +168,10 @@ barChartComparison(sampleSummaryAdj %>% filter(regionYear == "NL 2021"), "NL 202
 
 
 ################################################################################
+
+#### COMMENTING OUT OLD CODE. KEEPING FOR REFERENCE
+
+
 # This is my OLD graph that shows multiple graphs (e.g., using raw counts, not just relative abundance)
 
 # # Create a function that creates various types of bar charts
@@ -278,79 +281,79 @@ barChartComparison(sampleSummaryAdj %>% filter(regionYear == "NL 2021"), "NL 202
 
 ###############################################################################
 
-# Test doing log transforms of the data
-
-# Get summary stats for plotting
-# I want the average relative abundance for each sample in each region
-sampleSummary = fcQaDf %>%
-  # Get the relative abundance for each sample
-  group_by(FlowCamID, type) %>%
-  # mutate(relAbund = countTot / sum(countTot)*100) %>%
-  mutate(relAbund = abund / sum(abund)*100) %>%
-  # Now get the AVERAGE relative abundance for each sample. and the standard deviation
-  group_by(newName, type, regionYear) %>%
-  mutate(meanAbund = mean(relAbund),
-         sdAbund = sd(relAbund)) %>%
-  select(newName, regionYear, meanAbund, sdAbund, type) %>%
-  distinct() 
-
-# I want to know, for each regionYear, which taxa are found: in both flowcam and microsopy, flowcam only, and microscopy only
-# It is very annoying to do lol
-sampleSummaryAdj = sampleSummary %>%
-  # First need to expand the list, so it has ALL comparisons 
-  # Because previously, only taxa that are present are recorded for each regionYear/type
-  # But if, e.g., Calanoida (unid) only present in FlowCam but not in microscopy, I need a new line of data for that too
-  ungroup() %>%
-  complete(newName, regionYear, type, fill = list(meanAbund =0, sdAbund = 0)) %>%
-  
-  # Now do the comparisons.
-  group_by(newName, regionYear) %>%
-  mutate(presence = case_when(
-    all(meanAbund == 0) ~ "neither", # Not present in either
-    any(meanAbund >0) & all(meanAbund >0) ~ "Both", # present in both
-    meanAbund[type == "QA"] == 0 & meanAbund[type == "FC"] > 0 ~ "FC Only", # present in flowcam only
-    meanAbund[type == "QA"] > 0 & meanAbund[type == "FC"] == 0 ~ "MC Only" # present in microscopy only
-  )) 
-
-
-# Create a function to make bar chart comparisons for each region
-barChartComparison = function(relData, regionYear, plotName) {
-  
-  # Don't include the data that are present in neither
-  # That would include taxa that are present in other region years, but not these ones
-  relData = relData %>%
-    filter(presence != "neither")
-  
-  # Make a plot that has 3 panels: present in both, present in flowcam only, present in microscopy only
-  ggplot(relData, aes(x = log10(meanAbund*100+1), y = newName, fill = type))+
-    
-    geom_col(position = position_dodge2(preserve = "single"), width = 0.8)+
-    #facet_wrap(~presence, scales = "free_y", ncol = 1)+
-    # facet_grid seems better for getting bar width the same, but panel sizes to be different
-    facet_grid(presence~., scales = "free", space = "free", switch = "y")+ 
-    # Need an ifelse statement to remove error bars when the standard deviation is zero by making them NAs
-    # geom_errorbar(aes(xmin=ifelse(sdAbund == 0, NA, meanAbund), xmax=ifelse(sdAbund == 0, NA, meanAbund+sdAbund)), width=.2,
-    #               position=position_dodge(.8), col = "black", na.rm = T)+
-    xlab("Average relative abundance (%)")+
-    ggtitle(plotName)+
-    scale_fill_discrete(labels=c('FlowCam (FC)', 'Microscopy (MC)'))+
-    scale_color_discrete(labels = c("FlowCam (FC)", "Microscopy (MC)"))+
-    theme_bw()+
-    theme(
-      axis.title.y = element_blank(),
-      axis.title.x = element_text(size = 12),
-      legend.text = element_text(size = 11),
-      legend.title = element_blank(),
-      strip.text.y = element_text(size = 10)
-    )
-  
-}
-
-# Create the bar charts for each region separately
-barChartComparison(sampleSummaryAdj %>% filter(regionYear == "Gulf 2020"), "Gulf 2020", "Gulf 2020") 
-barChartComparison(sampleSummaryAdj %>% filter(regionYear == "Pac 21"), "Pac 21", "Pacific 2021") 
-barChartComparison(sampleSummaryAdj %>% filter(regionYear == "NL 2020"), "NL 2020", "Newfoundland 2020")
-barChartComparison(sampleSummaryAdj %>% filter(regionYear == "NL 2021"), "NL 2021", "Newfoundland 2021")
+# # Test doing log transforms of the data
+# 
+# # Get summary stats for plotting
+# # I want the average relative abundance for each sample in each region
+# sampleSummary = fcQaDf %>%
+#   # Get the relative abundance for each sample
+#   group_by(FlowCamID, type) %>%
+#   # mutate(relAbund = countTot / sum(countTot)*100) %>%
+#   mutate(relAbund = abund / sum(abund)*100) %>%
+#   # Now get the AVERAGE relative abundance for each sample. and the standard deviation
+#   group_by(newName, type, regionYear) %>%
+#   mutate(meanAbund = mean(relAbund),
+#          sdAbund = sd(relAbund)) %>%
+#   select(newName, regionYear, meanAbund, sdAbund, type) %>%
+#   distinct() 
+# 
+# # I want to know, for each regionYear, which taxa are found: in both flowcam and microsopy, flowcam only, and microscopy only
+# # It is very annoying to do lol
+# sampleSummaryAdj = sampleSummary %>%
+#   # First need to expand the list, so it has ALL comparisons 
+#   # Because previously, only taxa that are present are recorded for each regionYear/type
+#   # But if, e.g., Calanoida (unid) only present in FlowCam but not in microscopy, I need a new line of data for that too
+#   ungroup() %>%
+#   complete(newName, regionYear, type, fill = list(meanAbund =0, sdAbund = 0)) %>%
+#   
+#   # Now do the comparisons.
+#   group_by(newName, regionYear) %>%
+#   mutate(presence = case_when(
+#     all(meanAbund == 0) ~ "neither", # Not present in either
+#     any(meanAbund >0) & all(meanAbund >0) ~ "Both", # present in both
+#     meanAbund[type == "QA"] == 0 & meanAbund[type == "FC"] > 0 ~ "FC Only", # present in flowcam only
+#     meanAbund[type == "QA"] > 0 & meanAbund[type == "FC"] == 0 ~ "MC Only" # present in microscopy only
+#   )) 
+# 
+# 
+# # Create a function to make bar chart comparisons for each region
+# barChartComparison = function(relData, regionYear, plotName) {
+#   
+#   # Don't include the data that are present in neither
+#   # That would include taxa that are present in other region years, but not these ones
+#   relData = relData %>%
+#     filter(presence != "neither")
+#   
+#   # Make a plot that has 3 panels: present in both, present in flowcam only, present in microscopy only
+#   ggplot(relData, aes(x = log10(meanAbund*100+1), y = newName, fill = type))+
+#     
+#     geom_col(position = position_dodge2(preserve = "single"), width = 0.8)+
+#     #facet_wrap(~presence, scales = "free_y", ncol = 1)+
+#     # facet_grid seems better for getting bar width the same, but panel sizes to be different
+#     facet_grid(presence~., scales = "free", space = "free", switch = "y")+ 
+#     # Need an ifelse statement to remove error bars when the standard deviation is zero by making them NAs
+#     # geom_errorbar(aes(xmin=ifelse(sdAbund == 0, NA, meanAbund), xmax=ifelse(sdAbund == 0, NA, meanAbund+sdAbund)), width=.2,
+#     #               position=position_dodge(.8), col = "black", na.rm = T)+
+#     xlab("Average relative abundance (%)")+
+#     ggtitle(plotName)+
+#     scale_fill_discrete(labels=c('FlowCam (FC)', 'Microscopy (MC)'))+
+#     scale_color_discrete(labels = c("FlowCam (FC)", "Microscopy (MC)"))+
+#     theme_bw()+
+#     theme(
+#       axis.title.y = element_blank(),
+#       axis.title.x = element_text(size = 12),
+#       legend.text = element_text(size = 11),
+#       legend.title = element_blank(),
+#       strip.text.y = element_text(size = 10)
+#     )
+#   
+# }
+# 
+# # Create the bar charts for each region separately
+# barChartComparison(sampleSummaryAdj %>% filter(regionYear == "Gulf 2020"), "Gulf 2020", "Gulf 2020") 
+# barChartComparison(sampleSummaryAdj %>% filter(regionYear == "Pac 21"), "Pac 21", "Pacific 2021") 
+# barChartComparison(sampleSummaryAdj %>% filter(regionYear == "NL 2020"), "NL 2020", "Newfoundland 2020")
+# barChartComparison(sampleSummaryAdj %>% filter(regionYear == "NL 2021"), "NL 2021", "Newfoundland 2021")
 
 
 
