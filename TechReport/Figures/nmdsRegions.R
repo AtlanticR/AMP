@@ -17,6 +17,11 @@
 # Data from the Newfoundland region. These plots are a bit different because they 
 # had monthly sampling. 
 
+# New pat
+install.packages("gitcreds")
+library(gitcreds)
+gitcreds_set()
+
 ################################################################################
 ## Setup
 
