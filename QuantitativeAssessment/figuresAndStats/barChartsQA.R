@@ -69,7 +69,7 @@ barChart = function(regData, newSampleLabels, plotLabel){
     )+
     guides(fill = guide_legend(ncol=2))
   
-  #return(datPlot)
+  # return(datRanked)
 }
 
 
@@ -88,6 +88,8 @@ nl20Chart = barChart(fcQaDf %>% subset(regionYear == "NL 2020"), nl20Labs, "(C) 
 nl21Chart = barChart(fcQaDf %>% subset(regionYear == "NL 2021"), nl21Labs, "(D) Newfoundland 2021")
 
 ggarrange(gulf20Chart, pac21Chart, nl20Chart, nl21Chart, ncol = 1)
+
+
 
 ################################################################################
 ################################################################################
